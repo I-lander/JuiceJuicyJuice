@@ -1,4 +1,5 @@
 import { CustomScene } from '../customClasses/CustomScene';
+import { Sprite } from '../objects/Sprite';
 import { removeSplashScreen } from '../utils/utils';
 import { UIScene } from './UIScene';
 export class MainScene extends CustomScene {
@@ -7,6 +8,8 @@ export class MainScene extends CustomScene {
   canvasWidth: number = 0;
   canvasHeight: number = 0;
   tileSize: number = 0;
+
+  sprites: Sprite[] = [];
 
   constructor() {
     super('MainScene');

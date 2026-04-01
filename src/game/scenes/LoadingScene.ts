@@ -1,13 +1,14 @@
+import { spriteAtlas } from '../elements/SpriteAtlas';
+
 export class LoadingScene extends Phaser.Scene {
   constructor() {
     super({ key: 'LoadingScene' });
   }
 
   preload() {
-    // Load your assets here
-    // Example:
-    // this.load.image('myImage', './assets/images/myImage.png');
-    // this.load.atlas('myAtlas', './assets/images/atlas.png', atlasData);
+    document.fonts.load('16px "KenneyPixel"').then(() => {});
+
+    this.load.atlas('spriteAtlas', './assets/images/sprite-atlas.png', spriteAtlas);
   }
 
   async create() {
