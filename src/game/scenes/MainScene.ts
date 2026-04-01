@@ -10,6 +10,13 @@ export class MainScene extends CustomScene {
   canvasHeight: number = 0;
   tileSize: number = 0;
 
+  camera: { x: number; y: number; width: number; height: number } = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
+
   sprites: Sprite[] = [];
 
   constructor() {
@@ -29,20 +36,27 @@ export class MainScene extends CustomScene {
 
     this.uiScene = this.scene.get('UIScene') as UIScene;
     this.initCamera();
-    
+
     const firstSprite = new Sprite(this, this.canvasWidth / 2, this.canvasHeight / 2);
     firstSprite.init('house');
     this.sprites.push(firstSprite);
   }
 
   initCamera() {
-    this.cameras.main.setBounds(
-      0,
-      0,
-      this.canvasWidth - UIScene.leftPanelWidthInTiles * this.tileSize,
-      this.canvasHeight,
+    const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
+
+    this.camera = {
+      x: panelWidth,
+      y: 0,
+      width: this.canvasWidth - panelWidth,
+      height: this.canvasHeight,
+    };
+    this.cameras.main.setViewport(
+      this.camera.x,
+      this.camera.y,
+      this.camera.width,
+      this.camera.height,
     );
-    this.cameras.main.centerOn(this.canvasWidth / 2, this.canvasHeight / 2);
   }
 
   getTotalParticleCount(): number {
