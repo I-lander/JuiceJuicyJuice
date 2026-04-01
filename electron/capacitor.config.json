@@ -1,0 +1,8 @@
+{
+  "appId": "com.donkeysisle.please-dont-break-me",
+  "appName": "please-dont-break-me",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
