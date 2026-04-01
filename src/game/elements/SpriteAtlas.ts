@@ -2,8 +2,8 @@ import { createAtlasFromArray } from '../utils/utils';
 
 export const spriteElements = [
   {
-    id: 'tree',
-    atlasObj: { x: 1, y: 0, w: 1, h: 1 },
+    id: 'house',
+    atlasObj: { x: 0, y: 0, w: 1, h: 1 },
   },
 ];
 

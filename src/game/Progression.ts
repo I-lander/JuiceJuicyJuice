@@ -1,5 +1,5 @@
 export class Progression {
-  static particlesPerClick = 0;
+  static particlesPerClick = 1;
   static maxParticles = 5;
 		static particleLifetime = 1000;
   static sprites = 0;
