@@ -10,7 +10,7 @@ export function initPhaserGame() {
     type: Phaser.WEBGL,
     width: 2560,
     height: 1440,
-    backgroundColor: 'rgba(10, 10, 26, 1)',
+    backgroundColor: 'rgb(30, 30, 32)',
     antialias: false,
     pixelArt: true,
     roundPixels: true,

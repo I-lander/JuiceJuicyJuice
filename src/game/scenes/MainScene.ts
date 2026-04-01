@@ -28,10 +28,21 @@ export class MainScene extends CustomScene {
     Particle.createTexture(this);
 
     this.uiScene = this.scene.get('UIScene') as UIScene;
-
+    this.initCamera();
+    
     const firstSprite = new Sprite(this, this.canvasWidth / 2, this.canvasHeight / 2);
-    firstSprite.init('house')
+    firstSprite.init('house');
     this.sprites.push(firstSprite);
+  }
+
+  initCamera() {
+    this.cameras.main.setBounds(
+      0,
+      0,
+      this.canvasWidth - UIScene.leftPanelWidthInTiles * this.tileSize,
+      this.canvasHeight,
+    );
+    this.cameras.main.centerOn(this.canvasWidth / 2, this.canvasHeight / 2);
   }
 
   getTotalParticleCount(): number {
