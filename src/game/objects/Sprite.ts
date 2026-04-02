@@ -82,16 +82,20 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     if (this.x < radius) {
       this.x = radius;
       this.velocity.x *= -1;
+      if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     } else if (this.x > this.scene.canvasWidth - radius) {
       this.x = this.scene.canvasWidth - radius;
       this.velocity.x *= -1;
+      if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     }
     if (this.y < radius) {
       this.y = radius;
       this.velocity.y *= -1;
+      if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     } else if (this.y > this.scene.canvasHeight - radius) {
       this.y = this.scene.canvasHeight - radius;
       this.velocity.y *= -1;
+      if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     }
 
     if (Progression.isSpriteCollisionEnabled) {
@@ -133,6 +137,8 @@ export class Sprite extends Phaser.GameObjects.Sprite {
         other.velocity.y =
           (other.velocity.y * (other.speed - 1) + this.velocity.y * (this.speed - 1) - vyTotal) /
           (this.speed + other.speed - 2);
+
+        Progression.addCollisionCpu();
       }
     }
   }

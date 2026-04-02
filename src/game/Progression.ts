@@ -8,6 +8,7 @@ export const CPU_COSTS: Record<string, number> = {
   autoClicker: 0.2,
   shader: 2.0,
   uiParasite: 1.5,
+  collision: 0.8,
 };
 
 const CPU_COEFFICIENT = 0.002;
@@ -28,18 +29,26 @@ export class Progression {
   static cpuUsage = 0;
   static simulatedFps = 60;
   static cpuMultiplier = 1;
+  static activeCollisionCpu = 0;
 
   static level = 1;
   static experience = 0;
   static totalExperience = 0;
 
-  static calculateCpuUsage(spriteCount: number, particleCount: number, activeTweenCount: number, movingSpriteCount: number) {
+  static addCollisionCpu() {
+    Progression.activeCollisionCpu += CPU_COSTS.collision;
+  }
+
+  static calculateCpuUsage(spriteCount: number, particleCount: number, activeTweenCount: number, movingSpriteCount: number, delta: number) {
+    Progression.activeCollisionCpu = Math.max(0, Progression.activeCollisionCpu - Progression.activeCollisionCpu * delta / 1000);
+
     let totalCpu = 0;
     totalCpu += spriteCount * CPU_COSTS.sprite;
     totalCpu += particleCount * CPU_COSTS.particle;
     totalCpu += activeTweenCount * CPU_COSTS.tween;
     totalCpu += movingSpriteCount * CPU_COSTS.movingSprite;
     totalCpu += Progression.autoClickers * CPU_COSTS.autoClicker;
+    totalCpu += Progression.activeCollisionCpu;
     totalCpu *= Progression.cpuMultiplier;
 
     Progression.cpuUsage = totalCpu;
@@ -77,6 +86,9 @@ export class Progression {
     maxParticles: 0,
     autoClicker: 0,
     cooldownReduction: 0,
+    bounce: 0,
+    spriteMovement: 0,
+    spriteCollision: 0,
   };
 
   static getUpgradeValue(upgradeKey: string): string {
@@ -91,6 +103,12 @@ export class Progression {
         return `${Progression.autoClickers}`;
       case 'cooldownReduction':
         return `${(Progression.autoClickerCooldown / 1000).toFixed(1)}s`;
+      case 'bounce':
+        return Progression.isBounceEnabled ? 'ON' : 'OFF';
+      case 'spriteMovement':
+        return Progression.isSpriteMovementEnabled ? 'ON' : 'OFF';
+      case 'spriteCollision':
+        return Progression.isSpriteCollisionEnabled ? 'ON' : 'OFF';
       default:
         return '';
     }

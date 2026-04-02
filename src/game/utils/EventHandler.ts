@@ -1,3 +1,4 @@
+import { Progression } from '../Progression';
 import { MainScene } from '../scenes/MainScene';
 import { UIScene } from '../scenes/UIScene';
 import { toggleDebugGrid } from './utils';
@@ -37,12 +38,9 @@ export class EventHandler {
       }
     });
 
-    this.mainScene.input.on(
-      Phaser.Input.Events.POINTER_UP,
-      () => {
-        this.isDraggingWorld = false;
-      },
-    );
+    this.mainScene.input.on(Phaser.Input.Events.POINTER_UP, () => {
+      this.isDraggingWorld = false;
+    });
 
     this.mainScene.input.on(Phaser.Input.Events.POINTER_MOVE, (pointer: Phaser.Input.Pointer) => {
       if (this.isDraggingWorld && !this.isPinching) {
@@ -82,7 +80,7 @@ export class EventHandler {
 
       if (import.meta.env.VITE_IS_DEV_SPLASH === 'true') {
         if (key.code === 'KeyG') {
-          toggleDebugGrid(this.uiScene);
+          Progression.fragments = Infinity;
         }
       }
     });

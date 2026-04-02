@@ -204,6 +204,15 @@ export class Shop {
         this.scene.mainScene.spawnSprite(randomFrame);
         Progression.sprites++;
         break;
+      case 'bounce':
+        Progression.isBounceEnabled = true;
+        break;
+      case 'spriteMovement':
+        Progression.isSpriteMovementEnabled = true;
+        break;
+      case 'spriteCollision':
+        Progression.isSpriteCollisionEnabled = true;
+        break;
     }
 
     this.refreshButton(button);
@@ -283,9 +292,13 @@ export class Shop {
 
     let visibleIndex = 0;
     for (const button of this.buttons) {
+      const definition = UPGRADES[button.upgradeKey];
+      const level = Progression.upgradeLevels[button.upgradeKey] ?? 0;
+      const isMaxedSinglePurchase = definition.maxLevel === 1 && level >= 1;
       const isUnlocked = Progression.isUpgradeUnlocked(button.upgradeKey);
-      this.setButtonVisible(button, isUnlocked);
-      if (isUnlocked) {
+      const isVisible = isUnlocked && !isMaxedSinglePurchase;
+      this.setButtonVisible(button, isVisible);
+      if (isVisible) {
         this.repositionButton(button, visibleIndex);
         this.refreshButton(button);
         visibleIndex++;

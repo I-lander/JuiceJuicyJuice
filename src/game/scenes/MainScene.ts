@@ -4,8 +4,10 @@ import { Sprite } from '../objects/Sprite';
 import { getRandomInt, removeSplashScreen } from '../utils/utils';
 import { UIScene } from './UIScene';
 import { spriteElements } from '../elements/SpriteAtlas';
+import { EventHandler } from '../utils/EventHandler';
 export class MainScene extends CustomScene {
   uiScene!: UIScene;
+  eventHandler!: EventHandler;
 
   canvasWidth: number = 0;
   canvasHeight: number = 0;
@@ -35,6 +37,7 @@ export class MainScene extends CustomScene {
     this.pixelUnit = this.tileSize / 16;
 
     this.uiScene = this.scene.get('UIScene') as UIScene;
+    this.eventHandler = new EventHandler(this);
     this.initCamera();
 
     this.spawnSprite(spriteElements[0].id);
@@ -66,8 +69,6 @@ export class MainScene extends CustomScene {
   }
 
   spawnSprite(frame: string) {
-    console.log(this.sprites);
-
     const margin = this.tileSize * 2;
     const spawnX = getRandomInt(margin, this.camera.width - margin);
     const spawnY = getRandomInt(margin, this.camera.height - margin);
@@ -114,6 +115,7 @@ export class MainScene extends CustomScene {
       this.getTotalParticleCount(),
       activeTweenCount,
       movingSpriteCount,
+      delta,
     );
   }
 }
