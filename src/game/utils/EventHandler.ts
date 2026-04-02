@@ -32,53 +32,14 @@ export class EventHandler {
   init() {
     this.mainScene.input.addPointer(2);
 
-    this.mainScene.input.on(Phaser.Input.Events.POINTER_DOWN, (pointer: Phaser.Input.Pointer) => {
-      const hitObjects = this.mainScene.input.hitTestPointer(pointer);
-      if (hitObjects.length === 0) {
-        this.isDraggingWorld = true;
-      }
-    });
-
-    this.mainScene.input.on(Phaser.Input.Events.POINTER_UP, () => {
-      this.isDraggingWorld = false;
-    });
-
-    this.mainScene.input.on(Phaser.Input.Events.POINTER_MOVE, (pointer: Phaser.Input.Pointer) => {
-      if (this.isDraggingWorld && !this.isPinching) {
-        const dragX =
-          (pointer.position.x - pointer.prevPosition.x) * (1 / this.mainScene.cameras.main.zoom);
-        const dragY =
-          (pointer.position.y - pointer.prevPosition.y) * (1 / this.mainScene.cameras.main.zoom);
-        this.mainScene.cameras.main.scrollX -= dragX;
-        this.mainScene.cameras.main.scrollY -= dragY;
-      }
-    });
-
     this.mainScene.input.on(
-      Phaser.Input.Events.POINTER_WHEEL,
-      (pointer: Phaser.Input.Pointer, _objects: any[], _dx: number, deltaY: number) => {
-        const cam = this.mainScene.cameras.main;
-
-        const oldZoom = cam.zoom;
-        const newZoom = Phaser.Math.Clamp(oldZoom - deltaY * 0.002, this.minZoom, this.maxZoom);
-        if (newZoom === oldZoom) return;
-
-        const sx = pointer.x - cam.width * 0.5;
-        const sy = pointer.y - cam.height * 0.5;
-
-        cam.zoom = newZoom;
-
-        cam.scrollX += sx / oldZoom - sx / newZoom;
-        cam.scrollY += sy / oldZoom - sy / newZoom;
-      },
+      Phaser.Input.Events.POINTER_DOWN,
+      (pointer: Phaser.Input.Pointer) => {},
     );
 
-    this.mainScene.input.keyboard?.on('keydown', (key: KeyboardEvent) => {
-      if (key.code === 'KeyW' || key.code === 'ArrowUp') this.keyPressed.push('up');
-      if (key.code === 'KeyS' || key.code === 'ArrowDown') this.keyPressed.push('down');
-      if (key.code === 'KeyA' || key.code === 'ArrowLeft') this.keyPressed.push('left');
-      if (key.code === 'KeyD' || key.code === 'ArrowRight') this.keyPressed.push('right');
+    this.mainScene.input.on(Phaser.Input.Events.POINTER_UP, () => {});
 
+    this.mainScene.input.keyboard?.on('keydown', (key: KeyboardEvent) => {
       if (import.meta.env.VITE_IS_DEV_SPLASH === 'true') {
         if (key.code === 'KeyG') {
           Progression.fragments = Infinity;
@@ -91,16 +52,7 @@ export class EventHandler {
       }
     });
 
-    this.mainScene.input.keyboard?.on('keyup', (key: KeyboardEvent) => {
-      if (key.code === 'KeyW' || key.code === 'ArrowUp')
-        this.keyPressed = this.keyPressed.filter((k) => k !== 'up');
-      if (key.code === 'KeyS' || key.code === 'ArrowDown')
-        this.keyPressed = this.keyPressed.filter((k) => k !== 'down');
-      if (key.code === 'KeyA' || key.code === 'ArrowLeft')
-        this.keyPressed = this.keyPressed.filter((k) => k !== 'left');
-      if (key.code === 'KeyD' || key.code === 'ArrowRight')
-        this.keyPressed = this.keyPressed.filter((k) => k !== 'right');
-    });
+    this.mainScene.input.keyboard?.on('keyup', (key: KeyboardEvent) => {});
   }
 
   getTwoActivePointers(): Phaser.Input.Pointer[] | null {
