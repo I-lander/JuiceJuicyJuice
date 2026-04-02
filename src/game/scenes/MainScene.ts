@@ -3,6 +3,7 @@ import { Progression } from '../Progression';
 import { Sprite } from '../objects/Sprite';
 import { getRandomInt, removeSplashScreen } from '../utils/utils';
 import { UIScene } from './UIScene';
+import { spriteElements } from '../elements/SpriteAtlas';
 export class MainScene extends CustomScene {
   uiScene!: UIScene;
 
@@ -36,7 +37,7 @@ export class MainScene extends CustomScene {
     this.uiScene = this.scene.get('UIScene') as UIScene;
     this.initCamera();
 
-    this.spawnSprite('house');
+    this.spawnSprite(spriteElements[0].id);
   }
 
   initCamera() {

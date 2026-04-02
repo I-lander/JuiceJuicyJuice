@@ -14,6 +14,35 @@ export class Progression {
   static isSpriteMovementEnabled = false;
   static isSpriteCollisionEnabled = false;
 
+  static level = 1;
+  static experience = 0;
+  static totalExperience = 0;
+
+  static getExperienceForLevel(level: number): number {
+    return Math.floor(20 * Math.pow(1.4, level - 1));
+  }
+
+  static addExperience(amount: number) {
+    Progression.experience += amount;
+    Progression.totalExperience += amount;
+
+    let requiredXp = Progression.getExperienceForLevel(Progression.level);
+    while (Progression.experience >= requiredXp) {
+      Progression.experience -= requiredXp;
+      Progression.level++;
+      requiredXp = Progression.getExperienceForLevel(Progression.level);
+    }
+  }
+
+  static getExperienceProgress(): number {
+    return Progression.experience / Progression.getExperienceForLevel(Progression.level);
+  }
+
+  static isUpgradeUnlocked(upgradeKey: string): boolean {
+    const definition = UPGRADES[upgradeKey];
+    return Progression.level >= definition.levelToUnlock;
+  }
+
   static upgradeLevels: Record<string, number> = {
     basicSprite: 0,
     particlesPerClick: 0,

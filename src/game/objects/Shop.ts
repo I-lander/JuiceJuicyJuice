@@ -20,7 +20,15 @@ interface UpgradeButton {
 export class Shop {
   private scene: UIScene;
   private fragmentsText!: Phaser.GameObjects.Text;
+  private levelText!: Phaser.GameObjects.Text;
+  private xpBarBackground!: Phaser.GameObjects.Graphics;
+  private xpBarFill!: Phaser.GameObjects.Graphics;
+  private xpBarX: number = 0;
+  private xpBarY: number = 0;
+  private xpBarWidth: number = 0;
+  private xpBarHeight: number = 0;
   private buttons: UpgradeButton[] = [];
+  private buttonsStartY: number = 0;
 
   private panelX: number;
   private panelInnerWidth: number;
@@ -33,10 +41,10 @@ export class Shop {
     this.contentStartY = contentStartY;
 
     this.createFragmentsCounter();
+    this.createXpBar();
     for (const key in UPGRADES) {
-         this.createUpgradeButton(key);
+      this.createUpgradeButton(key);
     }
- 
   }
 
   private createFragmentsCounter() {
@@ -51,6 +59,49 @@ export class Shop {
     this.fragmentsText.setDepth(FRONT_DEPTH + 1);
   }
 
+  private createXpBar() {
+    const pixelUnit = this.scene.pixelUnit;
+    const tileSize = this.scene.tileSize;
+    const smallFontSize = Math.round(pixelUnit * 9);
+
+    const levelTextY = this.contentStartY + tileSize * 0.7;
+
+    this.levelText = this.scene.add.text(this.panelX + pixelUnit * 3, levelTextY, '', {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${smallFontSize}px`,
+      color: '#aaaacc',
+    });
+    this.levelText.setDepth(FRONT_DEPTH + 1);
+
+    this.xpBarX = this.panelX + pixelUnit * 3;
+    this.xpBarY = levelTextY + smallFontSize + pixelUnit * 2;
+    this.xpBarWidth = this.panelInnerWidth - pixelUnit * 6;
+    this.xpBarHeight = pixelUnit * 4;
+
+    this.xpBarBackground = this.scene.add.graphics();
+    this.xpBarBackground.setDepth(FRONT_DEPTH + 1);
+    this.xpBarBackground.fillStyle(0x111133, 0.8);
+    this.xpBarBackground.fillRect(this.xpBarX, this.xpBarY, this.xpBarWidth, this.xpBarHeight);
+    this.xpBarBackground.lineStyle(pixelUnit, 0x4444aa, 0.6);
+    this.xpBarBackground.strokeRect(this.xpBarX, this.xpBarY, this.xpBarWidth, this.xpBarHeight);
+
+    this.xpBarFill = this.scene.add.graphics();
+    this.xpBarFill.setDepth(FRONT_DEPTH + 1);
+
+    this.buttonsStartY = this.xpBarY + this.xpBarHeight + pixelUnit * 6;
+  }
+
+  private refreshXpBar() {
+    const progress = Progression.getExperienceProgress();
+    const requiredXp = Progression.getExperienceForLevel(Progression.level);
+
+    this.levelText.setText(`Lv.${Progression.level}  ${Progression.experience}/${requiredXp}`);
+
+    this.xpBarFill.clear();
+    this.xpBarFill.fillStyle(0x44ddff, 1);
+    this.xpBarFill.fillRect(this.xpBarX, this.xpBarY, this.xpBarWidth * progress, this.xpBarHeight);
+  }
+
   private createUpgradeButton(upgradeKey: string) {
     const pixelUnit = this.scene.pixelUnit;
     const tileSize = this.scene.tileSize;
@@ -61,7 +112,7 @@ export class Shop {
     const buttonHeight = tileSize * 1.8;
     const buttonGap = pixelUnit * 3;
     const buttonIndex = this.buttons.length;
-    const buttonY = this.contentStartY + tileSize * 1.2 + buttonIndex * (buttonHeight + buttonGap);
+    const buttonY = this.buttonsStartY + buttonIndex * (buttonHeight + buttonGap);
 
     const graphics = this.scene.add.graphics();
     graphics.setDepth(FRONT_DEPTH + 1);
@@ -86,11 +137,16 @@ export class Shop {
     costText.setOrigin(0.5, 1);
     costText.setDepth(FRONT_DEPTH + 2);
 
-    const levelText = this.scene.add.text(centerX, buttonY + buttonHeight * 0.5, '', {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${Math.round(smallFontSize * 0.75)}px`,
-      color: '#aaaacc',
-    });
+    const levelText = this.scene.add.text(
+      centerX,
+      nameText.y + nameText.height + pixelUnit * 2,
+      '',
+      {
+        fontFamily: 'KenneyPixel',
+        fontSize: `${Math.round(smallFontSize * 0.75)}px`,
+        color: '#aaaacc',
+      },
+    );
     levelText.setOrigin(0.5, 0.5);
     levelText.setDepth(FRONT_DEPTH + 2);
 
@@ -125,6 +181,7 @@ export class Shop {
   }
 
   private purchaseUpgrade(button: UpgradeButton) {
+    if (!Progression.isUpgradeUnlocked(button.upgradeKey)) return;
     if (!Progression.purchaseUpgrade(button.upgradeKey)) return;
 
     switch (button.upgradeKey) {
@@ -148,6 +205,31 @@ export class Shop {
     }
 
     this.refreshButton(button);
+  }
+
+  private setButtonVisible(button: UpgradeButton, visible: boolean) {
+    button.graphics.setVisible(visible);
+    button.nameText.setVisible(visible);
+    button.costText.setVisible(visible);
+    button.levelText.setVisible(visible);
+    button.hitZone.input!.enabled = visible;
+  }
+
+  private repositionButton(button: UpgradeButton, visibleIndex: number) {
+    const tileSize = this.scene.tileSize;
+    const pixelUnit = this.scene.pixelUnit;
+    const buttonHeight = tileSize * 1.8;
+    const buttonGap = pixelUnit * 3;
+    const newY = this.buttonsStartY + visibleIndex * (buttonHeight + buttonGap);
+
+    const deltaY = newY - button.y;
+    if (deltaY === 0) return;
+
+    button.y = newY;
+    button.nameText.y += deltaY;
+    button.costText.y += deltaY;
+    button.levelText.y += deltaY;
+    button.hitZone.y += deltaY;
   }
 
   private refreshButton(button: UpgradeButton) {
@@ -195,9 +277,17 @@ export class Shop {
 
   update() {
     this.fragmentsText.setText(`${Progression.fragments}`);
+    this.refreshXpBar();
 
+    let visibleIndex = 0;
     for (const button of this.buttons) {
-      this.refreshButton(button);
+      const isUnlocked = Progression.isUpgradeUnlocked(button.upgradeKey);
+      this.setButtonVisible(button, isUnlocked);
+      if (isUnlocked) {
+        this.repositionButton(button, visibleIndex);
+        this.refreshButton(button);
+        visibleIndex++;
+      }
     }
   }
 }

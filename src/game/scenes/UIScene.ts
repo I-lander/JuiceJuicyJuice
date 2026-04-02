@@ -24,7 +24,12 @@ export class UIScene extends CustomScene {
     this.pixelUnit = this.mainScene.pixelUnit;
 
     const panelLayout = this.drawLeftPanel();
-    this.shop = new Shop(this, panelLayout.innerX, panelLayout.innerWidth, panelLayout.contentStartY);
+    this.shop = new Shop(
+      this,
+      panelLayout.innerX,
+      panelLayout.innerWidth,
+      panelLayout.contentStartY,
+    );
   }
 
   private drawLeftPanel(): { innerX: number; innerWidth: number; contentStartY: number } {
@@ -46,28 +51,9 @@ export class UIScene extends CustomScene {
 
     const borderWidth = pixelUnit;
 
-    createUIPanel(
-      this.panelGraphics,
-      panelX,
-      panelY,
-      panelW,
-      panelH,
-      borderWidth,
-      0xffffff,
-      1,
-    );
+    createUIPanel(this.panelGraphics, panelX, panelY, panelW, panelH, borderWidth, 0xffffff, 1);
 
     const inset = pixelUnit * 2;
-    createUIPanel(
-      this.panelGraphics,
-      panelX + inset,
-      panelY + inset,
-      panelW - inset * 2,
-      panelH - inset * 2,
-      borderWidth,
-      0x4444aa,
-      0.8,
-    );
 
     return {
       innerX: panelX + inset,
