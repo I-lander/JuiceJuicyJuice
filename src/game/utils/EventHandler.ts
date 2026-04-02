@@ -1,3 +1,4 @@
+import { spriteElements } from '../elements/SpriteAtlas';
 import { Progression } from '../Progression';
 import { MainScene } from '../scenes/MainScene';
 import { UIScene } from '../scenes/UIScene';
@@ -81,6 +82,11 @@ export class EventHandler {
       if (import.meta.env.VITE_IS_DEV_SPLASH === 'true') {
         if (key.code === 'KeyG') {
           Progression.fragments = Infinity;
+        }
+        if (key.code === 'KeyH') {
+          this.mainScene.spawnSprite(
+            spriteElements[Math.floor(Math.random() * spriteElements.length)].id,
+          );
         }
       }
     });

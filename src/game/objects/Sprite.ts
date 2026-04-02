@@ -83,8 +83,8 @@ export class Sprite extends Phaser.GameObjects.Sprite {
       this.x = radius;
       this.velocity.x *= -1;
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
-    } else if (this.x > this.scene.canvasWidth - radius) {
-      this.x = this.scene.canvasWidth - radius;
+    } else if (this.x > this.scene.cameras.main.width - radius) {
+      this.x = this.scene.cameras.main.width - radius;
       this.velocity.x *= -1;
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     }
@@ -92,8 +92,8 @@ export class Sprite extends Phaser.GameObjects.Sprite {
       this.y = radius;
       this.velocity.y *= -1;
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
-    } else if (this.y > this.scene.canvasHeight - radius) {
-      this.y = this.scene.canvasHeight - radius;
+    } else if (this.y > this.scene.cameras.main.height - radius) {
+      this.y = this.scene.cameras.main.height - radius;
       this.velocity.y *= -1;
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     }
@@ -106,37 +106,34 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   handleCollisions() {
     const radius = (this.width * this.scale) / 2;
 
-    const otherSprites = this.scene.sprites.filter((s) => s !== this);
-    for (const other of otherSprites) {
+    for (const other of this.scene.sprites) {
+      if (other === this) continue;
       const dx = other.x - this.x;
       const dy = other.y - this.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance < radius + (other.width * other.scale) / 2) {
-        const angle = Math.atan2(dy, dx);
-        const overlap = (radius + (other.width * other.scale) / 2 - distance) / 2;
-        const moveX = Math.cos(angle) * overlap;
-        const moveY = Math.sin(angle) * overlap;
+      const otherRadius = (other.width * other.scale) / 2;
+      const minDistance = radius + otherRadius;
 
-        this.x -= moveX;
-        this.y -= moveY;
-        other.x += moveX;
-        other.y += moveY;
+      if (distance < minDistance && distance > 0) {
+        const normalX = dx / distance;
+        const normalY = dy / distance;
 
-        const vxTotal = this.velocity.x - other.velocity.x;
-        const vyTotal = this.velocity.y - other.velocity.y;
+        const overlap = (minDistance - distance) / 2;
+        this.x -= normalX * overlap;
+        this.y -= normalY * overlap;
+        other.x += normalX * overlap;
+        other.y += normalY * overlap;
 
-        this.velocity.x =
-          (this.velocity.x * (this.speed - 1) + other.velocity.x * (other.speed - 1) + vxTotal) /
-          (this.speed + other.speed - 2);
-        this.velocity.y =
-          (this.velocity.y * (this.speed - 1) + other.velocity.y * (other.speed - 1) + vyTotal) /
-          (this.speed + other.speed - 2);
-        other.velocity.x =
-          (other.velocity.x * (other.speed - 1) + this.velocity.x * (this.speed - 1) - vxTotal) /
-          (this.speed + other.speed - 2);
-        other.velocity.y =
-          (other.velocity.y * (other.speed - 1) + this.velocity.y * (this.speed - 1) - vyTotal) /
-          (this.speed + other.speed - 2);
+        const relativeVelocity =
+          (this.velocity.x * this.speed - other.velocity.x * other.speed) * normalX +
+          (this.velocity.y * this.speed - other.velocity.y * other.speed) * normalY;
+
+        if (relativeVelocity > 0) {
+          this.velocity.x -= (relativeVelocity * normalX) / this.speed;
+          this.velocity.y -= (relativeVelocity * normalY) / this.speed;
+          other.velocity.x += (relativeVelocity * normalX) / other.speed;
+          other.velocity.y += (relativeVelocity * normalY) / other.speed;
+        }
 
         Progression.addCollisionCpu();
       }
