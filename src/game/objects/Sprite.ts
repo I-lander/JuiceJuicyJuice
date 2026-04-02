@@ -16,7 +16,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     this.scene = scene;
     this.x = x;
     this.y = y;
-    this.speed = 3 + Math.random() * 3;
+    this.speed = 100 + Math.random() * 50;
     this.originalScale = this.scene.tileSize / SPRITE_BASE_UNIT;
     this.setScale(this.originalScale);
     scene.add.existing(this);
@@ -76,21 +76,22 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   }
 
   move(delta: number) {
+    const radius = (this.width * this.scale) / 2;
     this.x += this.velocity.x * this.speed * (delta / 1000);
     this.y += this.velocity.y * this.speed * (delta / 1000);
 
-    if (this.x < 0) {
-      this.x = 0;
+    if (this.x < radius) {
+      this.x = radius;
       this.velocity.x *= -1;
-    } else if (this.x > this.scene.canvasWidth) {
-      this.x = this.scene.canvasWidth;
+    } else if (this.x > this.scene.canvasWidth - radius) {
+      this.x = this.scene.canvasWidth - radius;
       this.velocity.x *= -1;
     }
-    if (this.y < 0) {
-      this.y = 0;
+    if (this.y < radius) {
+      this.y = radius;
       this.velocity.y *= -1;
-    } else if (this.y > this.scene.canvasHeight) {
-      this.y = this.scene.canvasHeight;
+    } else if (this.y > this.scene.canvasHeight - radius) {
+      this.y = this.scene.canvasHeight - radius;
       this.velocity.y *= -1;
     }
 
@@ -100,14 +101,16 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   }
 
   handleCollisions() {
+    const radius = (this.width * this.scale) / 2;
+
     const otherSprites = this.scene.sprites.filter((s) => s !== this);
     for (const other of otherSprites) {
       const dx = other.x - this.x;
       const dy = other.y - this.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance < this.width * this.scale) {
+      if (distance < radius + (other.width * other.scale) / 2) {
         const angle = Math.atan2(dy, dx);
-        const overlap = (this.width * this.scale - distance) / 2;
+        const overlap = (radius + (other.width * other.scale) / 2 - distance) / 2;
         const moveX = Math.cos(angle) * overlap;
         const moveY = Math.sin(angle) * overlap;
 

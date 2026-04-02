@@ -5,7 +5,7 @@ import { MainScene } from './MainScene';
 export class UIScene extends CustomScene {
   mainScene!: MainScene;
 
-  static leftPanelWidthInTiles = 4;
+  static leftPanelWidthInTiles = 6;
 
   private panelGraphics!: Phaser.GameObjects.Graphics;
 
