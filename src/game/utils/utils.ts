@@ -1,7 +1,7 @@
 import { CustomScene } from '../customClasses/CustomScene';
 import CrtShader from '../shaders/CrtShader';
 
-export const SPRITE_BASE_UNIT = 32;
+export const SPRITE_BASE_UNIT = 16;
 export const FRONT_DEPTH = 1000000;
 
 export function getColors(color: string): number {
