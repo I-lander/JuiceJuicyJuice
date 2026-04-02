@@ -54,8 +54,6 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     if (fragmentsToAdd <= 0) return;
 
     Progression.fragments += fragmentsToAdd;
-    Progression.addExperience(fragmentsToAdd);
-
     const visualParticles = Math.min(fragmentsToAdd, Progression.maxParticlesPerSpawn);
     this.particleEmitter.explode(visualParticles, this.x, this.y);
   }

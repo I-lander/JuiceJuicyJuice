@@ -182,11 +182,13 @@ export class Shop {
 
   private purchaseUpgrade(button: UpgradeButton) {
     if (!Progression.isUpgradeUnlocked(button.upgradeKey)) return;
+    const cost = Progression.getUpgradeCost(button.upgradeKey);
     if (!Progression.purchaseUpgrade(button.upgradeKey)) return;
+    Progression.addExperience(cost);
 
     switch (button.upgradeKey) {
       case 'particlesPerClick':
-        Progression.particlesPerClick += 2;
+        Progression.particlesPerClick += 1;
         break;
       case 'maxParticles':
         Progression.maxParticles += 5;

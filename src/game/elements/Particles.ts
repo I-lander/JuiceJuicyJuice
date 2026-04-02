@@ -23,7 +23,7 @@ export const PARTICLE_FRAMES = particleElements.map((element) => element.id);
 export const PARTICLE_CONFIG: Phaser.Types.GameObjects.Particles.ParticleEmitterConfig = {
   speed: { min: 0, max: 300 },
   angle: { min: 0, max: 360 },
-  alpha: { start: 1, end: 0 },
+  alpha: { start: 1, end: 0, ease: 'Cubic.easeOut' },
   lifespan: Progression.particleLifetime,
   emitting: false,
   frame: PARTICLE_FRAMES,
