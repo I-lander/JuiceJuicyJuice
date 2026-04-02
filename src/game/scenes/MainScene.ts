@@ -1,6 +1,7 @@
 import { CustomScene } from '../customClasses/CustomScene';
+import { Progression } from '../Progression';
 import { Sprite } from '../objects/Sprite';
-import { removeSplashScreen } from '../utils/utils';
+import { getRandomInt, removeSplashScreen } from '../utils/utils';
 import { UIScene } from './UIScene';
 export class MainScene extends CustomScene {
   uiScene!: UIScene;
@@ -17,6 +18,7 @@ export class MainScene extends CustomScene {
   };
 
   sprites: Sprite[] = [];
+  private autoClickTimer: number = 0;
 
   constructor() {
     super('MainScene');
@@ -34,9 +36,7 @@ export class MainScene extends CustomScene {
     this.uiScene = this.scene.get('UIScene') as UIScene;
     this.initCamera();
 
-    const firstSprite = new Sprite(this, this.canvasWidth / 2, this.canvasHeight / 2);
-    firstSprite.init('house');
-    this.sprites.push(firstSprite);
+    this.spawnSprite('house');
   }
 
   initCamera() {
@@ -64,9 +64,46 @@ export class MainScene extends CustomScene {
     return count;
   }
 
+  spawnSprite(frame: string) {
+    console.log(this.sprites);
+
+    const margin = this.tileSize * 2;
+    const spawnX = getRandomInt(margin, this.camera.width - margin);
+    const spawnY = getRandomInt(margin, this.camera.height - margin);
+
+    let newSprite: Sprite;
+    if (this.sprites.length === 0) {
+      const centerX = this.camera.width / 2;
+      const centerY = this.camera.height / 2;
+      newSprite = new Sprite(this, centerX, centerY);
+    } else {
+      newSprite = new Sprite(this, spawnX, spawnY);
+    }
+
+    newSprite.init(frame);
+    this.sprites.push(newSprite);
+  }
+
+  private autoClick() {
+    if (this.sprites.length === 0) return;
+
+    for (let i = 0; i < Progression.autoClickers; i++) {
+      const targetIndex = getRandomInt(0, this.sprites.length - 1);
+      this.sprites[targetIndex].onClick();
+    }
+  }
+
   update(_time: number, delta: number) {
     for (let i = 0; i < this.sprites.length; i++) {
       this.sprites[i].update(delta);
+    }
+
+    if (Progression.autoClickers > 0) {
+      this.autoClickTimer += delta;
+      if (this.autoClickTimer >= Progression.autoClickerCooldown) {
+        this.autoClickTimer -= Progression.autoClickerCooldown;
+        this.autoClick();
+      }
     }
   }
 }

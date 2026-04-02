@@ -1,4 +1,5 @@
 import { CustomScene } from '../customClasses/CustomScene';
+import { Shop } from '../objects/Shop';
 import { createUIPanel, FRONT_DEPTH } from '../utils/utils';
 import { MainScene } from './MainScene';
 
@@ -8,6 +9,7 @@ export class UIScene extends CustomScene {
   static leftPanelWidthInTiles = 6;
 
   private panelGraphics!: Phaser.GameObjects.Graphics;
+  private shop!: Shop;
 
   constructor() {
     super('UIScene');
@@ -21,10 +23,11 @@ export class UIScene extends CustomScene {
     this.tileSize = this.mainScene.tileSize;
     this.pixelUnit = this.mainScene.pixelUnit;
 
-    this.drawLeftPanel();
+    const panelLayout = this.drawLeftPanel();
+    this.shop = new Shop(this, panelLayout.innerX, panelLayout.innerWidth, panelLayout.contentStartY);
   }
 
-  private drawLeftPanel() {
+  private drawLeftPanel(): { innerX: number; innerWidth: number; contentStartY: number } {
     const screenHeight = this.cameras.main.height;
     const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
     const pixelUnit = this.pixelUnit;
@@ -65,7 +68,15 @@ export class UIScene extends CustomScene {
       0x4444aa,
       0.8,
     );
+
+    return {
+      innerX: panelX + inset,
+      innerWidth: panelW - inset * 2,
+      contentStartY: panelY + inset + pixelUnit * 3,
+    };
   }
 
-  update() {}
+  update() {
+    this.shop.update();
+  }
 }
