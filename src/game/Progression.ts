@@ -1,5 +1,16 @@
 import { UPGRADES } from "./objects/ShopUpgrades";
 
+export const CPU_COSTS: Record<string, number> = {
+  sprite: 1.0,
+  particle: 0.3,
+  tween: 0.5,
+  movingSprite: 0.5,
+  autoClicker: 0.2,
+  shader: 2.0,
+  uiParasite: 1.5,
+};
+
+const CPU_COEFFICIENT = 0.002;
 
 export class Progression {
   static fragments = 0;
@@ -14,9 +25,26 @@ export class Progression {
   static isSpriteMovementEnabled = false;
   static isSpriteCollisionEnabled = false;
 
+  static cpuUsage = 0;
+  static simulatedFps = 60;
+  static cpuMultiplier = 1;
+
   static level = 1;
   static experience = 0;
   static totalExperience = 0;
+
+  static calculateCpuUsage(spriteCount: number, particleCount: number, activeTweenCount: number, movingSpriteCount: number) {
+    let totalCpu = 0;
+    totalCpu += spriteCount * CPU_COSTS.sprite;
+    totalCpu += particleCount * CPU_COSTS.particle;
+    totalCpu += activeTweenCount * CPU_COSTS.tween;
+    totalCpu += movingSpriteCount * CPU_COSTS.movingSprite;
+    totalCpu += Progression.autoClickers * CPU_COSTS.autoClicker;
+    totalCpu *= Progression.cpuMultiplier;
+
+    Progression.cpuUsage = totalCpu;
+    Progression.simulatedFps = Math.max(0, 60 / (1 + totalCpu * CPU_COEFFICIENT));
+  }
 
   static getExperienceForLevel(level: number): number {
     return Math.floor(20 * Math.pow(1.4, level - 1));

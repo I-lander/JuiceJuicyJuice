@@ -106,5 +106,14 @@ export class MainScene extends CustomScene {
         this.autoClick();
       }
     }
+
+    const movingSpriteCount = Progression.isSpriteMovementEnabled ? this.sprites.length : 0;
+    const activeTweenCount = this.tweens.getTweens().length;
+    Progression.calculateCpuUsage(
+      this.sprites.length,
+      this.getTotalParticleCount(),
+      activeTweenCount,
+      movingSpriteCount,
+    );
   }
 }
