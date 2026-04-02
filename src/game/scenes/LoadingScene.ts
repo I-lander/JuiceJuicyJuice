@@ -1,3 +1,4 @@
+import { particleAtlas } from '../elements/Particles';
 import { spriteAtlas } from '../elements/SpriteAtlas';
 
 export class LoadingScene extends Phaser.Scene {
@@ -9,6 +10,7 @@ export class LoadingScene extends Phaser.Scene {
     document.fonts.load('16px "KenneyPixel"').then(() => {});
 
     this.load.atlas('spriteAtlas', './assets/images/sprite-atlas.png', spriteAtlas);
+    this.load.atlas('particleAtlas', './assets/images/particle-atlas.png', particleAtlas);
   }
 
   async create() {

@@ -1,5 +1,4 @@
 import { CustomScene } from '../customClasses/CustomScene';
-import { Particle } from '../objects/Particle';
 import { Sprite } from '../objects/Sprite';
 import { removeSplashScreen } from '../utils/utils';
 import { UIScene } from './UIScene';
@@ -32,8 +31,6 @@ export class MainScene extends CustomScene {
     this.tileSize = this.cameras.main.height / 18;
     this.pixelUnit = this.tileSize / 16;
 
-    Particle.createTexture(this);
-
     this.uiScene = this.scene.get('UIScene') as UIScene;
     this.initCamera();
 
@@ -62,7 +59,7 @@ export class MainScene extends CustomScene {
   getTotalParticleCount(): number {
     let count = 0;
     for (let i = 0; i < this.sprites.length; i++) {
-      count += this.sprites[i].particles.length;
+      count += this.sprites[i].getAliveParticleCount();
     }
     return count;
   }

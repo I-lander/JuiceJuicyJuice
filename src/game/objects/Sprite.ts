@@ -1,10 +1,10 @@
 import { MainScene } from '../scenes/MainScene';
-import { Particle } from './Particle';
 import { SPRITE_BASE_UNIT } from '../utils/utils';
 import { Progression } from '../Progression';
+import { PARTICLE_CONFIG } from '../elements/Particles';
 
 export class Sprite extends Phaser.GameObjects.Sprite {
-  particles: Particle[] = [];
+  particleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
   scene: MainScene;
 
   originalScale: number;
@@ -20,6 +20,11 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     this.originalScale = this.scene.tileSize / SPRITE_BASE_UNIT;
     this.setScale(this.originalScale);
     scene.add.existing(this);
+
+    this.particleEmitter = scene.add.particles(0, 0, 'particleAtlas', {
+      ...PARTICLE_CONFIG,
+      scale: scene.tileSize / SPRITE_BASE_UNIT,
+    });
 
     this.setInteractive();
     this.on('pointerdown', () => {
@@ -40,12 +45,18 @@ export class Sprite extends Phaser.GameObjects.Sprite {
 
   spawnParticles() {
     const scene = this.scene as MainScene;
-    for (let i = 0; i < Progression.particlesPerClick; i++) {
-      if (scene.getTotalParticleCount() >= Progression.maxParticles) {
-        return;
-      }
-      this.particles.push(new Particle(scene, this.x, this.y, 'particle'));
-    }
+    const totalParticles = scene.getTotalParticleCount();
+    const fragmentsToAdd = Math.min(
+      Progression.particlesPerClick,
+      Progression.maxParticles - totalParticles,
+    );
+
+    if (fragmentsToAdd <= 0) return;
+
+    Progression.fragments += fragmentsToAdd;
+
+    const visualParticles = Math.min(fragmentsToAdd, Progression.maxParticlesPerSpawn);
+    this.particleEmitter.explode(visualParticles, this.x, this.y);
   }
 
   bounce() {
@@ -124,13 +135,11 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     }
   }
 
+  getAliveParticleCount(): number {
+    return this.particleEmitter.getAliveParticleCount();
+  }
+
   update(delta: number) {
-    for (let i = this.particles.length - 1; i >= 0; i--) {
-      const alive = this.particles[i].update(delta);
-      if (!alive) {
-        this.particles.splice(i, 1);
-      }
-    }
     if (Progression.isSpriteMovementEnabled) {
       this.move(delta);
     }
