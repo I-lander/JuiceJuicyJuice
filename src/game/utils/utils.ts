@@ -163,7 +163,7 @@ export function initShader(scene: Phaser.Scene) {
   scene.scene.manager.scenes.forEach((s) => {
     const key = s.scene.key;
 
-    if (key !== 'LoadingScene' && key !== 'UIScene') {
+    if (key !== 'LoadingScene') {
       const renderer = s.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
 
       renderer.pipelines.addPostPipeline('CrtShader', CrtShader);

@@ -28,10 +28,10 @@ void main() {
 
 	vec2 pos = uv * 2.0 - 1.0;
 	float dist = length(pos);
-	float vignette = 1.0 - smoothstep(0.8, 1.4, dist);
+	float vignette = 1.0 - smoothstep(1.0, 2.1, dist);
 
 	float scanlineY = gl_FragCoord.y / resolution.y;
-	float scanline = 0.99 + 0.05 * sin(scanlineY * 800.0);
+	float scanline = 0.99 + 0.03 * sin(scanlineY * 800.0);
 
 	finalColor *= scanline;
 

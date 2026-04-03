@@ -32,6 +32,9 @@ export class UIScene extends CustomScene {
     this.tileSize = this.mainScene.tileSize;
     this.pixelUnit = this.mainScene.pixelUnit;
 
+    this.add
+      .rectangle(0, 0, this.mainScene.camera.x + 1, this.mainScene.camera.height, 0x42a72e)
+      .setOrigin(0, 0);
     const panelLayout = this.drawLeftPanel();
     this.shop = new Shop(
       this,
@@ -78,7 +81,12 @@ export class UIScene extends CustomScene {
     this.hudText.setColor(cpuColor);
   }
 
-  private drawLeftPanel(): { innerX: number; innerWidth: number; contentStartY: number; panelBottomY: number } {
+  private drawLeftPanel(): {
+    innerX: number;
+    innerWidth: number;
+    contentStartY: number;
+    panelBottomY: number;
+  } {
     const screenHeight = this.cameras.main.height;
     const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
     const pixelUnit = this.pixelUnit;
@@ -128,7 +136,10 @@ export class UIScene extends CustomScene {
       color: '#ffffff',
     });
 
-    this.notificationContainer = this.add.container(0, 0, [this.notificationBackground, this.notificationText]);
+    this.notificationContainer = this.add.container(0, 0, [
+      this.notificationBackground,
+      this.notificationText,
+    ]);
     this.notificationContainer.setDepth(FRONT_DEPTH + 20);
     this.notificationContainer.setVisible(false);
   }
@@ -156,15 +167,16 @@ export class UIScene extends CustomScene {
     const boxHeight = textHeight + padding * 2;
 
     this.notificationBackground.clear();
-    createUIPanel(
-      this.notificationBackground,
-      0, 0, boxWidth, boxHeight,
-      pixelUnit, 0x4444aa, 1,
-      { color: getColors('rgb(27, 41, 83)'), alpha: 1 },
-    );
+    createUIPanel(this.notificationBackground, 0, 0, boxWidth, boxHeight, pixelUnit, 0x4444aa, 1, {
+      color: getColors('rgb(27, 41, 83)'),
+      alpha: 1,
+    });
     this.notificationText.setPosition(padding, padding);
 
-    this.notificationContainer.setPosition(screenWidth - margin - boxWidth, screenHeight - margin - boxHeight);
+    this.notificationContainer.setPosition(
+      screenWidth - margin - boxWidth,
+      screenHeight - margin - boxHeight,
+    );
     this.notificationContainer.setAlpha(1);
     this.notificationContainer.setVisible(true);
     this.notificationActive = true;

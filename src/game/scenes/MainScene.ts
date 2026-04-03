@@ -36,6 +36,14 @@ export class MainScene extends CustomScene {
     this.tileSize = this.cameras.main.height / 14;
     this.pixelUnit = this.tileSize / 16;
 
+    this.add.rectangle(
+      this.canvasWidth / 2,
+      this.canvasHeight / 2,
+      this.canvasWidth,
+      this.canvasHeight,
+      0x42a72e,
+    );
+
     this.uiScene = this.scene.get('UIScene') as UIScene;
     this.eventHandler = new EventHandler(this);
     this.initCamera();
