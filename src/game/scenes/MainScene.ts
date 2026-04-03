@@ -1,7 +1,7 @@
 import { CustomScene } from '../customClasses/CustomScene';
 import { Progression } from '../Progression';
 import { Sprite } from '../objects/Sprite';
-import { getRandomInt, removeSplashScreen } from '../utils/utils';
+import { getRandomInt, initShader, removeSplashScreen } from '../utils/utils';
 import { UIScene } from './UIScene';
 import { spriteElements } from '../elements/SpriteAtlas';
 import { EventHandler } from '../utils/EventHandler';
@@ -33,7 +33,7 @@ export class MainScene extends CustomScene {
 
     this.canvasHeight = this.cameras.main.height;
     this.canvasWidth = this.cameras.main.width;
-    this.tileSize = this.cameras.main.height / 18;
+    this.tileSize = this.cameras.main.height / 14;
     this.pixelUnit = this.tileSize / 16;
 
     this.uiScene = this.scene.get('UIScene') as UIScene;

@@ -56,4 +56,53 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     maxLevel: 1,
     levelToUnlock: 25,
   },
+  yellowParticle: {
+    name: 'Yellow Particle',
+    baseCost: 5000,
+    growthFactor: 1,
+    maxLevel: 1,
+    levelToUnlock: 1,
+  },
+  redParticle: {
+    name: 'Red Particle',
+    baseCost: 8000,
+    growthFactor: 1,
+    maxLevel: 1,
+    levelToUnlock: 1,
+  },
+  blueParticle: {
+    name: 'Blue Particle',
+    baseCost: 12000,
+    growthFactor: 1,
+    maxLevel: 1,
+    levelToUnlock: 1,
+  },
+  greenParticle: {
+    name: 'Green Particle',
+    baseCost: 18000,
+    growthFactor: 1,
+    maxLevel: 1,
+    levelToUnlock: 1,
+  },
+  purpleParticle: {
+    name: 'Purple Particle',
+    baseCost: 25000,
+    growthFactor: 1,
+    maxLevel: 1,
+    levelToUnlock: 1,
+  },
+};
+
+export interface ParticleColorDefinition {
+  tint: number;
+  fragmentsPerParticle: number;
+}
+
+export const PARTICLE_COLOR_UPGRADES: Record<string, ParticleColorDefinition> = {
+  whiteParticle: { tint: 0xffffff, fragmentsPerParticle: 1 },
+  yellowParticle: { tint: 0xffd700, fragmentsPerParticle: 2 },
+  redParticle: { tint: 0xff4444, fragmentsPerParticle: 3 },
+  blueParticle: { tint: 0x44aaff, fragmentsPerParticle: 5 },
+  greenParticle: { tint: 0x44ff44, fragmentsPerParticle: 8 },
+  purpleParticle: { tint: 0xaa44ff, fragmentsPerParticle: 13 },
 };

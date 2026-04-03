@@ -2,7 +2,7 @@ import { spriteElements } from '../elements/SpriteAtlas';
 import { Progression } from '../Progression';
 import { UIScene } from '../scenes/UIScene';
 import { createUIPanel, FRONT_DEPTH } from '../utils/utils';
-import { UPGRADES } from './ShopUpgrades';
+import { PARTICLE_COLOR_UPGRADES, UPGRADES } from './ShopUpgrades';
 
 interface UpgradeButton {
   upgradeKey: string;
@@ -210,6 +210,13 @@ export class Shop {
         break;
       case 'spriteCollision':
         Progression.isSpriteCollisionEnabled = true;
+        break;
+      case 'yellowParticle':
+      case 'redParticle':
+      case 'blueParticle':
+      case 'greenParticle':
+      case 'purpleParticle':
+        Progression.unlockedParticleColors.push(PARTICLE_COLOR_UPGRADES[button.upgradeKey]);
         break;
     }
 

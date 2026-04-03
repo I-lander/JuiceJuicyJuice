@@ -1,10 +1,10 @@
 import { MainScene } from '../scenes/MainScene';
 import { SPRITE_BASE_UNIT } from '../utils/utils';
 import { Progression } from '../Progression';
-import { PARTICLE_CONFIG } from '../elements/Particles';
+import { Particle } from './Particle';
 
 export class Sprite extends Phaser.GameObjects.Sprite {
-  particleEmitter: Phaser.GameObjects.Particles.ParticleEmitter;
+  particles: Particle[] = [];
   scene: MainScene;
 
   originalScale: number;
@@ -13,7 +13,6 @@ export class Sprite extends Phaser.GameObjects.Sprite {
 
   particlesPerClick: number = 1;
   maxParticlesPerSpawn: number = 500;
-  particleLifetime: number = 700;
 
   constructor(scene: MainScene, x: number, y: number) {
     super(scene, x, y, 'spriteAtlas', '');
@@ -24,12 +23,6 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     this.originalScale = this.scene.tileSize / SPRITE_BASE_UNIT;
     this.setScale(this.originalScale);
     scene.add.existing(this);
-
-    const particleScale = scene.tileSize / SPRITE_BASE_UNIT;
-    this.particleEmitter = scene.add.particles(0, 0, 'particleAtlas', {
-      ...PARTICLE_CONFIG,
-      scale: { start: particleScale, end: 0, ease: 'Cubic.easeOut' },
-    });
 
     this.setInteractive();
     this.on('pointerdown', () => {
@@ -59,9 +52,14 @@ export class Sprite extends Phaser.GameObjects.Sprite {
 
     if (fragmentsToAdd <= 0) return;
 
-    Progression.addFragments(fragmentsToAdd);
-    const visualParticles = Math.min(fragmentsToAdd, this.maxParticlesPerSpawn);
-    this.particleEmitter.explode(visualParticles, this.x, this.y);
+    const particleScale = this.scene.tileSize / SPRITE_BASE_UNIT;
+    let totalFragments = 0;
+    for (let i = 0; i < fragmentsToAdd; i++) {
+      const particle = new Particle(this.scene, this.x, this.y, particleScale);
+      totalFragments += particle.fragmentsPerParticle;
+      this.particles.push(particle);
+    }
+    Progression.addFragments(totalFragments);
   }
 
   bounce() {
@@ -147,12 +145,14 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   }
 
   getAliveParticleCount(): number {
-    return this.particleEmitter.getAliveParticleCount();
+    return this.particles.length;
   }
 
   update(delta: number) {
     if (Progression.isSpriteMovementEnabled) {
       this.move(delta);
     }
+
+    this.particles = this.particles.filter((particle) => particle.update(delta));
   }
 }

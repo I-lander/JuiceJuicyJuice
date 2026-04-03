@@ -1,4 +1,4 @@
-import { UPGRADES } from "./objects/ShopUpgrades";
+import { PARTICLE_COLOR_UPGRADES, type ParticleColorDefinition, UPGRADES } from "./objects/ShopUpgrades";
 
 export const CPU_COSTS: Record<string, number> = {
   sprite: 1.0,
@@ -21,6 +21,7 @@ export class Progression {
   static isBounceEnabled = false;
   static isSpriteMovementEnabled = false;
   static isSpriteCollisionEnabled = false;
+  static unlockedParticleColors: ParticleColorDefinition[] = [PARTICLE_COLOR_UPGRADES.whiteParticle];
 
   static cpuUsage = 0;
   static simulatedFps = 60;
@@ -96,6 +97,11 @@ export class Progression {
     bounce: 0,
     spriteMovement: 0,
     spriteCollision: 0,
+    yellowParticle: 0,
+    redParticle: 0,
+    blueParticle: 0,
+    greenParticle: 0,
+    purpleParticle: 0,
   };
 
   static getUpgradeValue(upgradeKey: string): string {
@@ -116,6 +122,15 @@ export class Progression {
         return Progression.isSpriteMovementEnabled ? 'ON' : 'OFF';
       case 'spriteCollision':
         return Progression.isSpriteCollisionEnabled ? 'ON' : 'OFF';
+      case 'yellowParticle':
+      case 'redParticle':
+      case 'blueParticle':
+      case 'greenParticle':
+      case 'purpleParticle': {
+        const colorDef = PARTICLE_COLOR_UPGRADES[upgradeKey];
+        const owned = (Progression.upgradeLevels[upgradeKey] ?? 0) > 0;
+        return owned ? `x${colorDef.fragmentsPerParticle}` : 'OFF';
+      }
       default:
         return '';
     }
