@@ -31,6 +31,7 @@ export class UIScene extends CustomScene {
       panelLayout.innerX,
       panelLayout.innerWidth,
       panelLayout.contentStartY,
+      panelLayout.panelBottomY,
     );
 
     this.createHud();
@@ -68,7 +69,7 @@ export class UIScene extends CustomScene {
     this.hudText.setColor(cpuColor);
   }
 
-  private drawLeftPanel(): { innerX: number; innerWidth: number; contentStartY: number } {
+  private drawLeftPanel(): { innerX: number; innerWidth: number; contentStartY: number; panelBottomY: number } {
     const screenHeight = this.cameras.main.height;
     const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
     const pixelUnit = this.pixelUnit;
@@ -82,7 +83,7 @@ export class UIScene extends CustomScene {
     this.panelGraphics = this.add.graphics();
     this.panelGraphics.setDepth(FRONT_DEPTH);
 
-    this.panelGraphics.fillStyle(0x000033, 0.92);
+    this.panelGraphics.fillStyle(0x000033, 1);
     this.panelGraphics.fillRect(panelX, panelY, panelW, panelH);
 
     const borderWidth = pixelUnit;
@@ -95,6 +96,7 @@ export class UIScene extends CustomScene {
       innerX: panelX + inset,
       innerWidth: panelW - inset * 2,
       contentStartY: panelY + inset + pixelUnit * 3,
+      panelBottomY: panelY + panelH - inset,
     };
   }
 

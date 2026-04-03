@@ -33,18 +33,32 @@ export class Shop {
   private panelX: number;
   private panelInnerWidth: number;
   private contentStartY: number;
+  private panelBottomY: number;
 
-  constructor(scene: UIScene, panelX: number, panelInnerWidth: number, contentStartY: number) {
+  private scrollContainer!: Phaser.GameObjects.Container;
+  private scrollOffset: number = 0;
+  private maxScrollOffset: number = 0;
+  private visibleHeight: number = 0;
+
+  private isDragging: boolean = false;
+  private dragStartY: number = 0;
+  private dragStartOffset: number = 0;
+  private dragMoved: boolean = false;
+
+  constructor(scene: UIScene, panelX: number, panelInnerWidth: number, contentStartY: number, panelBottomY: number) {
     this.scene = scene;
     this.panelX = panelX;
     this.panelInnerWidth = panelInnerWidth;
     this.contentStartY = contentStartY;
+    this.panelBottomY = panelBottomY;
 
     this.createFragmentsCounter();
     this.createXpBar();
+    this.createScrollContainer();
     for (const key in UPGRADES) {
       this.createUpgradeButton(key);
     }
+    this.setupScrollInput();
   }
 
   private createFragmentsCounter() {
@@ -80,15 +94,85 @@ export class Shop {
 
     this.xpBarBackground = this.scene.add.graphics();
     this.xpBarBackground.setDepth(FRONT_DEPTH + 1);
-    this.xpBarBackground.fillStyle(0x111133, 0.8);
+    this.xpBarBackground.fillStyle(0x111133, 1);
     this.xpBarBackground.fillRect(this.xpBarX, this.xpBarY, this.xpBarWidth, this.xpBarHeight);
-    this.xpBarBackground.lineStyle(pixelUnit, 0x4444aa, 0.6);
+    this.xpBarBackground.lineStyle(pixelUnit, 0x4444aa, 1);
     this.xpBarBackground.strokeRect(this.xpBarX, this.xpBarY, this.xpBarWidth, this.xpBarHeight);
 
     this.xpBarFill = this.scene.add.graphics();
     this.xpBarFill.setDepth(FRONT_DEPTH + 1);
 
     this.buttonsStartY = this.xpBarY + this.xpBarHeight + pixelUnit * 6;
+    this.visibleHeight = this.panelBottomY - this.buttonsStartY;
+  }
+
+  private createScrollContainer() {
+    this.scrollContainer = this.scene.add.container(0, 0);
+    this.scrollContainer.setDepth(FRONT_DEPTH + 1);
+
+    const maskShape = this.scene.make.graphics({ x: 0, y: 0 });
+    maskShape.fillStyle(0xffffff, 1);
+    maskShape.fillRect(
+      this.panelX,
+      this.buttonsStartY,
+      this.panelInnerWidth,
+      this.visibleHeight,
+    );
+    this.scrollContainer.setMask(maskShape.createGeometryMask());
+  }
+
+  private applyScroll(delta: number) {
+    this.scrollOffset = Phaser.Math.Clamp(this.scrollOffset + delta, 0, this.maxScrollOffset);
+    this.scrollContainer.y = -this.scrollOffset;
+  }
+
+  private isPointerInScrollArea(pointer: Phaser.Input.Pointer): boolean {
+    return (
+      pointer.x >= this.panelX &&
+      pointer.x <= this.panelX + this.panelInnerWidth &&
+      pointer.y >= this.buttonsStartY &&
+      pointer.y <= this.buttonsStartY + this.visibleHeight
+    );
+  }
+
+  private setupScrollInput() {
+    const dragThreshold = this.scene.pixelUnit * 5;
+
+    this.scene.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
+      const scrollSpeed = this.scene.pixelUnit * 20;
+      this.applyScroll(deltaY > 0 ? scrollSpeed : -scrollSpeed);
+    });
+
+    this.scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (!this.isPointerInScrollArea(pointer)) return;
+      this.isDragging = true;
+      this.dragMoved = false;
+      this.dragStartY = pointer.y;
+      this.dragStartOffset = this.scrollOffset;
+    });
+
+    this.scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+      if (!this.isDragging) return;
+      const deltaY = this.dragStartY - pointer.y;
+      if (!this.dragMoved && Math.abs(deltaY) > dragThreshold) {
+        this.dragMoved = true;
+      }
+      if (this.dragMoved) {
+        this.scrollOffset = Phaser.Math.Clamp(this.dragStartOffset + deltaY, 0, this.maxScrollOffset);
+        this.scrollContainer.y = -this.scrollOffset;
+      }
+    });
+
+    this.scene.input.on('pointerup', () => {
+      this.isDragging = false;
+    });
+
+    this.scene.game.canvas.addEventListener('pointerleave', () => {
+      if (this.isDragging) {
+        this.isDragging = false;
+        this.dragMoved = false;
+      }
+    });
   }
 
   private refreshXpBar() {
@@ -173,8 +257,12 @@ export class Shop {
       hitZone,
     };
 
-    hitZone.on('pointerdown', () => {
-      this.purchaseUpgrade(button);
+    this.scrollContainer.add([graphics, nameText, costText, levelText, hitZone]);
+
+    hitZone.on('pointerup', () => {
+      if (!this.dragMoved) {
+        this.purchaseUpgrade(button);
+      }
     });
 
     this.buttons.push(button);
@@ -295,6 +383,11 @@ export class Shop {
     this.fragmentsText.setText(`${Progression.fragments}`);
     this.refreshXpBar();
 
+    const pixelUnit = this.scene.pixelUnit;
+    const tileSize = this.scene.tileSize;
+    const buttonHeight = tileSize * 1.8;
+    const buttonGap = pixelUnit * 3;
+
     let visibleIndex = 0;
     for (const button of this.buttons) {
       const definition = UPGRADES[button.upgradeKey];
@@ -309,5 +402,10 @@ export class Shop {
         visibleIndex++;
       }
     }
+
+    const totalContentHeight = visibleIndex * (buttonHeight + buttonGap) - buttonGap;
+    this.maxScrollOffset = Math.max(0, totalContentHeight - this.visibleHeight);
+    this.scrollOffset = Phaser.Math.Clamp(this.scrollOffset, 0, this.maxScrollOffset);
+    this.scrollContainer.y = -this.scrollOffset;
   }
 }
