@@ -463,7 +463,7 @@ export class Shop {
         Progression.autoClickers++;
         break;
       case 'cooldownReduction':
-        Progression.autoClickerCooldown = Math.max(200, Progression.autoClickerCooldown * 0.9);
+        Progression.autoClickerCooldown -= 100;
         break;
       case 'basicSprite':
         const randomFrame = spriteElements[Math.floor(Math.random() * spriteElements.length)].id;

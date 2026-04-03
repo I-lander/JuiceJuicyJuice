@@ -1,5 +1,5 @@
 import { MainScene } from '../scenes/MainScene';
-import { SPRITE_BASE_UNIT } from '../utils/utils';
+import { getRandomInt, SPRITE_BASE_UNIT } from '../utils/utils';
 import { Progression } from '../Progression';
 import { Particle } from './Particle';
 
@@ -81,6 +81,18 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     }
   }
 
+  spawnBounceParticles(contactX: number, contactY: number) {
+    const particleScale = this.scene.tileSize / SPRITE_BASE_UNIT;
+    const bounceParticleCount = getRandomInt(3, 5);
+    let totalFragments = 0;
+    for (let i = 0; i < bounceParticleCount; i++) {
+      const particle = new Particle(this.scene, contactX, contactY, particleScale * 0.5);
+      totalFragments += particle.fragmentsPerParticle;
+      this.particles.push(particle);
+    }
+    Progression.addFragments(totalFragments);
+  }
+
   move(delta: number) {
     const radius = (this.width * this.scale) / 2;
     this.x += this.velocity.x * this.speed * (delta / 1000);
@@ -89,19 +101,23 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     if (this.x < radius) {
       this.x = radius;
       this.velocity.x *= -1;
+      this.spawnBounceParticles(radius, this.y);
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     } else if (this.x > this.scene.cameras.main.width - radius) {
       this.x = this.scene.cameras.main.width - radius;
       this.velocity.x *= -1;
+      this.spawnBounceParticles(this.scene.cameras.main.width - radius, this.y);
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     }
     if (this.y < radius) {
       this.y = radius;
       this.velocity.y *= -1;
+      this.spawnBounceParticles(this.x, radius);
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     } else if (this.y > this.scene.cameras.main.height - radius) {
       this.y = this.scene.cameras.main.height - radius;
       this.velocity.y *= -1;
+      this.spawnBounceParticles(this.x, this.scene.cameras.main.height - radius);
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     }
 
@@ -140,6 +156,10 @@ export class Sprite extends Phaser.GameObjects.Sprite {
           this.velocity.y -= (relativeVelocity * normalY) / this.speed;
           other.velocity.x += (relativeVelocity * normalX) / other.speed;
           other.velocity.y += (relativeVelocity * normalY) / other.speed;
+
+          const contactX = (this.x + other.x) / 2;
+          const contactY = (this.y + other.y) / 2;
+          this.spawnBounceParticles(contactX, contactY);
         }
 
         Progression.addCollisionCpu();
