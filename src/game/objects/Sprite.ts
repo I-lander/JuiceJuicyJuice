@@ -25,9 +25,10 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     this.setScale(this.originalScale);
     scene.add.existing(this);
 
+    const particleScale = scene.tileSize / SPRITE_BASE_UNIT;
     this.particleEmitter = scene.add.particles(0, 0, 'particleAtlas', {
       ...PARTICLE_CONFIG,
-      scale: scene.tileSize / SPRITE_BASE_UNIT,
+      scale: { start: particleScale, end: 0, ease: 'Cubic.easeOut' },
     });
 
     this.setInteractive();
