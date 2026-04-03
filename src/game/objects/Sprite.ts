@@ -82,6 +82,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   }
 
   spawnBounceParticles(contactX: number, contactY: number) {
+    if (!Progression.isBounceParticlesEnabled) return;
     const particleScale = this.scene.tileSize / SPRITE_BASE_UNIT;
     const bounceParticleCount = getRandomInt(3, 5);
     let totalFragments = 0;

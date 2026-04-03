@@ -476,6 +476,9 @@ export class Shop {
       case 'spriteMovement':
         Progression.isSpriteMovementEnabled = true;
         break;
+      case 'bounceParticles':
+        Progression.isBounceParticlesEnabled = true;
+        break;
       case 'spriteCollision':
         Progression.isSpriteCollisionEnabled = true;
         break;

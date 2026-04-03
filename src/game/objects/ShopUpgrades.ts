@@ -49,6 +49,13 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     maxLevel: 1,
     levelToUnlock: 20,
   },
+  bounceParticles: {
+    name: 'Bounce Particles',
+    baseCost: 10000,
+    growthFactor: 1,
+    maxLevel: 1,
+    levelToUnlock: 23,
+  },
   spriteCollision: {
     name: 'Collision',
     baseCost: 25000,

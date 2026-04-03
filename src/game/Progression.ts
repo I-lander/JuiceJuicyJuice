@@ -21,6 +21,7 @@ export class Progression {
   static autoClickerCooldown = 3000;
   static isBounceEnabled = false;
   static isSpriteMovementEnabled = false;
+  static isBounceParticlesEnabled = false;
   static isSpriteCollisionEnabled = false;
   static isSpriteRotationEnabled = false;
   static unlockedParticleColors: ParticleColorDefinition[] = [PARTICLE_COLOR_UPGRADES.whiteParticle];
@@ -99,6 +100,7 @@ export class Progression {
     cooldownReduction: 0,
     bounce: 0,
     spriteMovement: 0,
+    bounceParticles: 0,
     spriteCollision: 0,
     spriteRotation: 0,
     yellowParticle: 0,
@@ -124,6 +126,8 @@ export class Progression {
         return Progression.isBounceEnabled ? 'ON' : 'OFF';
       case 'spriteMovement':
         return Progression.isSpriteMovementEnabled ? 'ON' : 'OFF';
+      case 'bounceParticles':
+        return Progression.isBounceParticlesEnabled ? 'ON' : 'OFF';
       case 'spriteCollision':
         return Progression.isSpriteCollisionEnabled ? 'ON' : 'OFF';
       case 'spriteRotation':
