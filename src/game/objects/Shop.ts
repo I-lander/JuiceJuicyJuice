@@ -1,7 +1,7 @@
 import { spriteElements } from '../elements/SpriteAtlas';
 import { Progression } from '../Progression';
 import { UIScene } from '../scenes/UIScene';
-import { createUIPanel, FRONT_DEPTH } from '../utils/utils';
+import { createUIPanel, formatNumber, FRONT_DEPTH } from '../utils/utils';
 import { PARTICLE_COLOR_UPGRADES, UPGRADES } from './ShopUpgrades';
 
 interface UpgradeButton {
@@ -45,7 +45,15 @@ export class Shop {
   private dragStartOffset: number = 0;
   private dragMoved: boolean = false;
 
-  constructor(scene: UIScene, panelX: number, panelInnerWidth: number, contentStartY: number, panelBottomY: number) {
+  private scrollbarThumb!: Phaser.GameObjects.Graphics;
+
+  constructor(
+    scene: UIScene,
+    panelX: number,
+    panelInnerWidth: number,
+    contentStartY: number,
+    panelBottomY: number,
+  ) {
     this.scene = scene;
     this.panelX = panelX;
     this.panelInnerWidth = panelInnerWidth;
@@ -55,6 +63,7 @@ export class Shop {
     this.createFragmentsCounter();
     this.createXpBar();
     this.createScrollContainer();
+    this.createScrollbar();
     for (const key in UPGRADES) {
       this.createUpgradeButton(key);
     }
@@ -112,13 +121,37 @@ export class Shop {
 
     const maskShape = this.scene.make.graphics({ x: 0, y: 0 });
     maskShape.fillStyle(0xffffff, 1);
-    maskShape.fillRect(
-      this.panelX,
-      this.buttonsStartY,
-      this.panelInnerWidth,
-      this.visibleHeight,
-    );
+    maskShape.fillRect(this.panelX, this.buttonsStartY, this.panelInnerWidth, this.visibleHeight);
     this.scrollContainer.setMask(maskShape.createGeometryMask());
+  }
+
+  private createScrollbar() {
+    const pixelUnit = this.scene.pixelUnit;
+
+    this.scrollbarThumb = this.scene.add.graphics();
+    this.scrollbarThumb.setDepth(FRONT_DEPTH + 3);
+  }
+
+  private refreshScrollbar() {
+    this.scrollbarThumb.clear();
+    if (this.maxScrollOffset <= 0) {
+      return;
+    }
+
+    const pixelUnit = this.scene.pixelUnit;
+    const scrollbarWidth = pixelUnit *2;
+    const scrollbarX = this.panelX + this.panelInnerWidth - scrollbarWidth + pixelUnit ;
+    const totalContentHeight = this.maxScrollOffset + this.visibleHeight;
+    const thumbHeight = Math.max(
+      pixelUnit * 6,
+      (this.visibleHeight / totalContentHeight) * this.visibleHeight,
+    );
+    const scrollableTrack = this.visibleHeight - thumbHeight;
+    const thumbY =
+      this.buttonsStartY + (this.scrollOffset / this.maxScrollOffset) * scrollableTrack;
+
+    this.scrollbarThumb.fillStyle(0x4444aa, 1);
+    this.scrollbarThumb.fillRect(scrollbarX, thumbY, scrollbarWidth, thumbHeight);
   }
 
   private applyScroll(delta: number) {
@@ -138,10 +171,18 @@ export class Shop {
   private setupScrollInput() {
     const dragThreshold = this.scene.pixelUnit * 5;
 
-    this.scene.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: Phaser.GameObjects.GameObject[], _deltaX: number, deltaY: number) => {
-      const scrollSpeed = this.scene.pixelUnit * 20;
-      this.applyScroll(deltaY > 0 ? scrollSpeed : -scrollSpeed);
-    });
+    this.scene.input.on(
+      'wheel',
+      (
+        _pointer: Phaser.Input.Pointer,
+        _gameObjects: Phaser.GameObjects.GameObject[],
+        _deltaX: number,
+        deltaY: number,
+      ) => {
+        const scrollSpeed = this.scene.pixelUnit * 20;
+        this.applyScroll(deltaY > 0 ? scrollSpeed : -scrollSpeed);
+      },
+    );
 
     this.scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (!this.isPointerInScrollArea(pointer)) return;
@@ -158,7 +199,11 @@ export class Shop {
         this.dragMoved = true;
       }
       if (this.dragMoved) {
-        this.scrollOffset = Phaser.Math.Clamp(this.dragStartOffset + deltaY, 0, this.maxScrollOffset);
+        this.scrollOffset = Phaser.Math.Clamp(
+          this.dragStartOffset + deltaY,
+          0,
+          this.maxScrollOffset,
+        );
         this.scrollContainer.y = -this.scrollOffset;
       }
     });
@@ -180,7 +225,9 @@ export class Shop {
     const currentFragments = Progression.getFragmentsInCurrentLevel();
     const requiredFragments = Progression.getFragmentsForLevel(Progression.level);
 
-    this.levelText.setText(`Lv.${Progression.level}  ${currentFragments}/${requiredFragments}`);
+    this.levelText.setText(
+      `Lv.${Progression.level}  ${formatNumber(currentFragments)}/${formatNumber(requiredFragments)}`,
+    );
 
     this.xpBarFill.clear();
     this.xpBarFill.fillStyle(0x44ddff, 1);
@@ -377,13 +424,13 @@ export class Shop {
       button.costText.setColor('#aaaacc');
     } else {
       const cost = Progression.getUpgradeCost(button.upgradeKey);
-      button.costText.setText(`${cost} fragments`);
+      button.costText.setText(`${formatNumber(cost)} fragments`);
       button.costText.setColor('#ffdd44');
     }
   }
 
   update() {
-    this.fragmentsText.setText(`${Progression.fragments}`);
+    this.fragmentsText.setText(formatNumber(Progression.fragments));
     this.refreshXpBar();
 
     const pixelUnit = this.scene.pixelUnit;
@@ -410,5 +457,6 @@ export class Shop {
     this.maxScrollOffset = Math.max(0, totalContentHeight - this.visibleHeight);
     this.scrollOffset = Phaser.Math.Clamp(this.scrollOffset, 0, this.maxScrollOffset);
     this.scrollContainer.y = -this.scrollOffset;
+    this.refreshScrollbar();
   }
 }
