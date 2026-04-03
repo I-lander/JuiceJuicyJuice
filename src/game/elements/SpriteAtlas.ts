@@ -53,6 +53,30 @@ export const spriteElements = [
     id: 'balloon',
     atlasObj: { x: 12, y: 0, w: 1, h: 1 },
   },
+  {
+    id: 'skull',
+    atlasObj: { x: 13, y: 0, w: 1, h: 1 },
+  },
+  {
+    id: 'diamond',
+    atlasObj: { x: 14, y: 0, w: 1, h: 1 },
+  },
+  {
+    id: 'bomb',
+    atlasObj: { x: 15, y: 0, w: 1, h: 1 },
+  },
+  {
+    id: 'crab',
+    atlasObj: { x: 0, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'frog',
+    atlasObj: { x: 1, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'pizza',
+    atlasObj: { x: 2, y: 1, w: 1, h: 1 },
+  },
 ];
 
 export const spriteAtlas = createAtlasFromArray(spriteElements);
