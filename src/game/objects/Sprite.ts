@@ -11,6 +11,10 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   velocity: { x: number; y: number };
   speed: number;
 
+  particlesPerClick: number = 1;
+  maxParticlesPerSpawn: number = 500;
+  particleLifetime: number = 700;
+
   constructor(scene: MainScene, x: number, y: number) {
     super(scene, x, y, 'spriteAtlas', '');
     this.scene = scene;
@@ -36,6 +40,8 @@ export class Sprite extends Phaser.GameObjects.Sprite {
 
   init(texture: string) {
     this.setTexture('spriteAtlas', texture);
+    const particlesPerClickLevel = Progression.upgradeLevels['particlesPerClick'] ?? 0;
+    this.particlesPerClick = 1 + particlesPerClickLevel;
   }
 
   onClick() {
@@ -44,22 +50,21 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   }
 
   spawnParticles() {
-    const scene = this.scene as MainScene;
-    const totalParticles = scene.getTotalParticleCount();
+    const aliveParticles = this.getAliveParticleCount();
     const fragmentsToAdd = Math.min(
-      Progression.particlesPerClick,
-      Progression.maxParticles - totalParticles,
+      this.particlesPerClick,
+      this.maxParticlesPerSpawn - aliveParticles,
     );
 
     if (fragmentsToAdd <= 0) return;
 
-    Progression.fragments += fragmentsToAdd;
-    const visualParticles = Math.min(fragmentsToAdd, Progression.maxParticlesPerSpawn);
+    Progression.addFragments(fragmentsToAdd);
+    const visualParticles = Math.min(fragmentsToAdd, this.maxParticlesPerSpawn);
     this.particleEmitter.explode(visualParticles, this.x, this.y);
   }
 
   bounce() {
-    if (Progression.isBounceEnabled) {
+    if (Progression.isBounceEnabled && this.scale === this.originalScale) {
       const bounceAmount = 0.2;
       this.scene.tweens.add({
         targets: this,

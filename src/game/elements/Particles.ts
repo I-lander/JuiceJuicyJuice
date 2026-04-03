@@ -1,4 +1,3 @@
-import { Progression } from '../Progression';
 import { createAtlasFromArray } from '../utils/utils';
 
 export const particleElements = [
@@ -24,7 +23,7 @@ export const PARTICLE_CONFIG: Phaser.Types.GameObjects.Particles.ParticleEmitter
   speed: { min: 0, max: 300 },
   angle: { min: 0, max: 360 },
   alpha: { start: 1, end: 0, ease: 'Cubic.easeOut' },
-  lifespan: Progression.particleLifetime,
+  lifespan: 700,
   emitting: false,
   frame: PARTICLE_FRAMES,
 };

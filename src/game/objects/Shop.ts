@@ -92,10 +92,11 @@ export class Shop {
   }
 
   private refreshXpBar() {
-    const progress = Progression.getExperienceProgress();
-    const requiredXp = Progression.getExperienceForLevel(Progression.level);
+    const progress = Progression.getLevelProgress();
+    const currentFragments = Progression.getFragmentsInCurrentLevel();
+    const requiredFragments = Progression.getFragmentsForLevel(Progression.level);
 
-    this.levelText.setText(`Lv.${Progression.level}  ${Progression.experience}/${requiredXp}`);
+    this.levelText.setText(`Lv.${Progression.level}  ${currentFragments}/${requiredFragments}`);
 
     this.xpBarFill.clear();
     this.xpBarFill.fillStyle(0x44ddff, 1);
@@ -182,16 +183,13 @@ export class Shop {
 
   private purchaseUpgrade(button: UpgradeButton) {
     if (!Progression.isUpgradeUnlocked(button.upgradeKey)) return;
-    const cost = Progression.getUpgradeCost(button.upgradeKey);
     if (!Progression.purchaseUpgrade(button.upgradeKey)) return;
-    Progression.addExperience(cost);
 
     switch (button.upgradeKey) {
       case 'particlesPerClick':
-        Progression.particlesPerClick += 1;
-        break;
-      case 'maxParticles':
-        Progression.maxParticles += 5;
+        for (const sprite of this.scene.mainScene.sprites) {
+          sprite.particlesPerClick += 1;
+        }
         break;
       case 'autoClicker':
         Progression.autoClickers++;

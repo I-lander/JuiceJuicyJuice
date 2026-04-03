@@ -15,10 +15,6 @@ const CPU_COEFFICIENT = 0.002;
 
 export class Progression {
   static fragments = 0;
-  static particlesPerClick = 1;
-  static maxParticles = 5;
-  static maxParticlesPerSpawn = 500;
-  static particleLifetime = 700;
   static sprites = 0;
   static autoClickers = 0;
   static autoClickerCooldown = 3000;
@@ -32,8 +28,7 @@ export class Progression {
   static activeCollisionCpu = 0;
 
   static level = 1;
-  static experience = 0;
-  static totalExperience = 0;
+  static totalFragments = 0;
 
   static addCollisionCpu() {
     Progression.activeCollisionCpu += CPU_COSTS.collision;
@@ -55,24 +50,36 @@ export class Progression {
     Progression.simulatedFps = Math.max(0, 60 / (1 + totalCpu * CPU_COEFFICIENT));
   }
 
-  static getExperienceForLevel(level: number): number {
-    return Math.floor(20 * Math.pow(1.4, level - 1));
+  static getFragmentsForLevel(level: number): number {
+    return Math.floor(10 * Math.pow(1.4, level - 1));
   }
 
-  static addExperience(amount: number) {
-    Progression.experience += amount;
-    Progression.totalExperience += amount;
+  static addFragments(amount: number) {
+    Progression.fragments += amount;
+    Progression.totalFragments += amount;
+    Progression.recalculateLevel();
+  }
 
-    let requiredXp = Progression.getExperienceForLevel(Progression.level);
-    while (Progression.experience >= requiredXp) {
-      Progression.experience -= requiredXp;
-      Progression.level++;
-      requiredXp = Progression.getExperienceForLevel(Progression.level);
+  static recalculateLevel() {
+    let cumulativeFragments = 0;
+    let level = 1;
+    while (cumulativeFragments + Progression.getFragmentsForLevel(level) <= Progression.totalFragments) {
+      cumulativeFragments += Progression.getFragmentsForLevel(level);
+      level++;
     }
+    Progression.level = level;
   }
 
-  static getExperienceProgress(): number {
-    return Progression.experience / Progression.getExperienceForLevel(Progression.level);
+  static getFragmentsInCurrentLevel(): number {
+    let cumulativeFragments = 0;
+    for (let lvl = 1; lvl < Progression.level; lvl++) {
+      cumulativeFragments += Progression.getFragmentsForLevel(lvl);
+    }
+    return Progression.totalFragments - cumulativeFragments;
+  }
+
+  static getLevelProgress(): number {
+    return Progression.getFragmentsInCurrentLevel() / Progression.getFragmentsForLevel(Progression.level);
   }
 
   static isUpgradeUnlocked(upgradeKey: string): boolean {
@@ -96,9 +103,9 @@ export class Progression {
       case 'basicSprite':
         return `${Progression.sprites}`;
       case 'particlesPerClick':
-        return `${Progression.particlesPerClick}`;
+        return `${1 + (Progression.upgradeLevels['particlesPerClick'] ?? 0)}`;
       case 'maxParticles':
-        return `${Progression.maxParticles}`;
+        return `${5 + (Progression.upgradeLevels['maxParticles'] ?? 0) * 5}`;
       case 'autoClicker':
         return `${Progression.autoClickers}`;
       case 'cooldownReduction':

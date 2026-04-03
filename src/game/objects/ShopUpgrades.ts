@@ -9,17 +9,10 @@ export interface UpgradeDefinition {
 export const UPGRADES: Record<string, UpgradeDefinition> = {
   particlesPerClick: {
     name: 'Particles/Click',
-    baseCost: 5,
+    baseCost: 10,
     growthFactor: 1.15,
     maxLevel: 50,
     levelToUnlock: 0,
-  },
-  maxParticles: {
-    name: 'Max Particles',
-    baseCost: 15,
-    growthFactor: 1.45,
-    maxLevel: 50,
-    levelToUnlock: 3,
   },
   autoClicker: {
     name: 'Autoclicker',

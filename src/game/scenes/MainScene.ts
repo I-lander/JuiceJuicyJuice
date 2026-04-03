@@ -83,6 +83,7 @@ export class MainScene extends CustomScene {
     }
 
     newSprite.init(frame);
+
     this.sprites.push(newSprite);
   }
 
