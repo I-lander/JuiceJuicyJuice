@@ -9,6 +9,7 @@ export const CPU_COSTS: Record<string, number> = {
   shader: 2.0,
   uiParasite: 1.5,
   collision: 0.8,
+  rotatingSprite: 0.7,
 };
 
 const CPU_COEFFICIENT = 0.002;
@@ -21,6 +22,7 @@ export class Progression {
   static isBounceEnabled = false;
   static isSpriteMovementEnabled = false;
   static isSpriteCollisionEnabled = false;
+  static isSpriteRotationEnabled = false;
   static unlockedParticleColors: ParticleColorDefinition[] = [PARTICLE_COLOR_UPGRADES.whiteParticle];
 
   static cpuUsage = 0;
@@ -35,7 +37,7 @@ export class Progression {
     Progression.activeCollisionCpu += CPU_COSTS.collision;
   }
 
-  static calculateCpuUsage(spriteCount: number, particleCount: number, activeTweenCount: number, movingSpriteCount: number, delta: number) {
+  static calculateCpuUsage(spriteCount: number, particleCount: number, activeTweenCount: number, movingSpriteCount: number, rotatingSpriteCount: number, delta: number) {
     Progression.activeCollisionCpu = Math.max(0, Progression.activeCollisionCpu - Progression.activeCollisionCpu * delta / 1000);
 
     let totalCpu = 0;
@@ -44,6 +46,7 @@ export class Progression {
     totalCpu += activeTweenCount * CPU_COSTS.tween;
     totalCpu += movingSpriteCount * CPU_COSTS.movingSprite;
     totalCpu += Progression.autoClickers * CPU_COSTS.autoClicker;
+    totalCpu += rotatingSpriteCount * CPU_COSTS.rotatingSprite;
     totalCpu += Progression.activeCollisionCpu;
     totalCpu *= Progression.cpuMultiplier;
 
@@ -97,6 +100,7 @@ export class Progression {
     bounce: 0,
     spriteMovement: 0,
     spriteCollision: 0,
+    spriteRotation: 0,
     yellowParticle: 0,
     redParticle: 0,
     blueParticle: 0,
@@ -122,6 +126,8 @@ export class Progression {
         return Progression.isSpriteMovementEnabled ? 'ON' : 'OFF';
       case 'spriteCollision':
         return Progression.isSpriteCollisionEnabled ? 'ON' : 'OFF';
+      case 'spriteRotation':
+        return Progression.isSpriteRotationEnabled ? 'ON' : 'OFF';
       case 'yellowParticle':
       case 'redParticle':
       case 'blueParticle':

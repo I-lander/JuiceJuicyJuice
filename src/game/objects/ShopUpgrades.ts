@@ -56,6 +56,13 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     maxLevel: 1,
     levelToUnlock: 25,
   },
+  spriteRotation: {
+    name: 'Rotation',
+    baseCost: 3000,
+    growthFactor: 1,
+    maxLevel: 1,
+    levelToUnlock: 30,
+  },
   yellowParticle: {
     name: 'Yellow Particle',
     baseCost: 5000,

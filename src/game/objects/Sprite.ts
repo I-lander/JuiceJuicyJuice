@@ -10,6 +10,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   originalScale: number;
   velocity: { x: number; y: number };
   speed: number;
+  rotationSpeed: number = 0;
 
   particlesPerClick: number = 1;
   maxParticlesPerSpawn: number = 500;
@@ -20,6 +21,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     this.x = x;
     this.y = y;
     this.speed = 100 + Math.random() * 50;
+    this.rotationSpeed = (0.5 + Math.random() * 1.5) * (Math.random() < 0.5 ? -1 : 1);
     this.originalScale = this.scene.tileSize / SPRITE_BASE_UNIT;
     this.setScale(this.originalScale);
     scene.add.existing(this);
@@ -151,6 +153,10 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   update(delta: number) {
     if (Progression.isSpriteMovementEnabled) {
       this.move(delta);
+    }
+
+    if (Progression.isSpriteRotationEnabled) {
+      this.rotation += this.rotationSpeed * (delta / 1000);
     }
 
     this.particles = this.particles.filter((particle) => particle.update(delta));

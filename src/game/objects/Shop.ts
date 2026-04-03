@@ -299,6 +299,9 @@ export class Shop {
       case 'spriteCollision':
         Progression.isSpriteCollisionEnabled = true;
         break;
+      case 'spriteRotation':
+        Progression.isSpriteRotationEnabled = true;
+        break;
       case 'yellowParticle':
       case 'redParticle':
       case 'blueParticle':
