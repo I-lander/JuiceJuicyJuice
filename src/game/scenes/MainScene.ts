@@ -77,7 +77,7 @@ export class MainScene extends CustomScene {
   }
 
   spawnSprite(frame: string) {
-    const margin = this.tileSize * 2;
+    const margin = this.tileSize / 2;
     const spawnX = getRandomInt(margin, this.camera.width - margin);
     const spawnY = getRandomInt(margin, this.camera.height - margin);
 

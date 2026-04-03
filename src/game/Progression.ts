@@ -1,4 +1,8 @@
-import { PARTICLE_COLOR_UPGRADES, type ParticleColorDefinition, UPGRADES } from "./objects/ShopUpgrades";
+import {
+  PARTICLE_COLOR_UPGRADES,
+  type ParticleColorDefinition,
+  UPGRADES,
+} from './objects/ShopUpgrades';
 
 export const CPU_COSTS: Record<string, number> = {
   sprite: 1.0,
@@ -24,7 +28,9 @@ export class Progression {
   static isBounceParticlesEnabled = false;
   static isSpriteCollisionEnabled = false;
   static isSpriteRotationEnabled = false;
-  static unlockedParticleColors: ParticleColorDefinition[] = [PARTICLE_COLOR_UPGRADES.whiteParticle];
+  static unlockedParticleColors: ParticleColorDefinition[] = [
+    PARTICLE_COLOR_UPGRADES.whiteParticle,
+  ];
 
   static cpuUsage = 0;
   static simulatedFps = 60;
@@ -38,8 +44,18 @@ export class Progression {
     Progression.activeCollisionCpu += CPU_COSTS.collision;
   }
 
-  static calculateCpuUsage(spriteCount: number, particleCount: number, activeTweenCount: number, movingSpriteCount: number, rotatingSpriteCount: number, delta: number) {
-    Progression.activeCollisionCpu = Math.max(0, Progression.activeCollisionCpu - Progression.activeCollisionCpu * delta / 1000);
+  static calculateCpuUsage(
+    spriteCount: number,
+    particleCount: number,
+    activeTweenCount: number,
+    movingSpriteCount: number,
+    rotatingSpriteCount: number,
+    delta: number,
+  ) {
+    Progression.activeCollisionCpu = Math.max(
+      0,
+      Progression.activeCollisionCpu - (Progression.activeCollisionCpu * delta) / 1000,
+    );
 
     let totalCpu = 0;
     totalCpu += spriteCount * CPU_COSTS.sprite;
@@ -68,7 +84,10 @@ export class Progression {
   static recalculateLevel() {
     let cumulativeFragments = 0;
     let level = 1;
-    while (cumulativeFragments + Progression.getFragmentsForLevel(level) <= Progression.totalFragments) {
+    while (
+      cumulativeFragments + Progression.getFragmentsForLevel(level) <=
+      Progression.totalFragments
+    ) {
       cumulativeFragments += Progression.getFragmentsForLevel(level);
       level++;
     }
@@ -84,7 +103,9 @@ export class Progression {
   }
 
   static getLevelProgress(): number {
-    return Progression.getFragmentsInCurrentLevel() / Progression.getFragmentsForLevel(Progression.level);
+    return (
+      Progression.getFragmentsInCurrentLevel() / Progression.getFragmentsForLevel(Progression.level)
+    );
   }
 
   static isUpgradeUnlocked(upgradeKey: string): boolean {
