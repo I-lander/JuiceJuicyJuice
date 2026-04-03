@@ -38,6 +38,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     this.setTexture('spriteAtlas', texture);
     const particlesPerClickLevel = Progression.upgradeLevels['particlesPerClick'] ?? 0;
     this.particlesPerClick = 1 + particlesPerClickLevel;
+    this.setDepth(1);
   }
 
   onClick() {

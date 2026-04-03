@@ -2,7 +2,7 @@ import { PARTICLE_FRAMES } from '../elements/Particles';
 import { Progression } from '../Progression';
 import type { ParticleColorDefinition } from './ShopUpgrades';
 
-const PARTICLE_LIFESPAN = 700;
+const PARTICLE_LIFESPAN = 500;
 
 export class Particle extends Phaser.GameObjects.Image {
   velocity: { x: number; y: number };
@@ -20,7 +20,7 @@ export class Particle extends Phaser.GameObjects.Image {
     this.lifespan = PARTICLE_LIFESPAN;
 
     const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 300;
+    const speed = Math.random() * 300 + 100;
     this.velocity = {
       x: Math.cos(angle) * speed,
       y: Math.sin(angle) * speed,
@@ -34,7 +34,7 @@ export class Particle extends Phaser.GameObjects.Image {
     } else {
       this.fragmentsPerParticle = 1;
     }
-
+    this.setDepth(0);
     this.setScale(startScale);
     scene.add.existing(this);
   }
