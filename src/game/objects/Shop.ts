@@ -47,6 +47,15 @@ export class Shop {
 
   private scrollbarThumb!: Phaser.GameObjects.Graphics;
 
+  private activeTab: 'upgrades' | 'unlocks' = 'upgrades';
+  private tabUpgradesGraphics!: Phaser.GameObjects.Graphics;
+  private tabUnlocksGraphics!: Phaser.GameObjects.Graphics;
+  private tabUpgradesText!: Phaser.GameObjects.Text;
+  private tabUnlocksText!: Phaser.GameObjects.Text;
+  private tabUpgradesZone!: Phaser.GameObjects.Zone;
+  private tabUnlocksZone!: Phaser.GameObjects.Zone;
+  private tabHeight: number = 0;
+
   constructor(
     scene: UIScene,
     panelX: number,
@@ -62,6 +71,7 @@ export class Shop {
 
     this.createFragmentsCounter();
     this.createXpBar();
+    this.createTabs();
     this.createScrollContainer();
     this.createScrollbar();
     for (const key in UPGRADES) {
@@ -115,6 +125,129 @@ export class Shop {
     this.visibleHeight = this.panelBottomY - this.buttonsStartY;
   }
 
+  private createTabs() {
+    const pixelUnit = this.scene.pixelUnit;
+    this.tabHeight = pixelUnit * 14;
+    const tabY = this.buttonsStartY;
+    const tabWidth = (this.panelInnerWidth - pixelUnit * 4) / 2;
+    const tabLeftX = this.panelX + pixelUnit * 2;
+    const tabRightX = tabLeftX + tabWidth;
+    const fontSize = Math.round(pixelUnit * 10);
+
+    this.tabUpgradesGraphics = this.scene.add.graphics();
+    this.tabUpgradesGraphics.setDepth(FRONT_DEPTH + 3);
+    this.tabUnlocksGraphics = this.scene.add.graphics();
+    this.tabUnlocksGraphics.setDepth(FRONT_DEPTH + 2);
+
+    this.tabUpgradesText = this.scene.add.text(
+      tabLeftX + tabWidth / 2,
+      tabY + this.tabHeight / 2,
+      'Upgrades',
+      {
+        fontFamily: 'KenneyPixel',
+        fontSize: `${fontSize}px`,
+        color: '#ffffff',
+      },
+    );
+    this.tabUpgradesText.setOrigin(0.5, 0.5);
+    this.tabUpgradesText.setDepth(FRONT_DEPTH + 3);
+
+    this.tabUnlocksText = this.scene.add.text(
+      tabRightX + tabWidth / 2,
+      tabY + this.tabHeight / 2,
+      'Unlocks',
+      {
+        fontFamily: 'KenneyPixel',
+        fontSize: `${fontSize}px`,
+        color: '#ffffff',
+      },
+    );
+    this.tabUnlocksText.setOrigin(0.5, 0.5);
+    this.tabUnlocksText.setDepth(FRONT_DEPTH + 3);
+
+    this.tabUpgradesZone = this.scene.add.zone(
+      tabLeftX + tabWidth / 2,
+      tabY + this.tabHeight / 2,
+      tabWidth,
+      this.tabHeight,
+    );
+    this.tabUpgradesZone.setDepth(FRONT_DEPTH + 4);
+    this.tabUpgradesZone.setInteractive({ useHandCursor: true });
+    this.tabUpgradesZone.on('pointerup', () => this.switchTab('upgrades'));
+
+    this.tabUnlocksZone = this.scene.add.zone(
+      tabRightX + tabWidth / 2,
+      tabY + this.tabHeight / 2,
+      tabWidth,
+      this.tabHeight,
+    );
+    this.tabUnlocksZone.setDepth(FRONT_DEPTH + 4);
+    this.tabUnlocksZone.setInteractive({ useHandCursor: true });
+    this.tabUnlocksZone.on('pointerup', () => this.switchTab('unlocks'));
+
+    this.buttonsStartY += this.tabHeight + pixelUnit * 3;
+    this.visibleHeight = this.panelBottomY - this.buttonsStartY;
+  }
+
+  private switchTab(tab: 'upgrades' | 'unlocks') {
+    if (this.activeTab === tab) return;
+    if (tab === 'upgrades') {
+      this.tabUpgradesGraphics.setDepth(FRONT_DEPTH + 3);
+      this.tabUnlocksGraphics.setDepth(FRONT_DEPTH + 2);
+    } else {
+      this.tabUpgradesGraphics.setDepth(FRONT_DEPTH + 2);
+      this.tabUnlocksGraphics.setDepth(FRONT_DEPTH + 3);
+    }
+    this.activeTab = tab;
+    this.scrollOffset = 0;
+    this.scrollContainer.y = 0;
+  }
+
+  private refreshTabs() {
+    const pixelUnit = this.scene.pixelUnit;
+    const tabY = this.xpBarY + this.xpBarHeight + pixelUnit * 6;
+    const tabWidth = (this.panelInnerWidth - pixelUnit * 4) / 2;
+    const tabLeftX = this.panelX + pixelUnit * 2;
+    const tabRightX = tabLeftX + tabWidth;
+
+    this.tabUpgradesGraphics.clear();
+    this.tabUnlocksGraphics.clear();
+
+    const activeColor = 0x334477;
+    const inactiveColor = 0x1a1a3a;
+
+    this.tabUpgradesGraphics.fillStyle(
+      this.activeTab === 'upgrades' ? activeColor : inactiveColor,
+      0.9,
+    );
+    this.tabUpgradesGraphics.fillRect(tabLeftX, tabY, tabWidth, this.tabHeight);
+    this.tabUpgradesGraphics.lineStyle(
+      pixelUnit,
+      this.activeTab === 'upgrades' ? 0x4488cc : 0x333366,
+      0.9,
+    );
+    this.tabUpgradesGraphics.strokeRect(tabLeftX, tabY, tabWidth, this.tabHeight);
+
+    this.tabUnlocksGraphics.fillStyle(
+      this.activeTab === 'unlocks' ? activeColor : inactiveColor,
+      0.9,
+    );
+    this.tabUnlocksGraphics.fillRect(tabRightX, tabY, tabWidth, this.tabHeight);
+    this.tabUnlocksGraphics.lineStyle(
+      pixelUnit,
+      this.activeTab === 'unlocks' ? 0x4488cc : 0x333366,
+      0.9,
+    );
+    this.tabUnlocksGraphics.strokeRect(tabRightX, tabY, tabWidth, this.tabHeight);
+
+    this.tabUpgradesText.setColor(this.activeTab === 'upgrades' ? '#ffffff' : '#666688');
+    this.tabUnlocksText.setColor(this.activeTab === 'unlocks' ? '#ffffff' : '#666688');
+  }
+
+  private isMultiLevelUpgrade(upgradeKey: string): boolean {
+    return UPGRADES[upgradeKey].maxLevel > 1;
+  }
+
   private createScrollContainer() {
     this.scrollContainer = this.scene.add.container(0, 0);
     this.scrollContainer.setDepth(FRONT_DEPTH + 1);
@@ -139,8 +272,8 @@ export class Shop {
     }
 
     const pixelUnit = this.scene.pixelUnit;
-    const scrollbarWidth = pixelUnit *2;
-    const scrollbarX = this.panelX + this.panelInnerWidth - scrollbarWidth + pixelUnit ;
+    const scrollbarWidth = pixelUnit * 2;
+    const scrollbarX = this.panelX + this.panelInnerWidth - scrollbarWidth + pixelUnit;
     const totalContentHeight = this.maxScrollOffset + this.visibleHeight;
     const thumbHeight = Math.max(
       pixelUnit * 6,
@@ -432,6 +565,7 @@ export class Shop {
   update() {
     this.fragmentsText.setText(formatNumber(Progression.fragments));
     this.refreshXpBar();
+    this.refreshTabs();
 
     const pixelUnit = this.scene.pixelUnit;
     const tileSize = this.scene.tileSize;
@@ -444,7 +578,11 @@ export class Shop {
       const level = Progression.upgradeLevels[button.upgradeKey] ?? 0;
       const isMaxedSinglePurchase = definition.maxLevel === 1 && level >= 1;
       const isUnlocked = Progression.isUpgradeUnlocked(button.upgradeKey);
-      const isVisible = isUnlocked && !isMaxedSinglePurchase;
+      const belongsToTab =
+        this.activeTab === 'upgrades'
+          ? this.isMultiLevelUpgrade(button.upgradeKey)
+          : !this.isMultiLevelUpgrade(button.upgradeKey);
+      const isVisible = isUnlocked && !isMaxedSinglePurchase && belongsToTab;
       this.setButtonVisible(button, isVisible);
       if (isVisible) {
         this.repositionButton(button, visibleIndex);
