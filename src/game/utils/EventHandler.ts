@@ -42,7 +42,10 @@ export class EventHandler {
     this.mainScene.input.keyboard?.on('keydown', (key: KeyboardEvent) => {
       if (import.meta.env.VITE_IS_DEV_SPLASH === 'true') {
         if (key.code === 'KeyG') {
-          Progression.fragments = Infinity;
+          Progression.fragments += 10000;
+        }
+        if (key.code === 'KeyL') {
+          Progression.totalFragments += 10000;
         }
         if (key.code === 'KeyH') {
           this.mainScene.spawnSprite(

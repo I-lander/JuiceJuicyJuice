@@ -113,8 +113,6 @@ export class Shop {
 
     this.xpBarBackground = this.scene.add.graphics();
     this.xpBarBackground.setDepth(FRONT_DEPTH + 1);
-    this.xpBarBackground.fillStyle(0x111133, 1);
-    this.xpBarBackground.fillRect(this.xpBarX, this.xpBarY, this.xpBarWidth, this.xpBarHeight);
     this.xpBarBackground.lineStyle(pixelUnit, 0x4444aa, 1);
     this.xpBarBackground.strokeRect(this.xpBarX, this.xpBarY, this.xpBarWidth, this.xpBarHeight);
 
@@ -364,6 +362,7 @@ export class Shop {
 
     this.xpBarFill.clear();
     this.xpBarFill.fillStyle(0x44ddff, 1);
+    this.xpBarFill.setDepth(FRONT_DEPTH);
     this.xpBarFill.fillRect(this.xpBarX, this.xpBarY, this.xpBarWidth * progress, this.xpBarHeight);
   }
 
@@ -480,6 +479,18 @@ export class Shop {
       case 'spriteRotation':
         Progression.isSpriteRotationEnabled = true;
         break;
+      case 'spriteFragRate':
+        Progression.spriteFragmentRate += 0.1;
+        break;
+      case 'bounceFragRate':
+        Progression.bounceFragmentRate += 0.1;
+        break;
+      case 'movementFragRate':
+        Progression.movementFragmentRate += 0.1;
+        break;
+      case 'rotationFragRate':
+        Progression.rotationFragmentRate += 0.1;
+        break;
       case 'yellowParticle':
       case 'redParticle':
       case 'blueParticle':
@@ -555,7 +566,7 @@ export class Shop {
       button.costText.setColor('#aaaacc');
     } else {
       const cost = Progression.getUpgradeCost(button.upgradeKey);
-      button.costText.setText(`${formatNumber(cost)} fragments`);
+      button.costText.setText(`${formatNumber(cost)}`);
       button.costText.setColor('#ffdd44');
     }
   }

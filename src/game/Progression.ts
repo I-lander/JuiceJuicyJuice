@@ -23,6 +23,10 @@ export class Progression {
   static sprites = 0;
   static autoClickers = 0;
   static autoClickerCooldown = 3000;
+  static spriteFragmentRate = 0.1;
+  static bounceFragmentRate = 0.1;
+  static movementFragmentRate = 0.1;
+  static rotationFragmentRate = 0.1;
   static isBounceEnabled = false;
   static isSpriteMovementEnabled = false;
   static isBounceParticlesEnabled = false;
@@ -124,6 +128,10 @@ export class Progression {
     bounceParticles: 0,
     spriteCollision: 0,
     spriteRotation: 0,
+    spriteFragRate: 0,
+    bounceFragRate: 0,
+    movementFragRate: 0,
+    rotationFragRate: 0,
     yellowParticle: 0,
     redParticle: 0,
     blueParticle: 0,
@@ -141,6 +149,14 @@ export class Progression {
         return `${Progression.autoClickers}`;
       case 'cooldownReduction':
         return `${(Progression.autoClickerCooldown / 1000).toFixed(1)}s`;
+      case 'spriteFragRate':
+        return `${Progression.spriteFragmentRate.toFixed(1)}/s`;
+      case 'bounceFragRate':
+        return `${Progression.bounceFragmentRate.toFixed(1)}/s`;
+      case 'movementFragRate':
+        return `${Progression.movementFragmentRate.toFixed(1)}/s`;
+      case 'rotationFragRate':
+        return `${Progression.rotationFragmentRate.toFixed(1)}/s`;
       case 'bounce':
         return Progression.isBounceEnabled ? 'ON' : 'OFF';
       case 'spriteMovement':
