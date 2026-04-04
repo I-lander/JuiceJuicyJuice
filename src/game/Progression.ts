@@ -114,8 +114,8 @@ export class Progression {
   }
 
   static upgradeLevels: Record<string, number> = {
-    basicSprite: 0,
-    particlesPerClick: 0,
+    addSprite: 0,
+    particlesPerClick: 1,
     maxParticles: 0,
     autoClicker: 0,
     cooldownReduction: 0,
@@ -133,12 +133,10 @@ export class Progression {
 
   static getUpgradeValue(upgradeKey: string): string {
     switch (upgradeKey) {
-      case 'basicSprite':
+      case 'addSprite':
         return `${Progression.sprites}`;
       case 'particlesPerClick':
-        return `${1 + (Progression.upgradeLevels['particlesPerClick'] ?? 0)}`;
-      case 'maxParticles':
-        return `${5 + (Progression.upgradeLevels['maxParticles'] ?? 0) * 5}`;
+        return `${Progression.upgradeLevels['particlesPerClick'] ?? 0}`;
       case 'autoClicker':
         return `${Progression.autoClickers}`;
       case 'cooldownReduction':

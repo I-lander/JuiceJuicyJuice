@@ -4,16 +4,12 @@ import { Progression } from '../Progression';
 import { Particle } from './Particle';
 
 export class Sprite extends Phaser.GameObjects.Sprite {
-  particles: Particle[] = [];
   scene: MainScene;
 
   originalScale: number;
   velocity: { x: number; y: number };
   speed: number;
   rotationSpeed: number = 0;
-
-  particlesPerClick: number = 1;
-  maxParticlesPerSpawn: number = 500;
 
   constructor(scene: MainScene, x: number, y: number) {
     super(scene, x, y, 'spriteAtlas', '');
@@ -26,43 +22,12 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     this.setScale(this.originalScale);
     scene.add.existing(this);
 
-    this.setInteractive();
-    this.on('pointerdown', () => {
-      this.onClick();
-    });
-
     this.velocity = { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 };
   }
 
   init(texture: string) {
     this.setTexture('spriteAtlas', texture);
-    const particlesPerClickLevel = Progression.upgradeLevels['particlesPerClick'] ?? 0;
-    this.particlesPerClick = 1 + particlesPerClickLevel;
     this.setDepth(1);
-  }
-
-  onClick() {
-    this.spawnParticles();
-    this.bounce();
-  }
-
-  spawnParticles() {
-    const aliveParticles = this.getAliveParticleCount();
-    const fragmentsToAdd = Math.min(
-      this.particlesPerClick,
-      this.maxParticlesPerSpawn - aliveParticles,
-    );
-
-    if (fragmentsToAdd <= 0) return;
-
-    const particleScale = this.scene.tileSize / SPRITE_BASE_UNIT;
-    let totalFragments = 0;
-    for (let i = 0; i < fragmentsToAdd; i++) {
-      const particle = new Particle(this.scene, this.x, this.y, particleScale);
-      totalFragments += particle.fragmentsPerParticle;
-      this.particles.push(particle);
-    }
-    Progression.addFragments(totalFragments);
   }
 
   bounce() {
@@ -89,7 +54,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     for (let i = 0; i < bounceParticleCount; i++) {
       const particle = new Particle(this.scene, contactX, contactY, particleScale * 0.5);
       totalFragments += particle.fragmentsPerParticle;
-      this.particles.push(particle);
+      this.scene.particles.push(particle);
     }
     Progression.addFragments(totalFragments);
   }
@@ -168,10 +133,6 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     }
   }
 
-  getAliveParticleCount(): number {
-    return this.particles.length;
-  }
-
   update(delta: number) {
     if (Progression.isSpriteMovementEnabled) {
       this.move(delta);
@@ -181,6 +142,5 @@ export class Sprite extends Phaser.GameObjects.Sprite {
       this.rotation += this.rotationSpeed * (delta / 1000);
     }
 
-    this.particles = this.particles.filter((particle) => particle.update(delta));
   }
 }

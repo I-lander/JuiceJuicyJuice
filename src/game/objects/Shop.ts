@@ -454,18 +454,13 @@ export class Shop {
     if (!Progression.purchaseUpgrade(button.upgradeKey)) return;
 
     switch (button.upgradeKey) {
-      case 'particlesPerClick':
-        for (const sprite of this.scene.mainScene.sprites) {
-          sprite.particlesPerClick += 1;
-        }
-        break;
       case 'autoClicker':
         Progression.autoClickers++;
         break;
       case 'cooldownReduction':
         Progression.autoClickerCooldown -= 100;
         break;
-      case 'basicSprite':
+      case 'addSprite':
         const randomFrame = spriteElements[Math.floor(Math.random() * spriteElements.length)].id;
         this.scene.mainScene.spawnSprite(randomFrame);
         Progression.sprites++;

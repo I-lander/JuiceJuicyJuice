@@ -1,8 +1,9 @@
 import { spriteElements } from '../elements/SpriteAtlas';
+import { Particle } from '../objects/Particle';
 import { Progression } from '../Progression';
 import { MainScene } from '../scenes/MainScene';
 import { UIScene } from '../scenes/UIScene';
-import { toggleDebugGrid } from './utils';
+import { SPRITE_BASE_UNIT, toggleDebugGrid } from './utils';
 
 export class EventHandler {
   mainScene: MainScene;
@@ -32,10 +33,9 @@ export class EventHandler {
   init() {
     this.mainScene.input.addPointer(2);
 
-    this.mainScene.input.on(
-      Phaser.Input.Events.POINTER_DOWN,
-      (pointer: Phaser.Input.Pointer) => {},
-    );
+    this.mainScene.input.on(Phaser.Input.Events.POINTER_DOWN, (pointer: Phaser.Input.Pointer) => {
+      this.spawnParticles(pointer.worldX, pointer.worldY);
+    });
 
     this.mainScene.input.on(Phaser.Input.Events.POINTER_UP, () => {});
 
@@ -53,6 +53,25 @@ export class EventHandler {
     });
 
     this.mainScene.input.keyboard?.on('keyup', (key: KeyboardEvent) => {});
+  }
+
+  spawnParticles(x: number, y: number) {
+    const aliveParticles = this.mainScene.getAliveParticleCount();
+    const fragmentsToAdd = Math.min(
+      Progression.upgradeLevels['particlesPerClick'] ?? 0,
+      this.mainScene.maxParticlesPerClick - aliveParticles,
+    );
+
+    if (fragmentsToAdd <= 0) return;
+
+    const particleScale = this.mainScene.tileSize / SPRITE_BASE_UNIT;
+    let totalFragments = 0;
+    for (let i = 0; i < fragmentsToAdd; i++) {
+      const particle = new Particle(this.mainScene, x, y, particleScale);
+      totalFragments += particle.fragmentsPerParticle;
+      this.mainScene.particles.push(particle);
+    }
+    Progression.addFragments(totalFragments);
   }
 
   getTwoActivePointers(): Phaser.Input.Pointer[] | null {

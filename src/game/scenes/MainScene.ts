@@ -5,6 +5,7 @@ import { getRandomInt, initShader, removeSplashScreen } from '../utils/utils';
 import { UIScene } from './UIScene';
 import { spriteElements } from '../elements/SpriteAtlas';
 import { EventHandler } from '../utils/EventHandler';
+import { Particle } from '../objects/Particle';
 export class MainScene extends CustomScene {
   uiScene!: UIScene;
   eventHandler!: EventHandler;
@@ -21,6 +22,8 @@ export class MainScene extends CustomScene {
   };
 
   sprites: Sprite[] = [];
+  particles: Particle[] = [];
+  maxParticlesPerClick: number = 500;
   private autoClickTimer: number = 0;
 
   constructor() {
@@ -47,8 +50,6 @@ export class MainScene extends CustomScene {
     this.uiScene = this.scene.get('UIScene') as UIScene;
     this.eventHandler = new EventHandler(this);
     this.initCamera();
-
-    this.spawnSprite(spriteElements[0].id);
   }
 
   initCamera() {
@@ -71,9 +72,13 @@ export class MainScene extends CustomScene {
   getTotalParticleCount(): number {
     let count = 0;
     for (let i = 0; i < this.sprites.length; i++) {
-      count += this.sprites[i].getAliveParticleCount();
+      count += this.getAliveParticleCount();
     }
     return count;
+  }
+
+  getAliveParticleCount(): number {
+    return this.particles.length;
   }
 
   spawnSprite(frame: string) {
@@ -81,14 +86,7 @@ export class MainScene extends CustomScene {
     const spawnX = getRandomInt(margin, this.camera.width - margin);
     const spawnY = getRandomInt(margin, this.camera.height - margin);
 
-    let newSprite: Sprite;
-    if (this.sprites.length === 0) {
-      const centerX = this.camera.width / 2;
-      const centerY = this.camera.height / 2;
-      newSprite = new Sprite(this, centerX, centerY);
-    } else {
-      newSprite = new Sprite(this, spawnX, spawnY);
-    }
+    const newSprite = new Sprite(this, spawnX, spawnY);
 
     newSprite.init(frame);
 
@@ -96,11 +94,10 @@ export class MainScene extends CustomScene {
   }
 
   private autoClick() {
-    if (this.sprites.length === 0) return;
-
     for (let i = 0; i < Progression.autoClickers; i++) {
-      const targetIndex = getRandomInt(0, this.sprites.length - 1);
-      this.sprites[targetIndex].onClick();
+      const randomX = getRandomInt(this.camera.x, this.camera.x + this.camera.width);
+      const randomY = getRandomInt(this.camera.y, this.camera.y + this.camera.height);
+      this.eventHandler.spawnParticles(randomX, randomY);
     }
   }
 
@@ -116,6 +113,7 @@ export class MainScene extends CustomScene {
         this.autoClick();
       }
     }
+    this.particles = this.particles.filter((particle) => particle.update(delta));
 
     const movingSpriteCount = Progression.isSpriteMovementEnabled ? this.sprites.length : 0;
     const rotatingSpriteCount = Progression.isSpriteRotationEnabled ? this.sprites.length : 0;
