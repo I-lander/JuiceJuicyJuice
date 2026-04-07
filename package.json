@@ -1,5 +1,5 @@
 {
-  "name": "please-dont-break-me",
+  "name": "juice-juicy-juice",
   "private": true,
   "version": "0.0.1",
   "type": "commonjs",
@@ -46,5 +46,5 @@
   "workspaces": [
     "electron"
   ],
-  "description": "please-dont-break-me — Idle / Roguelike / Deck Builder"
+  "description": "juice-juicy-juice — Idle / Roguelike / Deck Builder"
 }

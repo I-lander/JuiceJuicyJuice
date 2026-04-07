@@ -25,15 +25,15 @@ android {
      if (variant.buildType.name == 'release') {
             variant.outputs.all {
                 def versionName = android.defaultConfig.versionName
-                def newName = "pleasedontbreakme_${versionName}.apk"
+                def newName = "juicejuicyjuice_${versionName}.apk"
                 outputFileName = newName
             }
         }
     }
-    namespace "com.donkeysisle.pleasedontbreakme"
+    namespace "com.donkeysisle.juicejuicyjuice"
     compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.donkeysisle.pleasedontbreakme"
+        applicationId "com.donkeysisle.juicejuicyjuice"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

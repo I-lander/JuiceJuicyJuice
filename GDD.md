@@ -1,4 +1,4 @@
-# Please Dont Break Me — Game Design Document
+# Juice Juicy Juice — Game Design Document
 
 > **Version**: 2.0
 > **Date**: 2026-04-04
@@ -137,26 +137,26 @@ Upgrades are unlocked by player level (based on total Juice earned). The shop us
 
 ### 5.1 Upgrades tab (multi-level)
 
-| Upgrade          | Effect                            | Max Level | Base Cost | Growth | Unlock Level |
-| ---------------- | --------------------------------- | --------- | --------- | ------ | ------------ |
-| Particles/Click  | +1 particle per click             | 100       | 10        | x1.25  | 0            |
-| Autoclicker      | +1 autoclicker                    | 100       | 50        | x1.5   | 5            |
-| Cooldown -       | -100ms autoclicker cooldown       | 25        | 75        | x1.45  | 7            |
-| Add Sprite       | +1 random sprite on screen        | 100       | 100       | x1.3   | 10           |
-| Sprite Rate +    | +0.1 Juice/s per sprite           | 25        | 150       | x1.4   | 11           |
-| Bounce Rate +    | +0.1 Juice/s per sprite (bounce)  | 25        | 1,200     | x1.4   | 16           |
-| Movement Rate +  | +0.1 Juice/s per sprite (move)    | 25        | 6,000     | x1.4   | 21           |
-| Rotation Rate +  | +0.1 Juice/s per sprite (rotate)  | 25        | 180,000   | x1.4   | 31           |
+| Upgrade         | Effect                           | Max Level | Base Cost | Growth | Unlock Level |
+| --------------- | -------------------------------- | --------- | --------- | ------ | ------------ |
+| Particles/Click | +1 particle per click            | 100       | 10        | x1.25  | 0            |
+| Autoclicker     | +1 autoclicker                   | 100       | 50        | x1.5   | 5            |
+| Cooldown -      | -100ms autoclicker cooldown      | 25        | 75        | x1.45  | 7            |
+| Add Sprite      | +1 random sprite on screen       | 100       | 100       | x1.3   | 10           |
+| Sprite Rate +   | +0.1 Juice/s per sprite          | 25        | 150       | x1.4   | 11           |
+| Bounce Rate +   | +0.1 Juice/s per sprite (bounce) | 25        | 1,200     | x1.4   | 16           |
+| Movement Rate + | +0.1 Juice/s per sprite (move)   | 25        | 6,000     | x1.4   | 21           |
+| Rotation Rate + | +0.1 Juice/s per sprite (rotate) | 25        | 180,000   | x1.4   | 31           |
 
 ### 5.2 Unlocks tab (single-purchase)
 
-| Upgrade           | Effect                                    | Cost        | Unlock Level |
-| ----------------- | ----------------------------------------- | ----------- | ------------ |
-| Bounce            | Sprites bounce (scale tween on edges)     | 800         | 15           |
-| Movement          | Sprites move and bounce off edges         | 4,000       | 20           |
-| Bounce Particles  | Particles spawn on wall/sprite collisions | 10,000      | 23           |
-| Collision         | Sprites collide with each other           | 25,000      | 25           |
-| Rotation          | Sprites rotate on themselves              | 120,000     | 30           |
+| Upgrade          | Effect                                    | Cost    | Unlock Level |
+| ---------------- | ----------------------------------------- | ------- | ------------ |
+| Bounce           | Sprites bounce (scale tween on edges)     | 800     | 15           |
+| Movement         | Sprites move and bounce off edges         | 4,000   | 20           |
+| Bounce Particles | Particles spawn on wall/sprite collisions | 10,000  | 23           |
+| Collision        | Sprites collide with each other           | 25,000  | 25           |
+| Rotation         | Sprites rotate on themselves              | 120,000 | 30           |
 
 ### 5.3 Particle colors (single-purchase unlocks)
 
@@ -379,28 +379,28 @@ There is **no true ending**. The game is an infinite loop:
 
 ### Active files
 
-| File                                | Role                                                  |
-| ----------------------------------- | ----------------------------------------------------- |
-| `src/game/Progression.ts`          | Game state: Juice, CPU, levels, upgrades, all stats   |
-| `src/game/objects/ShopUpgrades.ts` | Upgrade definitions, costs, particle color definitions |
-| `src/game/objects/Shop.ts`         | Shop UI: tabs, scrolling, buttons, XP bar             |
+| File                               | Role                                                                             |
+| ---------------------------------- | -------------------------------------------------------------------------------- |
+| `src/game/Progression.ts`          | Game state: Juice, CPU, levels, upgrades, all stats                              |
+| `src/game/objects/ShopUpgrades.ts` | Upgrade definitions, costs, particle color definitions                           |
+| `src/game/objects/Shop.ts`         | Shop UI: tabs, scrolling, buttons, XP bar                                        |
 | `src/game/objects/Sprite.ts`       | Sprite behavior: movement, bounce, collision, rotation, passive Juice generation |
-| `src/game/objects/Particle.ts`     | Custom particle: lifespan, velocity, color, scale fade |
-| `src/game/scenes/MainScene.ts`     | Game area: sprites, particles, autoclickers, CPU calc  |
-| `src/game/scenes/UIScene.ts`       | HUD + left panel + notifications                      |
-| `src/game/scenes/LoadingScene.ts`  | Asset loading                                         |
-| `src/game/utils/EventHandler.ts`   | Click handling, particle spawning, debug keys          |
-| `src/game/utils/utils.ts`          | Graphics utilities, UI panel drawing                  |
-| `src/game/shaders/CrtShader.ts`    | CRT shader (scanlines, aberration)                    |
-| `src/game/elements/SpriteAtlas.ts` | Sprite atlas frame definitions                        |
-| `src/game/elements/Particles.ts`   | Particle atlas frame list                             |
+| `src/game/objects/Particle.ts`     | Custom particle: lifespan, velocity, color, scale fade                           |
+| `src/game/scenes/MainScene.ts`     | Game area: sprites, particles, autoclickers, CPU calc                            |
+| `src/game/scenes/UIScene.ts`       | HUD + left panel + notifications                                                 |
+| `src/game/scenes/LoadingScene.ts`  | Asset loading                                                                    |
+| `src/game/utils/EventHandler.ts`   | Click handling, particle spawning, debug keys                                    |
+| `src/game/utils/utils.ts`          | Graphics utilities, UI panel drawing                                             |
+| `src/game/shaders/CrtShader.ts`    | CRT shader (scanlines, aberration)                                               |
+| `src/game/elements/SpriteAtlas.ts` | Sprite atlas frame definitions                                                   |
+| `src/game/elements/Particles.ts`   | Particle atlas frame list                                                        |
 
 ### Files to create (future)
 
-| File                               | Role                                             |
-| ---------------------------------- | ------------------------------------------------ |
-| `src/game/PrestigeTree.ts`         | Talent tree, Glitch Points, nodes                |
-| `src/game/shaders/GlitchShader.ts` | Screen tearing / glitch shader                   |
+| File                               | Role                              |
+| ---------------------------------- | --------------------------------- |
+| `src/game/PrestigeTree.ts`         | Talent tree, Glitch Points, nodes |
+| `src/game/shaders/GlitchShader.ts` | Screen tearing / glitch shader    |
 
 ---
 

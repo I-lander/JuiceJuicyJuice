@@ -1,8 +1,9 @@
-# PleaseDontBreakMe
+# JuiceJuicyJuice
 
 ## Code rules
 
 ### General rules
+
 - **Never comment code**
 - **Never use single-letter variable names.** Always use explicit, descriptive names:
   - `g` -> `graphics`
@@ -15,6 +16,7 @@
   - `dx`, `dy` acceptable for deltas/offsets
 
 ### TypeScript
+
 - Explicit types when it improves readability
 - Avoid `any` unless absolutely necessary, and flag it
 - Use Phaser types when relevant

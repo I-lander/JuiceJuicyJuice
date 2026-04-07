@@ -1,4 +1,4 @@
-package com.donkeysisle.pleasedontbreakme;
+package com.donkeysisle.juicejuicyjuice;
 
 import android.content.pm.ActivityInfo;
 import android.os.Build;
@@ -18,8 +18,8 @@ public class MainActivity extends BridgeActivity {
     WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-      getWindow().getAttributes().layoutInDisplayCutoutMode =
-          WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+      getWindow()
+          .getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
     }
 
     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);

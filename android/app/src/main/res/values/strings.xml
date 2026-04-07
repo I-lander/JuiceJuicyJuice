@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Please Dont Break Me</string>
-    <string name="title_activity_main">Please Dont Break Me</string>
-    <string name="package_name">com.donkeysisle.pleasedontbreakme</string>
-    <string name="custom_url_scheme">com.donkeysisle.pleasedontbreakme</string>
+    <string name="app_name">Juice Juicy Juice</string>
+    <string name="title_activity_main">Juice Juicy Juice</string>
+    <string name="package_name">com.donkeysisle.juicejuicyjuice</string>
+    <string name="custom_url_scheme">com.donkeysisle.juicejuicyjuice</string>
 </resources>
