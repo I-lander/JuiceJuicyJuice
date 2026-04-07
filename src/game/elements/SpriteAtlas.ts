@@ -77,6 +77,62 @@ export const spriteElements = [
     id: 'pizza',
     atlasObj: { x: 2, y: 1, w: 1, h: 1 },
   },
+  {
+    id: 'apple',
+    atlasObj: { x: 3, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'pineapple',
+    atlasObj: { x: 4, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'bulblight',
+    atlasObj: { x: 5, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'smartphone',
+    atlasObj: { x: 6, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'snail',
+    atlasObj: { x: 7, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'alien',
+    atlasObj: { x: 8, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'monitor',
+    atlasObj: { x: 9, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'clock',
+    atlasObj: { x: 10, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'cherry',
+    atlasObj: { x: 11, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'eye',
+    atlasObj: { x: 12, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'bottle',
+    atlasObj: { x: 13, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'devil',
+    atlasObj: { x: 14, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'snowflake',
+    atlasObj: { x: 15, y: 1, w: 1, h: 1 },
+  },
+  {
+    id: 'star',
+    atlasObj: { x: 0, y: 2, w: 1, h: 1 },
+  },
 ];
 
 export const spriteAtlas = createAtlasFromArray(spriteElements);
