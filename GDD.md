@@ -1,8 +1,8 @@
 # Please Dont Break Me — Game Design Document
 
-> **Version**: 1.0
-> **Date**: 2026-04-01
-> **Status**: Pre-production
+> **Version**: 2.0
+> **Date**: 2026-04-04
+> **Status**: In development (Phase 1-2)
 
 ---
 
@@ -23,16 +23,17 @@ The player must literally "break" the game by making a simulated FPS counter dro
 ## 2. Core Loop
 
 ```
-Click on sprites
-    -> Generates particles
-        -> Each particle = Fragments (currency)
-            -> Buy upgrades (+ sprites, movement, particles, autoclickers...)
-                -> More CPU usage on the "system"
-                    -> Simulated FPS drops
-                        -> New milestones unlocked
-                            -> New upgrade categories
-                                -> EVEN more chaos
-                                    -> CRASH -> Prestige -> Restart with permanent talents
+Click on screen
+    -> Spawns particles (number = Particles/Click level)
+        -> Each particle = Juice (currency, amount depends on particle color)
+            -> Level up (XP bar based on total Juice earned)
+                -> New upgrades unlock at each level
+                    -> Sprites, movement, bounce, collisions, rotation...
+                        -> Passive Juice generation (rates per sprite)
+                            -> More CPU usage on the "system"
+                                -> Simulated FPS drops
+                                    -> EVEN more chaos
+                                        -> CRASH -> Prestige -> Restart with permanent talents
 ```
 
 The loop is infinite: each prestige strengthens the player through a talent tree, allowing faster and deeper chaos.
@@ -41,14 +42,28 @@ The loop is infinite: each prestige strengthens the player through a talent tree
 
 ## 3. Economy
 
-### 3.1 Main currency: Fragments
+### 3.1 Main currency: Juice
 
-- Each **generated particle** grants X Fragments
-- Gain per particle can be improved through upgrades
-- No passive income by default: you must click (or have autoclickers)
+- **Click-based income**: clicking spawns particles, each particle grants Juice based on its color tier
+- **Passive income via rates**: each sprite generates Juice/s through multiple rate channels:
+  - **Sprite rate**: base passive generation per sprite
+  - **Bounce rate**: earned when bounce is unlocked, per sprite
+  - **Movement rate**: earned when movement is unlocked, per sprite
+  - **Rotation rate**: earned when rotation is unlocked, per sprite
+- Rates are upgradeable (+0.1/s per level)
 - The visual chaos on screen directly corresponds to revenue: the more it explodes, the more you earn
 
-### 3.2 Prestige currency: Glitch Points
+### 3.2 Level system
+
+- Total Juice earned determines the player's level
+- Juice required per level follows an exponential curve:
+  ```
+  juiceForLevel(level) = floor(10 * 1.4 ^ (level - 1))
+  ```
+- Each level unlocks new upgrades in the shop (via `levelToUnlock`)
+- The level and XP bar are displayed in the shop panel
+
+### 3.3 Prestige currency: Glitch Points (planned)
 
 - Earned when prestiging, based on total accumulated CPU usage
 - Invested in the permanent talent tree (persists between runs)
@@ -67,16 +82,20 @@ CPU usage is the game's central metric. It represents the "load" the player impo
 
 CPU usage is recalculated every frame based on all active elements on screen.
 
-| Source               | CPU per unit      |
-| -------------------- | ----------------- |
-| Sprite on screen     | +1.0              |
-| Alive particle       | +0.3              |
-| Active tween/anim    | +0.5              |
-| Moving sprite        | +0.5 (additional) |
-| Active autoclicker   | +0.2              |
-| Active shader/effect | +2.0              |
-| Active UI parasite   | +1.5              |
-| CPU multiplier       | x factor          |
+| Source             | CPU per unit      |
+| ------------------ | ----------------- |
+| Sprite on screen   | +1.0              |
+| Alive particle     | +0.3              |
+| Active tween/anim  | +0.5              |
+| Moving sprite      | +0.5 (additional) |
+| Rotating sprite    | +0.7 (additional) |
+| Active autoclicker | +0.2              |
+| Collision event    | +0.8 (decaying)   |
+| Active shader      | +2.0              |
+| Active UI parasite | +1.5              |
+| CPU multiplier     | x factor          |
+
+Collision CPU is additive and decays over time (exponential decay at rate 1/s).
 
 ### 4.2 Simulated FPS formula
 
@@ -112,107 +131,99 @@ The game simulates performance degradation through successive layers. Order matt
 
 ---
 
-## 5. Progression milestones
+## 5. Progression & Unlocks
 
-Each FPS milestone unlocks a **new upgrade category** in the shop. This is the core progression gate.
+Upgrades are unlocked by player level (based on total Juice earned). The shop uses two tabs: **Upgrades** (multi-level) and **Unlocks** (single-purchase). Single-purchase unlocks disappear from the shop once bought.
 
-| #   | FPS threshold | Unlocked category           | 4th wall comment                                                                    |
-| --- | ------------- | --------------------------- | ----------------------------------------------------------------------------------- |
-| 1   | Start (60)    | **Sprites**                 | _"Welcome! You wouldn't hurt a fly, would you?"_                                    |
-| 2   | < 50 FPS      | **Movement**                | _"Oh no, they're moving now..."_                                                    |
-| 3   | < 30 FPS      | **Particles**               | _"Particles?! You know those are expensive on the GPU, right?"_                     |
-| 4   | < 20 FPS      | **Autoclickers**            | _"You don't even need to click anymore. Beautiful, the automation of destruction."_ |
-| 5   | < 10 FPS      | **Shaders & effects**       | _"Please... not the shaders..."_                                                    |
-| 6   | < 5 FPS       | **CPU multipliers**         | _"I... I'm not feeling so good."_                                                   |
-| 7   | < 1 FPS       | **UI parasites** + Prestige | _"FATAL ERROR -- Fine, you win. Try again if you dare."_                            |
+### 5.1 Upgrades tab (multi-level)
+
+| Upgrade          | Effect                            | Max Level | Base Cost | Growth | Unlock Level |
+| ---------------- | --------------------------------- | --------- | --------- | ------ | ------------ |
+| Particles/Click  | +1 particle per click             | 100       | 10        | x1.25  | 0            |
+| Autoclicker      | +1 autoclicker                    | 100       | 50        | x1.5   | 5            |
+| Cooldown -       | -100ms autoclicker cooldown       | 25        | 75        | x1.45  | 7            |
+| Add Sprite       | +1 random sprite on screen        | 100       | 100       | x1.3   | 10           |
+| Sprite Rate +    | +0.1 Juice/s per sprite           | 25        | 150       | x1.4   | 11           |
+| Bounce Rate +    | +0.1 Juice/s per sprite (bounce)  | 25        | 1,200     | x1.4   | 16           |
+| Movement Rate +  | +0.1 Juice/s per sprite (move)    | 25        | 6,000     | x1.4   | 21           |
+| Rotation Rate +  | +0.1 Juice/s per sprite (rotate)  | 25        | 180,000   | x1.4   | 31           |
+
+### 5.2 Unlocks tab (single-purchase)
+
+| Upgrade           | Effect                                    | Cost        | Unlock Level |
+| ----------------- | ----------------------------------------- | ----------- | ------------ |
+| Bounce            | Sprites bounce (scale tween on edges)     | 800         | 15           |
+| Movement          | Sprites move and bounce off edges         | 4,000       | 20           |
+| Bounce Particles  | Particles spawn on wall/sprite collisions | 10,000      | 23           |
+| Collision         | Sprites collide with each other           | 25,000      | 25           |
+| Rotation          | Sprites rotate on themselves              | 120,000     | 30           |
+
+### 5.3 Particle colors (single-purchase unlocks)
+
+Each color unlocked adds to the random color pool. Higher-tier colors grant more Juice per particle.
+
+| Color  | Juice/particle | Cost            | Unlock Level |
+| ------ | -------------- | --------------- | ------------ |
+| White  | x1             | (default)       | 0            |
+| Yellow | x2             | 300             | 12           |
+| Red    | x3             | 20,000          | 22           |
+| Blue   | x5             | 3,500,000       | 38           |
+| Green  | x8             | 1,500,000,000   | 52           |
+| Purple | x13            | 800,000,000,000 | 65           |
+
+### 5.4 Cost formula
+
+```
+cost(level) = floor(baseCost * growthFactor ^ level)
+```
 
 ---
 
-## 6. Upgrade categories
+## 6. Sprite behaviors
 
-Each upgrade has **25 levels** with increasing cost (except binary unlocks). Cost follows an exponential curve:
+Sprites are pixel art from a shared sprite atlas. Each sprite has:
 
-```
-cost(level) = baseCost * growthFactor ^ level
-```
+- **Position**: random spawn within the game area
+- **Speed**: 100-150 px/s (random at creation)
+- **Velocity**: random direction normalized
+- **Rotation speed**: 0.5-2.0 rad/s (random direction)
+- **Scale**: tileSize / SPRITE_BASE_UNIT
 
-### 6.1 Sprites (available from start)
+Behaviors are layered (each requires its unlock):
 
-Pixel art sprites that appear on screen. Each type has increasing cost.
-
-| Upgrade                       | Effect               | Type   | Base cost | CPU/unit |
-| ----------------------------- | -------------------- | ------ | --------- | -------- |
-| Basic sprite (8x8 square)     | +1 sprite on screen  | 25 lvl | 10        | 1.0      |
-| Medium sprite (16x16 circle)  | +1 sprite, CPU x1.5  | 25 lvl | 50        | 1.5      |
-| Complex sprite (16x16 star)   | +1 sprite, CPU x2    | 25 lvl | 200       | 2.0      |
-| Rare sprite (32x32 pixel art) | +1 sprite, CPU x3    | 25 lvl | 1,000     | 3.0      |
-
-### 6.2 Movement (unlocked < 50 FPS)
-
-| Upgrade         | Effect                                       | Type      |
-| --------------- | -------------------------------------------- | --------- |
-| Random movement | Sprites move in a random walk                | Unlock x1 |
-| Speed           | +10% movement speed per level                | 25 lvl    |
-| Edge bounce     | Sprites bounce off edges instead of wrapping | Unlock x1 |
-| Rotation        | Sprites spin on themselves (+speed/lvl)      | 25 lvl    |
-
-### 6.3 Particles (unlocked < 30 FPS)
-
-| Upgrade         | Effect                            | Type      |
-| --------------- | --------------------------------- | --------- |
-| Basic particles | Enables particles on sprite click | Unlock x1 |
-| Particle count  | +2 particles per click per level  | 25 lvl    |
-| Lifespan        | Particles live longer (+CPU)      | 25 lvl    |
-| Particle size   | Bigger particles (+visual)        | 25 lvl    |
-| Colors          | Random multicolored particles     | Unlock x1 |
-
-### 6.4 Autoclickers (unlocked < 20 FPS)
-
-| Upgrade            | Effect                                 | Type      |
-| ------------------ | -------------------------------------- | --------- |
-| Basic autoclicker  | Auto-clicks 1 random sprite every 2s   | Unlock x1 |
-| Extra autoclickers | +1 autoclicker                         | 25 lvl    |
-| Cooldown reduction | -5% cooldown per level                 | 25 lvl    |
-| Multi-click        | Each autoclicker targets +1 sprite/lvl | 25 lvl    |
-
-### 6.5 Shaders & visual effects (unlocked < 10 FPS)
-
-| Upgrade              | Effect                              | Type   |
-| -------------------- | ----------------------------------- | ------ |
-| Chromatic aberration | RGB offset across the entire screen | 25 lvl |
-| Thick scanlines      | More intense CRT scan lines         | 25 lvl |
-| Bloom / Glow         | Light halo around sprites           | 25 lvl |
-| Distortion           | Screen wave/ripple effect           | 25 lvl |
-
-### 6.6 CPU multipliers (unlocked < 5 FPS)
-
-| Upgrade      | Effect                      | Type   |
-| ------------ | --------------------------- | ------ |
-| Sprite CPU   | x1.1 sprite CPU per level   | 25 lvl |
-| Particle CPU | x1.1 particle CPU per level | 25 lvl |
-| Global CPU   | +5% total CPU per level     | 25 lvl |
-
-### 6.7 UI parasites (unlocked < 1 FPS / post-crash)
-
-| Upgrade              | Effect                                | Type          |
-| -------------------- | ------------------------------------- | ------------- |
-| Fake error popups    | Random "Error" popups on screen       | 25 lvl (freq) |
-| Fake notifications   | _"Your GPU is on fire!"_ and variants | 25 lvl        |
-| Debug console        | Fake scrolling console text           | Unlock x1     |
-| Infinite loading bar | Permanent fake loading bar            | Unlock x1     |
+1. **Base**: static sprite on screen, generates passive Juice at sprite rate
+2. **Bounce**: scale tween animation (+20% bounce), generates Juice at bounce rate
+3. **Movement**: sprites move with velocity, bounce off screen edges, generates Juice at movement rate, edge bounces grant +1 Juice
+4. **Bounce Particles**: 3-5 small particles spawn on wall collisions and sprite collisions
+5. **Collision**: sprites physically collide with elastic collision physics, each collision adds +0.8 decaying CPU
+6. **Rotation**: sprites spin, generates Juice at rotation rate
 
 ---
 
-## 7. Prestige system
+## 7. Particle system
 
-### 7.1 Trigger
+Particles are custom GameObjects (not Phaser emitters):
+
+- **Lifespan**: 500ms
+- **Velocity**: random angle, 100-400 px/s
+- **Visual**: random frame from particle atlas, tinted by color
+- **Scale**: eased fade-out (cubic ease-out over lifespan)
+- **Juice**: granted on spawn, not on death
+- **Color**: randomly picked from unlocked color pool
+- **Max particles**: 500 alive at once (click spawn capped)
+
+---
+
+## 8. Prestige system (planned)
+
+### 8.1 Trigger
 
 - Available when simulated FPS drops below 1 (the "crash")
 - The player **chooses** to prestige (not automatic)
-- **Reset**: all upgrades, sprites, fragments set to zero
+- **Reset**: all upgrades, sprites, Juice set to zero
 - **Kept**: earned Glitch Points + talent tree progress + prestige counter
 
-### 7.2 Talent tree — 3 branches
+### 8.2 Talent tree — 3 branches
 
 The talent tree is permanent and persists between runs. Each node costs an increasing number of Glitch Points. The player can't max everything quickly and must choose their strategy.
 
@@ -234,7 +245,7 @@ The talent tree is permanent and persists between runs. Each node costs an incre
 | Base cooldown -  | -10% autoclicker cooldown per node           |
 | Double clicks    | Each click (manual or auto) counts as double |
 | Multi-target +   | Autoclickers target +1 sprite per node       |
-| Fragment bonus   | +20% fragments per particle per node         |
+| Juice bonus      | +20% Juice per particle per node             |
 
 #### Corruption branch (green) — visual effects & shaders
 
@@ -248,58 +259,61 @@ The talent tree is permanent and persists between runs. Each node costs an incre
 
 ---
 
-## 8. User interface
+## 9. User interface
 
-### 8.1 Main layout (landscape 16:9)
+### 9.1 Main layout (landscape 16:9)
 
 ```
 +----------------------------------------------------------+
-|  [FPS: 47]     [Fragments: 1,234]     [CPU: 523]        |  <- Top HUD
+|                                      [FPS: 47  CPU: 523] |  <- Top-right HUD
 |                                                           |
 |                                                           |
 |                 MAIN GAME AREA                            |
 |            (sprites + particles + chaos)                   |
 |                                                           |
 |                                                           |
-|                                                   [SHOP>] |  <- Toggle
 +----------------------------------------------------------+
 ```
 
-### 8.2 Shop panel expanded
+The left panel is always visible (not collapsible).
+
+### 9.2 Left panel (shop)
 
 ```
-+--------------------------------------+--------------------+
-|  [FPS: 47]  [Frag: 1,234]           |      SHOP          |
-|                                      |                    |
-|                                      |  > Sprites         |
-|                                      |    - Basic    x3   |
-|        GAME AREA                     |    - Medium   x1   |
-|        (shrunk ~70%)                 |                    |
-|                                      |  > Movement        |
-|                                      |    - Speed  Lv.5   |
-|                                      |                    |
-|                                      |  > Particles       |
-|                                      |    [LOCKED < 30fps]|
-|                                      |                    |
-|                                  [<] |  [PRESTIGE]        |
-+--------------------------------------+--------------------+
++----------------+------------------------------------------+
+| 1,234          |                                          |
+| Lv.12  450/630 |                                          |
+| [====----]     |                                          |
+|                |                                          |
+| [Upgrades][Unlocks]        GAME AREA                     |
+|                |        (camera viewport)                 |
+| Particles/Click|                                          |
+|   1  (1/100)  |                                          |
+|   Cost: 13    |                                          |
+|                |                                          |
+| Add Sprite     |                                          |
+|   3  (3/100)  |                                          |
+|   Cost: 220   |                                          |
+|                |                                          |
+|  [scrollbar]  |                                          |
++----------------+------------------------------------------+
 ```
 
-### 8.3 UI elements
+### 9.3 UI elements
 
-| Element           | Behavior                                                       |
-| ----------------- | -------------------------------------------------------------- |
-| FPS counter       | Large, prominent. Dynamic color: green > yellow > orange > red |
-| Fragments         | Counter with gain animation (numbers floating up)              |
-| CPU               | Gauge or raw number                                            |
-| Shop button       | Toggles the side panel (collapsible)                           |
-| Locked categories | Greyed out with required FPS threshold displayed, padlock icon |
-| Prestige button   | Only appears when crash is reached                             |
-| 4th wall messages | Text zone at bottom or overlay, temporary appearance           |
+| Element              | Behavior                                                       |
+| -------------------- | -------------------------------------------------------------- |
+| FPS + CPU counter    | Top-right HUD. Dynamic color: green > yellow > orange > red    |
+| Juice counter        | In shop panel, large yellow text                               |
+| Level + XP bar       | In shop panel, shows current level and progress to next        |
+| Tabs                 | Upgrades / Unlocks toggle, active tab highlighted              |
+| Upgrade buttons      | Show name, current value, level/max, cost. Green if affordable |
+| Scrollbar            | Visible when content exceeds panel height                      |
+| Unlock notifications | Bottom-right toast: "New: [upgrade name]", fades after 2s      |
 
 ---
 
-## 9. 4th wall narrative
+## 10. 4th wall narrative (planned)
 
 The game has a "personality": it suffers from what the player does. Messages appear at key moments.
 
@@ -332,24 +346,24 @@ Pool of sarcastic messages that appear from time to time during gameplay:
 
 ---
 
-## 10. Save system
+## 11. Save system (planned)
 
 - **Auto-save** every 30 seconds to `localStorage`
 - Saved data:
-  - Current fragments
-  - All upgrade levels (per category)
-  - Unlocked FPS milestones
+  - Current Juice
+  - All upgrade levels
+  - Player level + total Juice earned
   - Total Glitch Points
   - Talent tree (unlocked nodes)
   - Prestige count
-  - Statistics (total fragments earned, total sprites bought, etc.)
+  - Statistics (total Juice earned, total sprites bought, etc.)
 - Corrupt save detection with sarcastic message:
   - _"Your save file is corrupted. Just like your soul."_
   - Fallback: clean reset
 
 ---
 
-## 11. Endgame
+## 12. Endgame
 
 There is **no true ending**. The game is an infinite loop:
 
@@ -361,71 +375,71 @@ There is **no true ending**. The game is an infinite loop:
 
 ---
 
-## 12. Technical stack
+## 13. Technical stack
 
-### Files to create
+### Active files
 
-| File                               | Role                                                     |
-| ---------------------------------- | -------------------------------------------------------- |
-| `src/game/GameState.ts`            | Singleton game state (fragments, CPU, upgrades, save)    |
-| `src/game/ShopData.ts`             | Definitions for 7 categories, costs, effects, text       |
-| `src/game/FpsSimulator.ts`         | Simulated FPS calculation, fake lag layer management     |
-| `src/game/PrestigeTree.ts`         | Talent tree, Glitch Points, nodes                        |
-| `src/game/shaders/GlitchShader.ts` | Screen tearing / glitch shader                           |
+| File                                | Role                                                  |
+| ----------------------------------- | ----------------------------------------------------- |
+| `src/game/Progression.ts`          | Game state: Juice, CPU, levels, upgrades, all stats   |
+| `src/game/objects/ShopUpgrades.ts` | Upgrade definitions, costs, particle color definitions |
+| `src/game/objects/Shop.ts`         | Shop UI: tabs, scrolling, buttons, XP bar             |
+| `src/game/objects/Sprite.ts`       | Sprite behavior: movement, bounce, collision, rotation, passive Juice generation |
+| `src/game/objects/Particle.ts`     | Custom particle: lifespan, velocity, color, scale fade |
+| `src/game/scenes/MainScene.ts`     | Game area: sprites, particles, autoclickers, CPU calc  |
+| `src/game/scenes/UIScene.ts`       | HUD + left panel + notifications                      |
+| `src/game/scenes/LoadingScene.ts`  | Asset loading                                         |
+| `src/game/utils/EventHandler.ts`   | Click handling, particle spawning, debug keys          |
+| `src/game/utils/utils.ts`          | Graphics utilities, UI panel drawing                  |
+| `src/game/shaders/CrtShader.ts`    | CRT shader (scanlines, aberration)                    |
+| `src/game/elements/SpriteAtlas.ts` | Sprite atlas frame definitions                        |
+| `src/game/elements/Particles.ts`   | Particle atlas frame list                             |
 
-### Files to rewrite
+### Files to create (future)
 
-| File                              | Changes                                             |
-| --------------------------------- | --------------------------------------------------- |
-| `src/game/scenes/MainScene.ts`    | Game area: sprites, particles, clicks, autoclickers |
-| `src/game/scenes/UIScene.ts`      | HUD + collapsible shop + 4th wall messages          |
-| `src/game/scenes/LoadingScene.ts` | Procedural pixel art texture generation             |
-| `src/game/shaders/CrtShader.ts`   | Dynamic parameters (aberration, distortion)         |
-
-### Files to delete
-
-| File                             | Reason                                |
-| -------------------------------- | ------------------------------------- |
-| `src/game/GameManager.ts`        | Replaced by GameState                 |
-| `src/game/utils/EventHandler.ts` | No longer needed (no camera pan/zoom) |
-
-### Files kept as-is
-
-- `src/main.ts` — Capacitor entry point
-- `src/game/main.ts` — Phaser config
-- `src/game/customClasses/CustomScene.ts` — Base scene class
-- `src/game/utils/utils.ts` — Graphics utilities
+| File                               | Role                                             |
+| ---------------------------------- | ------------------------------------------------ |
+| `src/game/PrestigeTree.ts`         | Talent tree, Glitch Points, nodes                |
+| `src/game/shaders/GlitchShader.ts` | Screen tearing / glitch shader                   |
 
 ---
 
-## 13. Implementation phases
+## 14. Implementation phases
 
-### Phase 1 — Playable MVP
+### Phase 1 — Playable MVP [DONE]
 
-1. GameState + FpsSimulator
-2. Clickable sprites + basic particles + Fragments
-3. Collapsible shop with Sprites + Movement + Particles
-4. Simulated FPS counter + milestone unlocks
-5. Fake lag visual layers (at least first 3)
+1. Progression system (Juice, levels, CPU)
+2. Clickable screen + particles + Juice
+3. Shop panel with tabs (Upgrades / Unlocks)
+4. Sprites + movement + bounce + collision + rotation
+5. Simulated FPS counter + HUD
 
-### Phase 2 — Full gameplay
+### Phase 2 — Economy depth [IN PROGRESS]
 
-6. Autoclickers
-7. Dynamic shaders (aberration, distortion, bloom)
-8. CPU multipliers
-9. UI parasites
-10. 4th wall messages
+6. Passive Juice rates (sprite/bounce/movement/rotation)
+7. Particle color tiers (white -> yellow -> red -> blue -> green -> purple)
+8. Autoclickers + cooldown reduction
+9. Unlock notifications
+10. CRT shader
 
-### Phase 3 — Meta-progression
+### Phase 3 — Visual chaos
 
-11. Prestige system (crash -> reset -> Glitch Points)
-12. Talent tree (3 branches)
-13. Inter-prestige scaling
-14. Save/Load localStorage
+11. Dynamic shaders (aberration, distortion, bloom)
+12. CPU multipliers
+13. UI parasites
+14. 4th wall messages
+15. Fake lag visual layers
 
-### Phase 4 — Polish
+### Phase 4 — Meta-progression
 
-15. Sound & feedback (optional)
-16. Mobile polish (touch, performance)
-17. Balancing through playtesting
-18. Additional messages and content
+16. Prestige system (crash -> reset -> Glitch Points)
+17. Talent tree (3 branches)
+18. Inter-prestige scaling
+19. Save/Load localStorage
+
+### Phase 5 — Polish
+
+20. Sound & feedback
+21. Mobile polish (touch, performance)
+22. Balancing through playtesting
+23. Additional messages and content
