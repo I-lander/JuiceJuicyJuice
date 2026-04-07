@@ -20,7 +20,8 @@ interface UpgradeButton {
 export class Shop {
   private scene: UIScene;
   private container: Phaser.GameObjects.Container;
-  private fragmentsText!: Phaser.GameObjects.Text;
+  private juicePanel!: Phaser.GameObjects.Graphics;
+  private juiceText!: Phaser.GameObjects.Text;
   private levelText!: Phaser.GameObjects.Text;
   private xpBarBackground!: Phaser.GameObjects.Graphics;
   private xpBarFill!: Phaser.GameObjects.Graphics;
@@ -72,7 +73,7 @@ export class Shop {
     this.contentStartY = contentStartY;
     this.panelBottomY = panelBottomY;
 
-    this.createFragmentsCounter();
+    this.createJuiceCounter();
     this.createXpBar();
     this.createTabs();
     this.createScrollContainer();
@@ -83,17 +84,40 @@ export class Shop {
     this.setupScrollInput();
   }
 
-  private createFragmentsCounter() {
+  private createJuiceCounter() {
     const pixelUnit = this.scene.pixelUnit;
     const fontSize = Math.round(pixelUnit * 16);
 
-    this.fragmentsText = this.scene.add.text(this.panelX + pixelUnit * 3, this.contentStartY, '0', {
+    const screenWidth = this.scene.cameras.main.width;
+    const padding = pixelUnit * 4;
+    const centerX = screenWidth / 2;
+    const topY = pixelUnit * 5;
+
+    this.juiceText = this.scene.add.text(centerX, topY + padding, '0', {
       fontFamily: 'KenneyPixel',
       fontSize: `${fontSize}px`,
       color: '#ffdd44',
     });
-    this.fragmentsText.setDepth(FRONT_DEPTH + 1);
-    this.container.add(this.fragmentsText);
+    this.juiceText.setOrigin(0.5, 0);
+    this.juiceText.setDepth(FRONT_DEPTH + 11);
+
+    this.juicePanel = this.scene.add.graphics();
+    this.juicePanel.setDepth(FRONT_DEPTH + 10);
+  }
+
+  private refreshJuicePanel() {
+    const pixelUnit = this.scene.pixelUnit;
+    const padding = pixelUnit * 4;
+    const textHeight = this.juiceText.height;
+    const panelWidth = this.scene.tileSize * 4;
+    const panelHeight = textHeight + padding * 2;
+    const panelX = this.juiceText.x - panelWidth / 2;
+    const panelY = this.juiceText.y - padding;
+
+    this.juicePanel.clear();
+    this.juicePanel.fillStyle(0x000033, 0.9);
+    this.juicePanel.fillRect(panelX, panelY, panelWidth, panelHeight);
+    createUIPanel(this.juicePanel, panelX, panelY, panelWidth, panelHeight, pixelUnit, 0xffffff, 1);
   }
 
   private createXpBar() {
@@ -365,11 +389,11 @@ export class Shop {
 
   private refreshXpBar() {
     const progress = Progression.getLevelProgress();
-    const currentFragments = Progression.getFragmentsInCurrentLevel();
-    const requiredFragments = Progression.getFragmentsForLevel(Progression.level);
+    const currentJuice = Progression.getJuiceInCurrentLevel();
+    const requiredJuice = Progression.getJuiceForLevel(Progression.level);
 
     this.levelText.setText(
-      `Lv.${Progression.level}  ${formatNumber(currentFragments)}/${formatNumber(requiredFragments)}`,
+      `Lv.${Progression.level}  ${formatNumber(currentJuice)}/${formatNumber(requiredJuice)}`,
     );
 
     this.xpBarFill.clear();
@@ -492,16 +516,16 @@ export class Shop {
         Progression.isSpriteRotationEnabled = true;
         break;
       case 'spriteFragRate':
-        Progression.spriteFragmentRate += 0.1;
+        Progression.spriteJuiceRate += 0.1;
         break;
       case 'bounceFragRate':
-        Progression.bounceFragmentRate += 0.1;
+        Progression.bounceJuiceRate += 0.1;
         break;
       case 'movementFragRate':
-        Progression.movementFragmentRate += 0.1;
+        Progression.movementJuiceRate += 0.1;
         break;
       case 'rotationFragRate':
-        Progression.rotationFragmentRate += 0.1;
+        Progression.rotationJuiceRate += 0.1;
         break;
       case 'yellowParticle':
       case 'redParticle':
@@ -584,7 +608,8 @@ export class Shop {
   }
 
   update() {
-    this.fragmentsText.setText(formatNumber(Progression.fragments));
+    this.juiceText.setText(formatNumber(Progression.juice));
+    this.refreshJuicePanel();
     this.refreshXpBar();
     this.refreshTabs();
 

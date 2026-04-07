@@ -137,14 +137,14 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
 
 export interface ParticleColorDefinition {
   tint: number;
-  fragmentsPerParticle: number;
+  juicePerParticle: number;
 }
 
 export const PARTICLE_COLOR_UPGRADES: Record<string, ParticleColorDefinition> = {
-  whiteParticle: { tint: 0xffffff, fragmentsPerParticle: 1 },
-  yellowParticle: { tint: 0xffd700, fragmentsPerParticle: 2 },
-  redParticle: { tint: 0xff4444, fragmentsPerParticle: 3 },
-  blueParticle: { tint: 0x44aaff, fragmentsPerParticle: 5 },
-  greenParticle: { tint: 0x44ff44, fragmentsPerParticle: 8 },
-  purpleParticle: { tint: 0xaa44ff, fragmentsPerParticle: 13 },
+  whiteParticle: { tint: 0xffffff, juicePerParticle: 1 },
+  yellowParticle: { tint: 0xffd700, juicePerParticle: 2 },
+  redParticle: { tint: 0xff4444, juicePerParticle: 3 },
+  blueParticle: { tint: 0x44aaff, juicePerParticle: 5 },
+  greenParticle: { tint: 0x44ff44, juicePerParticle: 8 },
+  purpleParticle: { tint: 0xaa44ff, juicePerParticle: 13 },
 };

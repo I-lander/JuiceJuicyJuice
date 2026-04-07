@@ -9,7 +9,7 @@ export class Particle extends Phaser.GameObjects.Image {
   lifespan: number;
   maxLifespan: number;
   startScale: number;
-  fragmentsPerParticle: number;
+  juicePerParticle: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number, startScale: number) {
     const frame = PARTICLE_FRAMES[Math.floor(Math.random() * PARTICLE_FRAMES.length)];
@@ -30,9 +30,9 @@ export class Particle extends Phaser.GameObjects.Image {
     if (colors.length > 0) {
       const colorDef: ParticleColorDefinition = colors[Math.floor(Math.random() * colors.length)];
       this.setTint(colorDef.tint);
-      this.fragmentsPerParticle = colorDef.fragmentsPerParticle;
+      this.juicePerParticle = colorDef.juicePerParticle;
     } else {
-      this.fragmentsPerParticle = 1;
+      this.juicePerParticle = 1;
     }
     this.setDepth(0);
     this.setScale(startScale);

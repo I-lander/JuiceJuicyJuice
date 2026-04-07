@@ -35,7 +35,7 @@ Le projet dispose d'un squelette Phaser 3 fonctionnel (Capacitor, Vite, WebGL) i
 ## Phase 0 — Nettoyage & fondations
 
 - [x] **0.1** Supprimer `GameManager.ts` et `EventHandler.ts`
-- [x] **0.2** Creer `GameState.ts` — singleton : fragments, stress, upgrades, prestige count, save/load
+- [x] **0.2** Creer `GameState.ts` — singleton : juice, stress, upgrades, prestige count, save/load
 - [x] **0.3** Creer `ShopData.ts` — 7 categories, couts (`baseCost * growthFactor^level`), effets, textes 4th wall
 - [x] **0.4** Creer `FpsSimulator.ts` — formule `simulatedFPS = 60 / (1 + stress * 0.002)` + gestion layers
 
@@ -45,13 +45,13 @@ Le projet dispose d'un squelette Phaser 3 fonctionnel (Capacitor, Vite, WebGL) i
 
 - [x] **1.1** `LoadingScene.ts` — Chargement atlas sprites + generation texture particule
 - [x] **1.2** `MainScene.ts` — Sprites cliquables qui apparaissent sur le game area
-- [x] **1.3** `MainScene.ts` — Systeme de particules au clic → gain de Fragments
-- [x] **1.4** `UIScene.ts` — HUD : compteur FPS (colore dynamiquement), Fragments, Stress
+- [x] **1.3** `MainScene.ts` — Systeme de particules au clic → gain de Juice
+- [x] **1.4** `UIScene.ts` — HUD : compteur FPS (colore dynamiquement), Juice, Stress
 - [x] **1.5** `UIScene.ts` — Shop collapsible (panneau lateral droit) avec 7 categories
 - [x] **1.6** `GameState.ts` + `UIScene.ts` — Milestones FPS → deblocage progressif des categories
 - [x] **1.7** `FpsSimulator.ts` + `MainScene.ts` — Fake lag layers (freeze frames, screen shake, speed factor)
 
-**Objectif** : une boucle jouable click → particles → fragments → buy sprites → stress monte → FPS baisse → nouvelles categories.
+**Objectif** : une boucle jouable click → particles → juice → buy sprites → stress monte → FPS baisse → nouvelles categories.
 
 ---
 

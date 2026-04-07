@@ -8,7 +8,7 @@ import { MainScene } from './MainScene';
 export class UIScene extends CustomScene {
   mainScene!: MainScene;
 
-  static leftPanelWidthInTiles = 6;
+  static leftPanelWidthInTiles = 5;
 
   private panelGraphics!: Phaser.GameObjects.Graphics;
   private shop!: Shop;
@@ -101,30 +101,23 @@ export class UIScene extends CustomScene {
     const screenHeight = this.cameras.main.height;
     const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
     const pixelUnit = this.pixelUnit;
-    const margin = pixelUnit * 3;
-
-    const panelX = margin;
-    const panelY = margin;
-    const panelW = panelWidth - margin * 2;
-    const panelH = screenHeight - margin * 2;
 
     this.panelGraphics = this.add.graphics();
     this.panelGraphics.setDepth(FRONT_DEPTH);
 
     this.panelGraphics.fillStyle(0x000033, 1);
-    this.panelGraphics.fillRect(panelX, panelY, panelW, panelH);
+    this.panelGraphics.fillRect(0, 0, panelWidth, screenHeight);
 
-    const borderWidth = pixelUnit;
+    this.panelGraphics.fillStyle(0xffffff, 1);
+    this.panelGraphics.fillRect(panelWidth - pixelUnit, 0, pixelUnit, screenHeight);
 
-    createUIPanel(this.panelGraphics, panelX, panelY, panelW, panelH, borderWidth, 0xffffff, 1);
-
-    const inset = pixelUnit * 2;
+    const inset = pixelUnit * 3;
 
     return {
-      innerX: panelX + inset,
-      innerWidth: panelW - inset * 2,
-      contentStartY: panelY + inset + pixelUnit * 3,
-      panelBottomY: panelY + panelH - inset,
+      innerX: inset,
+      innerWidth: panelWidth - inset * 2,
+      contentStartY: inset + pixelUnit * 3,
+      panelBottomY: screenHeight - inset,
     };
   }
 
@@ -133,7 +126,7 @@ export class UIScene extends CustomScene {
     const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
     const buttonWidth = pixelUnit * 14;
     const buttonHeight = pixelUnit * 14;
-    const buttonX = panelWidth + pixelUnit * 4.5;
+    const buttonX = panelWidth + buttonWidth / 2 + pixelUnit / 2;
     const buttonY = pixelUnit * 3.5 + buttonHeight / 2;
 
     this.toggleButton = this.add.graphics();

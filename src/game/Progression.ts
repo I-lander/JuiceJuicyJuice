@@ -19,14 +19,14 @@ export const CPU_COSTS: Record<string, number> = {
 const CPU_COEFFICIENT = 0.002;
 
 export class Progression {
-  static fragments = 0;
+  static juice = 0;
   static sprites = 0;
   static autoClickers = 0;
   static autoClickerCooldown = 3000;
-  static spriteFragmentRate = 0.1;
-  static bounceFragmentRate = 0.1;
-  static movementFragmentRate = 0.1;
-  static rotationFragmentRate = 0.1;
+  static spriteJuiceRate = 0.1;
+  static bounceJuiceRate = 0.1;
+  static movementJuiceRate = 0.1;
+  static rotationJuiceRate = 0.1;
   static isBounceEnabled = false;
   static isSpriteMovementEnabled = false;
   static isBounceParticlesEnabled = false;
@@ -42,7 +42,7 @@ export class Progression {
   static activeCollisionCpu = 0;
 
   static level = 1;
-  static totalFragments = 0;
+  static totalJuice = 0;
 
   static addCollisionCpu() {
     Progression.activeCollisionCpu += CPU_COSTS.collision;
@@ -75,41 +75,36 @@ export class Progression {
     Progression.simulatedFps = Math.max(0, 60 / (1 + totalCpu * CPU_COEFFICIENT));
   }
 
-  static getFragmentsForLevel(level: number): number {
+  static getJuiceForLevel(level: number): number {
     return Math.floor(10 * Math.pow(1.4, level - 1));
   }
 
-  static addFragments(amount: number) {
-    Progression.fragments += amount;
-    Progression.totalFragments += amount;
+  static addJuice(amount: number) {
+    Progression.juice += amount;
+    Progression.totalJuice += amount;
     Progression.recalculateLevel();
   }
 
   static recalculateLevel() {
-    let cumulativeFragments = 0;
+    let cumulativeJuice = 0;
     let level = 1;
-    while (
-      cumulativeFragments + Progression.getFragmentsForLevel(level) <=
-      Progression.totalFragments
-    ) {
-      cumulativeFragments += Progression.getFragmentsForLevel(level);
+    while (cumulativeJuice + Progression.getJuiceForLevel(level) <= Progression.totalJuice) {
+      cumulativeJuice += Progression.getJuiceForLevel(level);
       level++;
     }
     Progression.level = level;
   }
 
-  static getFragmentsInCurrentLevel(): number {
-    let cumulativeFragments = 0;
+  static getJuiceInCurrentLevel(): number {
+    let cumulativeJuice = 0;
     for (let lvl = 1; lvl < Progression.level; lvl++) {
-      cumulativeFragments += Progression.getFragmentsForLevel(lvl);
+      cumulativeJuice += Progression.getJuiceForLevel(lvl);
     }
-    return Progression.totalFragments - cumulativeFragments;
+    return Progression.totalJuice - cumulativeJuice;
   }
 
   static getLevelProgress(): number {
-    return (
-      Progression.getFragmentsInCurrentLevel() / Progression.getFragmentsForLevel(Progression.level)
-    );
+    return Progression.getJuiceInCurrentLevel() / Progression.getJuiceForLevel(Progression.level);
   }
 
   static isUpgradeUnlocked(upgradeKey: string): boolean {
@@ -150,13 +145,13 @@ export class Progression {
       case 'cooldownReduction':
         return `${(Progression.autoClickerCooldown / 1000).toFixed(1)}s`;
       case 'spriteFragRate':
-        return `${Progression.spriteFragmentRate.toFixed(1)}/s`;
+        return `${Progression.spriteJuiceRate.toFixed(1)}/s`;
       case 'bounceFragRate':
-        return `${Progression.bounceFragmentRate.toFixed(1)}/s`;
+        return `${Progression.bounceJuiceRate.toFixed(1)}/s`;
       case 'movementFragRate':
-        return `${Progression.movementFragmentRate.toFixed(1)}/s`;
+        return `${Progression.movementJuiceRate.toFixed(1)}/s`;
       case 'rotationFragRate':
-        return `${Progression.rotationFragmentRate.toFixed(1)}/s`;
+        return `${Progression.rotationJuiceRate.toFixed(1)}/s`;
       case 'bounce':
         return Progression.isBounceEnabled ? 'ON' : 'OFF';
       case 'spriteMovement':
@@ -174,7 +169,7 @@ export class Progression {
       case 'purpleParticle': {
         const colorDef = PARTICLE_COLOR_UPGRADES[upgradeKey];
         const owned = (Progression.upgradeLevels[upgradeKey] ?? 0) > 0;
-        return owned ? `x${colorDef.fragmentsPerParticle}` : 'OFF';
+        return owned ? `x${colorDef.juicePerParticle}` : 'OFF';
       }
       default:
         return '';
@@ -188,7 +183,7 @@ export class Progression {
   }
 
   static canAffordUpgrade(upgradeKey: string): boolean {
-    return Progression.fragments >= Progression.getUpgradeCost(upgradeKey);
+    return Progression.juice >= Progression.getUpgradeCost(upgradeKey);
   }
 
   static purchaseUpgrade(upgradeKey: string): boolean {
@@ -196,9 +191,9 @@ export class Progression {
     const definition = UPGRADES[upgradeKey];
     const level = Progression.upgradeLevels[upgradeKey] ?? 0;
 
-    if (Progression.fragments < cost || level >= definition.maxLevel) return false;
+    if (Progression.juice < cost || level >= definition.maxLevel) return false;
 
-    Progression.fragments -= cost;
+    Progression.juice -= cost;
     Progression.upgradeLevels[upgradeKey] = level + 1;
     return true;
   }

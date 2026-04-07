@@ -42,10 +42,10 @@ export class EventHandler {
     this.mainScene.input.keyboard?.on('keydown', (key: KeyboardEvent) => {
       if (import.meta.env.VITE_IS_DEV_SPLASH === 'true') {
         if (key.code === 'KeyG') {
-          Progression.fragments += 10000;
+          Progression.juice += 1000000000;
         }
         if (key.code === 'KeyL') {
-          Progression.totalFragments += 10000;
+          Progression.totalJuice += 10000;
         }
         if (key.code === 'KeyH') {
           this.mainScene.spawnSprite(
@@ -60,21 +60,21 @@ export class EventHandler {
 
   spawnParticles(x: number, y: number) {
     const aliveParticles = this.mainScene.getAliveParticleCount();
-    const fragmentsToAdd = Math.min(
+    const juiceToAdd = Math.min(
       Progression.upgradeLevels['particlesPerClick'] ?? 0,
       this.mainScene.maxParticlesPerClick - aliveParticles,
     );
 
-    if (fragmentsToAdd <= 0) return;
+    if (juiceToAdd <= 0) return;
 
     const particleScale = this.mainScene.tileSize / SPRITE_BASE_UNIT;
-    let totalFragments = 0;
-    for (let i = 0; i < fragmentsToAdd; i++) {
+    let totalJuice = 0;
+    for (let i = 0; i < juiceToAdd; i++) {
       const particle = new Particle(this.mainScene, x, y, particleScale);
-      totalFragments += particle.fragmentsPerParticle;
+      totalJuice += particle.juicePerParticle;
       this.mainScene.particles.push(particle);
     }
-    Progression.addFragments(totalFragments);
+    Progression.addJuice(totalJuice);
   }
 
   getTwoActivePointers(): Phaser.Input.Pointer[] | null {

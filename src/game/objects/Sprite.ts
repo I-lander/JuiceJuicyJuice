@@ -10,10 +10,10 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   velocity: { x: number; y: number };
   speed: number;
   rotationSpeed: number = 0;
-  private spriteFragmentAccumulator: number = 0;
-  private bounceFragmentAccumulator: number = 0;
-  private movementFragmentAccumulator: number = 0;
-  private rotationFragmentAccumulator: number = 0;
+  private spriteJuiceAccumulator: number = 0;
+  private bounceJuiceAccumulator: number = 0;
+  private movementJuiceAccumulator: number = 0;
+  private rotationJuiceAccumulator: number = 0;
 
   constructor(scene: MainScene, x: number, y: number) {
     super(scene, x, y, 'spriteAtlas', '');
@@ -68,26 +68,26 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     if (this.x < radius) {
       this.x = radius;
       this.velocity.x *= -1;
-      if (Progression.isBounceEnabled) Progression.addFragments(1);
+      if (Progression.isBounceEnabled) Progression.addJuice(1);
       this.spawnBounceParticles(radius, this.y);
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     } else if (this.x > this.scene.cameras.main.width - radius) {
       this.x = this.scene.cameras.main.width - radius;
       this.velocity.x *= -1;
-      if (Progression.isBounceEnabled) Progression.addFragments(1);
+      if (Progression.isBounceEnabled) Progression.addJuice(1);
       this.spawnBounceParticles(this.scene.cameras.main.width - radius, this.y);
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     }
     if (this.y < radius) {
       this.y = radius;
       this.velocity.y *= -1;
-      if (Progression.isBounceEnabled) Progression.addFragments(1);
+      if (Progression.isBounceEnabled) Progression.addJuice(1);
       this.spawnBounceParticles(this.x, radius);
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     } else if (this.y > this.scene.cameras.main.height - radius) {
       this.y = this.scene.cameras.main.height - radius;
       this.velocity.y *= -1;
-      if (Progression.isBounceEnabled) Progression.addFragments(1);
+      if (Progression.isBounceEnabled) Progression.addJuice(1);
       this.spawnBounceParticles(this.x, this.scene.cameras.main.height - radius);
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     }
@@ -128,7 +128,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
           other.velocity.x += (relativeVelocity * normalX) / other.speed;
           other.velocity.y += (relativeVelocity * normalY) / other.speed;
 
-          if (Progression.isBounceEnabled) Progression.addFragments(1);
+          if (Progression.isBounceEnabled) Progression.addJuice(1);
           const contactX = (this.x + other.x) / 2;
           const contactY = (this.y + other.y) / 2;
           this.spawnBounceParticles(contactX, contactY);
@@ -139,42 +139,48 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     }
   }
 
-  private generateFragments(accumulator: number, rate: number, delta: number): number {
+  private generateJuice(accumulator: number, rate: number, delta: number): number {
     accumulator += rate * (delta / 1000);
     const earned = Math.floor(accumulator);
     if (earned > 0) {
-      Progression.addFragments(earned);
+      Progression.addJuice(earned);
       accumulator -= earned;
     }
     return accumulator;
   }
 
   update(delta: number) {
-    this.spriteFragmentAccumulator = this.generateFragments(
-      this.spriteFragmentAccumulator, Progression.spriteFragmentRate, delta,
+    this.spriteJuiceAccumulator = this.generateJuice(
+      this.spriteJuiceAccumulator,
+      Progression.spriteJuiceRate,
+      delta,
     );
 
     if (Progression.isBounceEnabled) {
-      this.bounceFragmentAccumulator += Progression.bounceFragmentRate * (delta / 1000);
-      const earnedBounce = Math.floor(this.bounceFragmentAccumulator);
+      this.bounceJuiceAccumulator += Progression.bounceJuiceRate * (delta / 1000);
+      const earnedBounce = Math.floor(this.bounceJuiceAccumulator);
       if (earnedBounce > 0) {
-        Progression.addFragments(earnedBounce);
-        this.bounceFragmentAccumulator -= earnedBounce;
+        Progression.addJuice(earnedBounce);
+        this.bounceJuiceAccumulator -= earnedBounce;
         this.bounce();
       }
     }
 
     if (Progression.isSpriteMovementEnabled) {
       this.move(delta);
-      this.movementFragmentAccumulator = this.generateFragments(
-        this.movementFragmentAccumulator, Progression.movementFragmentRate, delta,
+      this.movementJuiceAccumulator = this.generateJuice(
+        this.movementJuiceAccumulator,
+        Progression.movementJuiceRate,
+        delta,
       );
     }
 
     if (Progression.isSpriteRotationEnabled) {
       this.rotation += this.rotationSpeed * (delta / 1000);
-      this.rotationFragmentAccumulator = this.generateFragments(
-        this.rotationFragmentAccumulator, Progression.rotationFragmentRate, delta,
+      this.rotationJuiceAccumulator = this.generateJuice(
+        this.rotationJuiceAccumulator,
+        Progression.rotationJuiceRate,
+        delta,
       );
     }
   }
