@@ -20,6 +20,13 @@ export class UIScene extends CustomScene {
   private notificationBackground!: Phaser.GameObjects.Graphics;
   private notificationActive: boolean = false;
 
+  private collapsed: boolean = false;
+  private animating: boolean = false;
+  private panelContainer!: Phaser.GameObjects.Container;
+  private toggleButton!: Phaser.GameObjects.Graphics;
+  private toggleImg!: Phaser.GameObjects.Image;
+  private toggleZone!: Phaser.GameObjects.Zone;
+
   constructor() {
     super('UIScene');
   }
@@ -32,18 +39,22 @@ export class UIScene extends CustomScene {
     this.tileSize = this.mainScene.tileSize;
     this.pixelUnit = this.mainScene.pixelUnit;
 
-    this.add
-      .rectangle(0, 0, this.mainScene.camera.x + 1, this.mainScene.camera.height, 0x42a72e)
-      .setOrigin(0, 0);
+    this.panelContainer = this.add.container(0, 0);
+    this.panelContainer.setDepth(FRONT_DEPTH);
+
     const panelLayout = this.drawLeftPanel();
+    this.panelContainer.add(this.panelGraphics);
+
     this.shop = new Shop(
       this,
+      this.panelContainer,
       panelLayout.innerX,
       panelLayout.innerWidth,
       panelLayout.contentStartY,
       panelLayout.panelBottomY,
     );
 
+    this.createToggleButton();
     this.createHud();
     this.createNotification();
     this.initUnlockedUpgrades();
@@ -115,6 +126,64 @@ export class UIScene extends CustomScene {
       contentStartY: panelY + inset + pixelUnit * 3,
       panelBottomY: panelY + panelH - inset,
     };
+  }
+
+  private createToggleButton() {
+    const pixelUnit = this.pixelUnit;
+    const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
+    const buttonWidth = pixelUnit * 14;
+    const buttonHeight = pixelUnit * 14;
+    const buttonX = panelWidth + pixelUnit * 4.5;
+    const buttonY = pixelUnit * 3.5 + buttonHeight / 2;
+
+    this.toggleButton = this.add.graphics();
+    this.toggleImg = this.add.image(buttonX, buttonY, 'uiAtlas', 'leftArrow');
+    this.toggleImg.setDisplaySize(buttonWidth * 0.6, buttonHeight * 0.6);
+    this.toggleButton.setDepth(FRONT_DEPTH + 30);
+    this.toggleImg.setDepth(FRONT_DEPTH + 30);
+    this.drawToggleArrow(buttonX, buttonY, this.tileSize, this.tileSize);
+
+    this.toggleZone = this.add.zone(buttonX, buttonY, buttonWidth, buttonHeight);
+    this.toggleZone.setDepth(FRONT_DEPTH + 31);
+    this.toggleZone.setInteractive({ useHandCursor: true });
+    this.toggleZone.on('pointerup', () => this.togglePanel());
+  }
+
+  private drawToggleArrow(centerX: number, centerY: number, width: number, height: number) {
+    const pixelUnit = this.pixelUnit;
+    this.toggleButton.clear();
+    this.toggleButton.fillStyle(0x000033, 0.9);
+    this.toggleButton.lineStyle(pixelUnit, 0xffffff, 1);
+    this.toggleButton.fillRect(centerX - width / 2, centerY - height / 2, width, height);
+    this.toggleButton.strokeRect(centerX - width / 2, centerY - height / 2, width, height);
+
+    this.toggleButton.fillStyle(0xffffff, 1);
+  }
+
+  private togglePanel() {
+    if (this.animating) return;
+    this.animating = true;
+    this.collapsed = !this.collapsed;
+
+    const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
+    const collapsedWidth = 0;
+    const targetX = this.collapsed ? -(panelWidth - collapsedWidth) : 0;
+
+    const delta = targetX - this.panelContainer.x;
+    if (this.collapsed) {
+      this.toggleImg.setFlipX(true);
+    } else {
+      this.toggleImg.setFlipX(false);
+    }
+    this.tweens.add({
+      targets: [this.panelContainer, this.toggleButton, this.toggleImg, this.toggleZone],
+      x: `+=${delta}`,
+      duration: 250,
+      ease: 'Power2',
+      onComplete: () => {
+        this.animating = false;
+      },
+    });
   }
 
   private initUnlockedUpgrades() {
@@ -202,7 +271,9 @@ export class UIScene extends CustomScene {
   }
 
   update() {
-    this.shop.update();
+    if (!this.collapsed) {
+      this.shop.update();
+    }
     this.refreshHud();
     this.checkNewUnlocks();
     this.updateNotifications();

@@ -1,5 +1,6 @@
 import { particleAtlas } from '../elements/Particles';
 import { spriteAtlas } from '../elements/SpriteAtlas';
+import { uiAtlas } from '../elements/UiAtlas';
 
 export class LoadingScene extends Phaser.Scene {
   constructor() {
@@ -11,6 +12,7 @@ export class LoadingScene extends Phaser.Scene {
 
     this.load.atlas('spriteAtlas', './assets/images/sprite-atlas.png', spriteAtlas);
     this.load.atlas('particleAtlas', './assets/images/particle-atlas.png', particleAtlas);
+    this.load.atlas('uiAtlas', './assets/images/ui-atlas.png', uiAtlas);
   }
 
   async create() {

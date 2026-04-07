@@ -53,12 +53,10 @@ export class MainScene extends CustomScene {
   }
 
   initCamera() {
-    const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
-
-    this.camera = {
-      x: panelWidth,
+      this.camera = {
+      x: 0,
       y: 0,
-      width: this.canvasWidth - panelWidth,
+      width: this.canvasWidth ,
       height: this.canvasHeight,
     };
     this.cameras.main.setViewport(

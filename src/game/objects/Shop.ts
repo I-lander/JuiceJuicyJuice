@@ -19,6 +19,7 @@ interface UpgradeButton {
 
 export class Shop {
   private scene: UIScene;
+  private container: Phaser.GameObjects.Container;
   private fragmentsText!: Phaser.GameObjects.Text;
   private levelText!: Phaser.GameObjects.Text;
   private xpBarBackground!: Phaser.GameObjects.Graphics;
@@ -58,12 +59,14 @@ export class Shop {
 
   constructor(
     scene: UIScene,
+    container: Phaser.GameObjects.Container,
     panelX: number,
     panelInnerWidth: number,
     contentStartY: number,
     panelBottomY: number,
   ) {
     this.scene = scene;
+    this.container = container;
     this.panelX = panelX;
     this.panelInnerWidth = panelInnerWidth;
     this.contentStartY = contentStartY;
@@ -90,6 +93,7 @@ export class Shop {
       color: '#ffdd44',
     });
     this.fragmentsText.setDepth(FRONT_DEPTH + 1);
+    this.container.add(this.fragmentsText);
   }
 
   private createXpBar() {
@@ -105,6 +109,7 @@ export class Shop {
       color: '#aaaacc',
     });
     this.levelText.setDepth(FRONT_DEPTH + 1);
+    this.container.add(this.levelText);
 
     this.xpBarX = this.panelX + pixelUnit * 3;
     this.xpBarY = levelTextY + smallFontSize + pixelUnit * 2;
@@ -115,9 +120,11 @@ export class Shop {
     this.xpBarBackground.setDepth(FRONT_DEPTH + 1);
     this.xpBarBackground.lineStyle(pixelUnit, 0x4444aa, 1);
     this.xpBarBackground.strokeRect(this.xpBarX, this.xpBarY, this.xpBarWidth, this.xpBarHeight);
+    this.container.add(this.xpBarBackground);
 
     this.xpBarFill = this.scene.add.graphics();
     this.xpBarFill.setDepth(FRONT_DEPTH + 1);
+    this.container.add(this.xpBarFill);
 
     this.buttonsStartY = this.xpBarY + this.xpBarHeight + pixelUnit * 6;
     this.visibleHeight = this.panelBottomY - this.buttonsStartY;
@@ -133,9 +140,10 @@ export class Shop {
     const fontSize = Math.round(pixelUnit * 10);
 
     this.tabUpgradesGraphics = this.scene.add.graphics();
-    this.tabUpgradesGraphics.setDepth(FRONT_DEPTH + 3);
+    this.tabUpgradesGraphics.setDepth(3);
     this.tabUnlocksGraphics = this.scene.add.graphics();
-    this.tabUnlocksGraphics.setDepth(FRONT_DEPTH + 2);
+    this.tabUnlocksGraphics.setDepth(2);
+    this.container.add([this.tabUnlocksGraphics, this.tabUpgradesGraphics]);
 
     this.tabUpgradesText = this.scene.add.text(
       tabLeftX + tabWidth / 2,
@@ -162,6 +170,7 @@ export class Shop {
     );
     this.tabUnlocksText.setOrigin(0.5, 0.5);
     this.tabUnlocksText.setDepth(FRONT_DEPTH + 3);
+    this.container.add([this.tabUpgradesText, this.tabUnlocksText]);
 
     this.tabUpgradesZone = this.scene.add.zone(
       tabLeftX + tabWidth / 2,
@@ -182,6 +191,7 @@ export class Shop {
     this.tabUnlocksZone.setDepth(FRONT_DEPTH + 4);
     this.tabUnlocksZone.setInteractive({ useHandCursor: true });
     this.tabUnlocksZone.on('pointerup', () => this.switchTab('unlocks'));
+    this.container.add([this.tabUpgradesZone, this.tabUnlocksZone]);
 
     this.buttonsStartY += this.tabHeight + pixelUnit * 3;
     this.visibleHeight = this.panelBottomY - this.buttonsStartY;
@@ -190,11 +200,11 @@ export class Shop {
   private switchTab(tab: 'upgrades' | 'unlocks') {
     if (this.activeTab === tab) return;
     if (tab === 'upgrades') {
-      this.tabUpgradesGraphics.setDepth(FRONT_DEPTH + 3);
-      this.tabUnlocksGraphics.setDepth(FRONT_DEPTH + 2);
+      this.container.bringToTop(this.tabUpgradesGraphics);
+      this.container.bringToTop(this.tabUpgradesText);
     } else {
-      this.tabUpgradesGraphics.setDepth(FRONT_DEPTH + 2);
-      this.tabUnlocksGraphics.setDepth(FRONT_DEPTH + 3);
+      this.container.bringToTop(this.tabUnlocksGraphics);
+      this.container.bringToTop(this.tabUnlocksText);
     }
     this.activeTab = tab;
     this.scrollOffset = 0;
@@ -254,6 +264,7 @@ export class Shop {
     maskShape.fillStyle(0xffffff, 1);
     maskShape.fillRect(this.panelX, this.buttonsStartY, this.panelInnerWidth, this.visibleHeight);
     this.scrollContainer.setMask(maskShape.createGeometryMask());
+    this.container.add(this.scrollContainer);
   }
 
   private createScrollbar() {
@@ -261,6 +272,7 @@ export class Shop {
 
     this.scrollbarThumb = this.scene.add.graphics();
     this.scrollbarThumb.setDepth(FRONT_DEPTH + 3);
+    this.container.add(this.scrollbarThumb);
   }
 
   private refreshScrollbar() {
