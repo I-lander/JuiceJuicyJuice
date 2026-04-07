@@ -1,4 +1,5 @@
 import { MainScene } from '../scenes/MainScene';
+
 import { getRandomInt, SPRITE_BASE_UNIT } from '../utils/utils';
 import { Progression } from '../Progression';
 import { Particle } from './Particle';
@@ -92,9 +93,55 @@ export class Sprite extends Phaser.GameObjects.Sprite {
       if (Progression.isSpriteCollisionEnabled) Progression.addCollisionCpu();
     }
 
+    this.bounceOnJuicePanel();
+
     if (Progression.isSpriteCollisionEnabled) {
       this.handleCollisions();
     }
+  }
+
+  private bounceOnJuicePanel() {
+    const panelBounds = this.scene.uiScene.shop.juicePanelBounds;
+    if (panelBounds.width === 0) return;
+
+    const radius = (this.width * this.scale) / 2;
+    const spriteLeft = this.x - radius;
+    const spriteRight = this.x + radius;
+    const spriteTop = this.y - radius;
+    const spriteBottom = this.y + radius;
+
+    const left = panelBounds.x;
+    const right = panelBounds.x + panelBounds.width;
+    const top = panelBounds.y;
+    const bottom = panelBounds.y + panelBounds.height;
+
+    if (spriteRight < left || spriteLeft > right || spriteBottom < top || spriteTop > bottom) return;
+
+    const overlapLeft = spriteRight - left;
+    const overlapRight = right - spriteLeft;
+    const overlapTop = spriteBottom - top;
+    const overlapBottom = bottom - spriteTop;
+    const minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+
+    if (minOverlap === overlapLeft) {
+      this.x = left - radius;
+      this.velocity.x *= -1;
+      this.spawnBounceParticles(left, this.y);
+    } else if (minOverlap === overlapRight) {
+      this.x = right + radius;
+      this.velocity.x *= -1;
+      this.spawnBounceParticles(right, this.y);
+    } else if (minOverlap === overlapTop) {
+      this.y = top - radius;
+      this.velocity.y *= -1;
+      this.spawnBounceParticles(this.x, top);
+    } else {
+      this.y = bottom + radius;
+      this.velocity.y *= -1;
+      this.spawnBounceParticles(this.x, bottom);
+    }
+
+    if (Progression.isBounceEnabled) Progression.addJuice(1);
   }
 
   handleCollisions() {

@@ -11,7 +11,7 @@ export class UIScene extends CustomScene {
   static leftPanelWidthInTiles = 5;
 
   private panelGraphics!: Phaser.GameObjects.Graphics;
-  private shop!: Shop;
+  shop!: Shop;
   private hudText!: Phaser.GameObjects.Text;
   private previouslyUnlocked: Set<string> = new Set();
   private notificationQueue: string[] = [];

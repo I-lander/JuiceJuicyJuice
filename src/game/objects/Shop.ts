@@ -105,6 +105,13 @@ export class Shop {
     this.juicePanel.setDepth(FRONT_DEPTH + 10);
   }
 
+  juicePanelBounds: { x: number; y: number; width: number; height: number } = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
+
   private refreshJuicePanel() {
     const pixelUnit = this.scene.pixelUnit;
     const padding = pixelUnit * 4;
@@ -113,6 +120,8 @@ export class Shop {
     const panelHeight = textHeight + padding * 2;
     const panelX = this.juiceText.x - panelWidth / 2;
     const panelY = this.juiceText.y - padding;
+
+    this.juicePanelBounds = { x: panelX, y: panelY, width: panelWidth, height: panelHeight };
 
     this.juicePanel.clear();
     this.juicePanel.fillStyle(0x000033, 0.9);
