@@ -524,7 +524,7 @@ export class Shop {
       this.hideTooltip();
       const pointerX = pointer.x;
       const pointerY = pointer.y;
-      this.longPressTimer = this.scene.time.delayedCall(1000, () => {
+      this.longPressTimer = this.scene.time.delayedCall(500, () => {
         this.showTooltip(upgradeKey, pointerX, pointerY);
         this.longPressTimer = null;
       });
