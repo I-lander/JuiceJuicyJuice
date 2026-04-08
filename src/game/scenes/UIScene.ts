@@ -126,7 +126,7 @@ export class UIScene extends CustomScene {
     return {
       innerX: inset,
       innerWidth: panelWidth - inset * 2,
-      contentStartY: inset + pixelUnit * 3,
+      contentStartY: inset,
       panelBottomY: screenHeight - inset,
     };
   }
@@ -174,10 +174,15 @@ export class UIScene extends CustomScene {
     this.menuBtnZone.on('pointerup', () => this.openMenu());
   }
 
-  private drawMenuButtonBackground(centerX: number, centerY: number, width: number, height: number) {
+  private drawMenuButtonBackground(
+    centerX: number,
+    centerY: number,
+    width: number,
+    height: number,
+  ) {
     const pixelUnit = this.pixelUnit;
     this.menuBtnGraphics.clear();
-    this.menuBtnGraphics.fillStyle(0x000033, 0.9);
+    this.menuBtnGraphics.fillStyle(0x000033, 0.8);
     this.menuBtnGraphics.lineStyle(pixelUnit, 0xffffff, 1);
     this.menuBtnGraphics.fillRect(centerX - width / 2, centerY - height / 2, width, height);
     this.menuBtnGraphics.strokeRect(centerX - width / 2, centerY - height / 2, width, height);
@@ -187,7 +192,7 @@ export class UIScene extends CustomScene {
   private drawToggleArrow(centerX: number, centerY: number, width: number, height: number) {
     const pixelUnit = this.pixelUnit;
     this.toggleButton.clear();
-    this.toggleButton.fillStyle(0x000033, 0.9);
+    this.toggleButton.fillStyle(0x000033, 0.8);
     this.toggleButton.lineStyle(pixelUnit, 0xffffff, 1);
     this.toggleButton.fillRect(centerX - width / 2, centerY - height / 2, width, height);
     this.toggleButton.strokeRect(centerX - width / 2, centerY - height / 2, width, height);
@@ -211,7 +216,15 @@ export class UIScene extends CustomScene {
       this.toggleImg.setFlipX(false);
     }
     this.tweens.add({
-      targets: [this.panelContainer, this.toggleButton, this.toggleImg, this.toggleZone, this.menuBtnGraphics, this.menuBtnImg, this.menuBtnZone],
+      targets: [
+        this.panelContainer,
+        this.toggleButton,
+        this.toggleImg,
+        this.toggleZone,
+        this.menuBtnGraphics,
+        this.menuBtnImg,
+        this.menuBtnZone,
+      ],
       x: `+=${delta}`,
       duration: 250,
       ease: 'Power2',
@@ -323,7 +336,7 @@ export class UIScene extends CustomScene {
     overlay.setInteractive();
 
     const panelGraphics = this.add.graphics();
-    panelGraphics.fillStyle(0x000033, 1);
+    panelGraphics.fillStyle(0x000033, 0.8);
     panelGraphics.fillRect(menuX, menuY, menuWidth, menuHeight);
     createUIPanel(panelGraphics, menuX, menuY, menuWidth, menuHeight, pixelUnit, 0xffffff, 1);
 
@@ -331,9 +344,23 @@ export class UIScene extends CustomScene {
     const firstButtonY = menuY + pixelUnit * 8 + buttonHeight / 2;
 
     const resumeGraphics = this.add.graphics();
-    resumeGraphics.fillStyle(0x225522, 0.9);
-    resumeGraphics.fillRect(centerX - buttonWidth / 2, firstButtonY - buttonHeight / 2, buttonWidth, buttonHeight);
-    createUIPanel(resumeGraphics, centerX - buttonWidth / 2, firstButtonY - buttonHeight / 2, buttonWidth, buttonHeight, pixelUnit, 0x44aa44, 0.9);
+    resumeGraphics.fillStyle(0x225522, 0.8);
+    resumeGraphics.fillRect(
+      centerX - buttonWidth / 2,
+      firstButtonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+    );
+    createUIPanel(
+      resumeGraphics,
+      centerX - buttonWidth / 2,
+      firstButtonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      pixelUnit,
+      0x44aa44,
+      0.9,
+    );
 
     const resumeText = this.add.text(centerX, firstButtonY, 'RESUME', {
       fontFamily: 'KenneyPixel',
@@ -350,8 +377,22 @@ export class UIScene extends CustomScene {
 
     const quitGraphics = this.add.graphics();
     quitGraphics.fillStyle(0x552222, 0.9);
-    quitGraphics.fillRect(centerX - buttonWidth / 2, secondButtonY - buttonHeight / 2, buttonWidth, buttonHeight);
-    createUIPanel(quitGraphics, centerX - buttonWidth / 2, secondButtonY - buttonHeight / 2, buttonWidth, buttonHeight, pixelUnit, 0xaa4444, 0.9);
+    quitGraphics.fillRect(
+      centerX - buttonWidth / 2,
+      secondButtonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+    );
+    createUIPanel(
+      quitGraphics,
+      centerX - buttonWidth / 2,
+      secondButtonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      pixelUnit,
+      0xaa4444,
+      0.9,
+    );
 
     const quitText = this.add.text(centerX, secondButtonY, 'QUIT', {
       fontFamily: 'KenneyPixel',
@@ -371,9 +412,14 @@ export class UIScene extends CustomScene {
     });
 
     this.menuContainer = this.add.container(0, 0, [
-      overlay, panelGraphics,
-      resumeGraphics, resumeText, resumeZone,
-      quitGraphics, quitText, quitZone,
+      overlay,
+      panelGraphics,
+      resumeGraphics,
+      resumeText,
+      resumeZone,
+      quitGraphics,
+      quitText,
+      quitZone,
     ]);
     this.menuContainer.setDepth(FRONT_DEPTH + 50);
     this.menuContainer.setVisible(false);

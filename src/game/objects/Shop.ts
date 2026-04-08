@@ -124,7 +124,7 @@ export class Shop {
     this.juicePanelBounds = { x: panelX, y: panelY, width: panelWidth, height: panelHeight };
 
     this.juicePanel.clear();
-    this.juicePanel.fillStyle(0x000033, 0.9);
+    this.juicePanel.fillStyle(0x000033, 0.8);
     this.juicePanel.fillRect(panelX, panelY, panelWidth, panelHeight);
     createUIPanel(this.juicePanel, panelX, panelY, panelWidth, panelHeight, pixelUnit, 0xffffff, 1);
   }
@@ -134,7 +134,7 @@ export class Shop {
     const tileSize = this.scene.tileSize;
     const smallFontSize = Math.round(pixelUnit * 9);
 
-    const levelTextY = this.contentStartY + tileSize * 0.7;
+    const levelTextY = this.contentStartY + tileSize * 0.25;
 
     this.levelText = this.scene.add.text(this.panelX + pixelUnit * 3, levelTextY, '', {
       fontFamily: 'KenneyPixel',
