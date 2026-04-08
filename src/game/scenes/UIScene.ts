@@ -4,7 +4,7 @@ import { CustomScene } from '../customClasses/CustomScene';
 import { Progression } from '../Progression';
 import { Shop } from '../objects/Shop';
 import { UPGRADES } from '../objects/ShopUpgrades';
-import { createUIPanel, FRONT_DEPTH, getColors } from '../utils/utils';
+import { createUIPanel, formatNumber, FRONT_DEPTH, getColors } from '../utils/utils';
 import { MainScene } from './MainScene';
 
 export class UIScene extends CustomScene {
@@ -15,6 +15,8 @@ export class UIScene extends CustomScene {
 
   private panelGraphics!: Phaser.GameObjects.Graphics;
   shop!: Shop;
+  private juicePanel!: Phaser.GameObjects.Graphics;
+  private juiceText!: Phaser.GameObjects.Text;
   private hudText!: Phaser.GameObjects.Text;
   private previouslyUnlocked: Set<string> = new Set();
   private notificationQueue: string[] = [];
@@ -65,13 +67,58 @@ export class UIScene extends CustomScene {
       panelLayout.contentStartY,
       panelLayout.panelBottomY,
     );
-
+    this.createJuiceCounter();
     this.createMenuButton();
     this.createToggleButton();
     this.createMenu();
     this.createHud();
     this.createNotification();
     this.initUnlockedUpgrades();
+  }
+
+  private createJuiceCounter() {
+    const pixelUnit = this.pixelUnit;
+    const fontSize = Math.round(pixelUnit * 16);
+
+    const screenWidth = this.cameras.main.width;
+    const padding = pixelUnit * 4;
+    const centerX = screenWidth / 2;
+    const topY = pixelUnit * 5;
+
+    this.juiceText = this.add.text(centerX, topY + padding, '0', {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffdd44',
+    });
+    this.juiceText.setOrigin(0.5, 0);
+    this.juiceText.setDepth(FRONT_DEPTH + 11);
+
+    this.juicePanel = this.add.graphics();
+    this.juicePanel.setDepth(FRONT_DEPTH + 10);
+  }
+
+  juicePanelBounds: { x: number; y: number; width: number; height: number } = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
+
+  private refreshJuicePanel() {
+    const pixelUnit = this.pixelUnit;
+    const padding = pixelUnit * 4;
+    const textHeight = this.juiceText.height;
+    const panelWidth = this.tileSize * 4;
+    const panelHeight = textHeight + padding * 2;
+    const panelX = this.juiceText.x - panelWidth / 2;
+    const panelY = this.juiceText.y - padding;
+
+    this.juicePanelBounds = { x: panelX, y: panelY, width: panelWidth, height: panelHeight };
+
+    this.juicePanel.clear();
+    this.juicePanel.fillStyle(0x000033, 0.8);
+    this.juicePanel.fillRect(panelX, panelY, panelWidth, panelHeight);
+    createUIPanel(this.juicePanel, panelX, panelY, panelWidth, panelHeight, pixelUnit, 0xffffff, 1);
   }
 
   private createHud() {
@@ -517,6 +564,8 @@ export class UIScene extends CustomScene {
     if (!this.collapsed && !this.menuOpen) {
       this.shop.update();
     }
+    this.juiceText.setText(formatNumber(Progression.juice));
+    this.refreshJuicePanel();
     this.refreshHud();
     this.checkNewUnlocks();
     this.updateNotifications();
