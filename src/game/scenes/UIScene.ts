@@ -380,6 +380,10 @@ export class UIScene extends CustomScene {
     ]);
     this.notificationContainer.setDepth(FRONT_DEPTH + 20);
     this.notificationContainer.setVisible(false);
+
+    if (this.isPortrait) {
+      this.panelContainer.add(this.notificationContainer);
+    }
   }
 
   private checkNewUnlocks() {

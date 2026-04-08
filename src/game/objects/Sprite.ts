@@ -97,7 +97,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   }
 
   private bounceOnJuicePanel() {
-    const panelBounds = this.scene.uiScene.shop.juicePanelBounds;
+    const panelBounds = this.scene.uiScene.juicePanelBounds;
     if (panelBounds.width === 0) return;
 
     const radius = (this.width * this.scale) / 2;

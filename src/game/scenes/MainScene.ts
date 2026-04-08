@@ -91,14 +91,14 @@ export class MainScene extends CustomScene {
     let isSpawnValid = false;
     while (!isSpawnValid) {
       if (
-        spawnX > this.uiScene.shop.juicePanelBounds.x - margin &&
+        spawnX > this.uiScene.juicePanelBounds.x - margin &&
         spawnX <
-          this.uiScene.shop.juicePanelBounds.x +
-            this.uiScene.shop.juicePanelBounds.width +
+          this.uiScene.juicePanelBounds.x +
+            this.uiScene.juicePanelBounds.width +
             margin &&
-        spawnY > this.uiScene.shop.juicePanelBounds.y - margin &&
+        spawnY > this.uiScene.juicePanelBounds.y - margin &&
         spawnY <
-          this.uiScene.shop.juicePanelBounds.y + this.uiScene.shop.juicePanelBounds.height + margin
+          this.uiScene.juicePanelBounds.y + this.uiScene.juicePanelBounds.height + margin
       ) {
         spawnX = getRandomInt(margin, this.camera.width - margin);
         spawnY = getRandomInt(margin, this.camera.height - margin);
