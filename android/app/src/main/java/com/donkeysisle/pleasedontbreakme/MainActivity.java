@@ -22,7 +22,7 @@ public class MainActivity extends BridgeActivity {
           .getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
     }
 
-    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
   }

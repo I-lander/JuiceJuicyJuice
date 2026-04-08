@@ -11,6 +11,7 @@ export class UIScene extends CustomScene {
   mainScene!: MainScene;
 
   static leftPanelWidthInTiles = 5;
+  static bottomPanelHeightInTiles = 15;
 
   private panelGraphics!: Phaser.GameObjects.Graphics;
   shop!: Shop;
@@ -22,6 +23,7 @@ export class UIScene extends CustomScene {
   private notificationBackground!: Phaser.GameObjects.Graphics;
   private notificationActive: boolean = false;
 
+  private isPortrait: boolean = false;
   private collapsed: boolean = false;
   private animating: boolean = false;
   private panelContainer!: Phaser.GameObjects.Container;
@@ -50,7 +52,9 @@ export class UIScene extends CustomScene {
     this.panelContainer = this.add.container(0, 0);
     this.panelContainer.setDepth(FRONT_DEPTH);
 
-    const panelLayout = this.drawLeftPanel();
+    this.isPortrait = this.mainScene.isPortrait;
+
+    const panelLayout = this.isPortrait ? this.drawBottomPanel() : this.drawLeftPanel();
     this.panelContainer.add(this.panelGraphics);
 
     this.shop = new Shop(
@@ -131,18 +135,65 @@ export class UIScene extends CustomScene {
     };
   }
 
+  private drawBottomPanel(): {
+    innerX: number;
+    innerWidth: number;
+    contentStartY: number;
+    panelBottomY: number;
+  } {
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    const panelHeight = UIScene.bottomPanelHeightInTiles * this.tileSize;
+    const panelTopY = screenHeight - panelHeight;
+    const pixelUnit = this.pixelUnit;
+
+    this.panelGraphics = this.add.graphics();
+    this.panelGraphics.setDepth(FRONT_DEPTH);
+
+    this.panelGraphics.fillStyle(0x000033, 0.8);
+    this.panelGraphics.fillRect(0, panelTopY, screenWidth, panelHeight);
+
+    this.panelGraphics.fillStyle(0xffffff, 1);
+    this.panelGraphics.fillRect(0, panelTopY, screenWidth, pixelUnit);
+
+    const inset = pixelUnit * 3;
+
+    return {
+      innerX: inset,
+      innerWidth: screenWidth - inset * 2,
+      contentStartY: panelTopY + inset + pixelUnit * 3,
+      panelBottomY: screenHeight - inset,
+    };
+  }
+
   private createToggleButton() {
     const pixelUnit = this.pixelUnit;
-    const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
     const buttonWidth = pixelUnit * 14;
     const buttonHeight = pixelUnit * 14;
-    const buttonX = panelWidth + buttonWidth / 2 + pixelUnit / 2;
-    const menuY = pixelUnit * 3.5 + buttonHeight / 2;
-    const buttonY = menuY + this.tileSize + pixelUnit * 2;
+
+    let buttonX: number;
+    let buttonY: number;
+
+    if (this.isPortrait) {
+      const screenWidth = this.cameras.main.width;
+      const screenHeight = this.cameras.main.height;
+      const panelHeight = UIScene.bottomPanelHeightInTiles * this.tileSize;
+      const panelTopY = screenHeight - panelHeight;
+      buttonX = screenWidth / 2;
+      buttonY = panelTopY - this.tileSize / 2;
+    } else {
+      const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
+      buttonX = panelWidth + buttonWidth / 2 + pixelUnit / 2;
+      const menuY = pixelUnit * 3.5 + buttonHeight / 2;
+      buttonY = menuY + this.tileSize + pixelUnit * 2;
+    }
 
     this.toggleButton = this.add.graphics();
     this.toggleImg = this.add.image(buttonX, buttonY, 'uiAtlas', 'leftArrow');
     this.toggleImg.setDisplaySize(buttonWidth * 0.6, buttonHeight * 0.6);
+    if (this.isPortrait) {
+      this.toggleImg.setAngle(-90);
+    }
     this.toggleButton.setDepth(FRONT_DEPTH + 30);
     this.toggleImg.setDepth(FRONT_DEPTH + 30);
     this.drawToggleArrow(buttonX, buttonY, this.tileSize, this.tileSize);
@@ -155,10 +206,19 @@ export class UIScene extends CustomScene {
 
   private createMenuButton() {
     const pixelUnit = this.pixelUnit;
-    const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
     const buttonSize = pixelUnit * 14;
-    const buttonX = panelWidth + buttonSize / 2 + pixelUnit / 2;
-    const buttonY = pixelUnit * 3.5 + buttonSize / 2;
+
+    let buttonX: number;
+    let buttonY: number;
+
+    if (this.isPortrait) {
+      buttonX = pixelUnit * 3.5 + buttonSize / 2;
+      buttonY = pixelUnit * 3.5 + buttonSize / 2;
+    } else {
+      const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
+      buttonX = panelWidth + buttonSize / 2 + pixelUnit / 2;
+      buttonY = pixelUnit * 3.5 + buttonSize / 2;
+    }
 
     this.menuBtnGraphics = this.add.graphics();
     this.menuBtnGraphics.setDepth(FRONT_DEPTH + 30);
@@ -205,33 +265,47 @@ export class UIScene extends CustomScene {
     this.animating = true;
     this.collapsed = !this.collapsed;
 
-    const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
-    const collapsedWidth = 0;
-    const targetX = this.collapsed ? -(panelWidth - collapsedWidth) : 0;
+    if (this.isPortrait) {
+      const panelHeight = UIScene.bottomPanelHeightInTiles * this.tileSize;
+      const targetY = this.collapsed ? panelHeight : 0;
+      const delta = targetY - this.panelContainer.y;
 
-    const delta = targetX - this.panelContainer.x;
-    if (this.collapsed) {
-      this.toggleImg.setFlipX(true);
+      this.toggleImg.setAngle(this.collapsed ? 90 : -90);
+
+      this.tweens.add({
+        targets: [this.panelContainer, this.toggleButton, this.toggleImg, this.toggleZone],
+        y: `+=${delta}`,
+        duration: 250,
+        ease: 'Power2',
+        onComplete: () => {
+          this.animating = false;
+        },
+      });
     } else {
-      this.toggleImg.setFlipX(false);
+      const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
+      const targetX = this.collapsed ? -panelWidth : 0;
+      const delta = targetX - this.panelContainer.x;
+
+      this.toggleImg.setFlipX(this.collapsed);
+
+      this.tweens.add({
+        targets: [
+          this.panelContainer,
+          this.toggleButton,
+          this.toggleImg,
+          this.toggleZone,
+          this.menuBtnGraphics,
+          this.menuBtnImg,
+          this.menuBtnZone,
+        ],
+        x: `+=${delta}`,
+        duration: 250,
+        ease: 'Power2',
+        onComplete: () => {
+          this.animating = false;
+        },
+      });
     }
-    this.tweens.add({
-      targets: [
-        this.panelContainer,
-        this.toggleButton,
-        this.toggleImg,
-        this.toggleZone,
-        this.menuBtnGraphics,
-        this.menuBtnImg,
-        this.menuBtnZone,
-      ],
-      x: `+=${delta}`,
-      duration: 250,
-      ease: 'Power2',
-      onComplete: () => {
-        this.animating = false;
-      },
-    });
   }
 
   private initUnlockedUpgrades() {
@@ -290,10 +364,11 @@ export class UIScene extends CustomScene {
     });
     this.notificationText.setPosition(padding, padding);
 
-    this.notificationContainer.setPosition(
-      screenWidth - margin - boxWidth,
-      screenHeight - margin - boxHeight,
-    );
+    const notifY = this.isPortrait
+      ? screenHeight - UIScene.bottomPanelHeightInTiles * this.tileSize - margin - boxHeight
+      : screenHeight - margin - boxHeight;
+
+    this.notificationContainer.setPosition(screenWidth - margin - boxWidth, notifY);
     this.notificationContainer.setAlpha(1);
     this.notificationContainer.setVisible(true);
     this.notificationActive = true;

@@ -13,6 +13,7 @@ export class MainScene extends CustomScene {
   canvasWidth: number = 0;
   canvasHeight: number = 0;
   tileSize: number = 0;
+  isPortrait: boolean = false;
 
   camera: { x: number; y: number; width: number; height: number } = {
     x: 0,
@@ -37,7 +38,8 @@ export class MainScene extends CustomScene {
 
     this.canvasHeight = this.cameras.main.height;
     this.canvasWidth = this.cameras.main.width;
-    this.tileSize = this.cameras.main.height / 14;
+    this.isPortrait = this.canvasHeight > this.canvasWidth;
+    this.tileSize = Math.min(this.canvasWidth, this.canvasHeight) / 14;
     this.pixelUnit = this.tileSize / 16;
 
     this.add.rectangle(

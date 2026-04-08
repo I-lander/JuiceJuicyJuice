@@ -6,10 +6,12 @@ import { LoadingScene } from './scenes/LoadingScene';
 export function initPhaserGame() {
   window.splashStartTime = Date.now();
 
+  const isPortrait = window.innerHeight > window.innerWidth;
+
   const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.WEBGL,
-    width: 2560,
-    height: 1440,
+    width: isPortrait ? 1440 : 2560,
+    height: isPortrait ? 2560 : 1440,
     backgroundColor: '#000000',
     antialias: false,
     pixelArt: true,

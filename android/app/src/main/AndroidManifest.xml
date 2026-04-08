@@ -17,7 +17,7 @@
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:exported="true"
-            android:screenOrientation="sensorLandscape"
+            android:screenOrientation="portrait"
             android:resizeableActivity="false"
             android:hardwareAccelerated="true"
             android:enableOnBackInvokedCallback="true">
