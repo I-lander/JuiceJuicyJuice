@@ -4,6 +4,7 @@ import { CustomScene } from '../customClasses/CustomScene';
 import { Progression } from '../Progression';
 import { Shop } from '../objects/Shop';
 import { UPGRADES } from '../objects/ShopUpgrades';
+import { t, getLanguage, setLanguage } from '../utils/i18n';
 import { createUIPanel, formatNumber, FRONT_DEPTH, getColors } from '../utils/utils';
 import { MainScene } from './MainScene';
 
@@ -38,6 +39,10 @@ export class UIScene extends CustomScene {
   private menuBtnGraphics!: Phaser.GameObjects.Graphics;
   private menuBtnImg!: Phaser.GameObjects.Image;
   private menuBtnZone!: Phaser.GameObjects.Zone;
+  private resumeText!: Phaser.GameObjects.Text;
+  private quitText!: Phaser.GameObjects.Text;
+  private enFlagImg!: Phaser.GameObjects.Image;
+  private frFlagImg!: Phaser.GameObjects.Image;
 
   constructor() {
     super('UIScene');
@@ -390,19 +395,19 @@ export class UIScene extends CustomScene {
     for (const key in UPGRADES) {
       if (Progression.isUpgradeUnlocked(key) && !this.previouslyUnlocked.has(key)) {
         this.previouslyUnlocked.add(key);
-        this.notificationQueue.push(UPGRADES[key].name);
+        this.notificationQueue.push(key);
       }
     }
   }
 
-  private showNotification(name: string) {
+  private showNotification(upgradeKey: string) {
     const pixelUnit = this.pixelUnit;
     const screenWidth = this.cameras.main.width;
     const screenHeight = this.cameras.main.height;
     const padding = pixelUnit * 4;
     const margin = pixelUnit * 8;
 
-    this.notificationText.setText(`New: ${name}`);
+    this.notificationText.setText(`${t('ui.newUnlock')}${t(`upgrade.${upgradeKey}.name`)}`);
     const textWidth = this.notificationText.width;
     const textHeight = this.notificationText.height;
     const boxWidth = textWidth + padding * 2;
@@ -453,7 +458,7 @@ export class UIScene extends CustomScene {
     const buttonHeight = pixelUnit * 16;
     const gap = pixelUnit * 6;
     const menuWidth = buttonWidth + pixelUnit * 16;
-    const menuHeight = buttonHeight * 2 + gap * 3 + pixelUnit * 16;
+    const menuHeight = buttonHeight * 3 + gap * 2 + pixelUnit * 16;
     const menuX = (screenWidth - menuWidth) / 2;
     const menuY = (screenHeight - menuHeight) / 2;
 
@@ -488,31 +493,53 @@ export class UIScene extends CustomScene {
       0.9,
     );
 
-    const resumeText = this.add.text(centerX, firstButtonY, 'RESUME', {
+    this.resumeText = this.add.text(centerX, firstButtonY, t('ui.resume'), {
       fontFamily: 'KenneyPixel',
       fontSize: `${fontSize}px`,
       color: '#ffffff',
     });
-    resumeText.setOrigin(0.5, 0.5);
+    this.resumeText.setOrigin(0.5, 0.5);
 
     const resumeZone = this.add.zone(centerX, firstButtonY, buttonWidth, buttonHeight);
     resumeZone.setInteractive({ useHandCursor: true });
     resumeZone.on('pointerup', () => this.closeMenu());
 
     const secondButtonY = firstButtonY + buttonHeight + gap;
+    const flagSize = buttonHeight * 0.8;
+    const flagGap = pixelUnit * 6;
+
+    this.enFlagImg = this.add.image(centerX - flagGap / 2 - flagSize / 2, secondButtonY, 'uiAtlas', 'enFlag');
+    this.enFlagImg.setDisplaySize(flagSize, flagSize);
+    this.enFlagImg.setInteractive({ useHandCursor: true });
+    this.enFlagImg.on('pointerup', () => {
+      setLanguage('en');
+      this.refreshMenuTexts();
+    });
+
+    this.frFlagImg = this.add.image(centerX + flagGap / 2 + flagSize / 2, secondButtonY, 'uiAtlas', 'frFlag');
+    this.frFlagImg.setDisplaySize(flagSize, flagSize);
+    this.frFlagImg.setInteractive({ useHandCursor: true });
+    this.frFlagImg.on('pointerup', () => {
+      setLanguage('fr');
+      this.refreshMenuTexts();
+    });
+
+    this.refreshFlagAlpha();
+
+    const thirdButtonY = secondButtonY + buttonHeight + gap;
 
     const quitGraphics = this.add.graphics();
     quitGraphics.fillStyle(0x552222, 0.9);
     quitGraphics.fillRect(
       centerX - buttonWidth / 2,
-      secondButtonY - buttonHeight / 2,
+      thirdButtonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
     );
     createUIPanel(
       quitGraphics,
       centerX - buttonWidth / 2,
-      secondButtonY - buttonHeight / 2,
+      thirdButtonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
       pixelUnit,
@@ -520,14 +547,14 @@ export class UIScene extends CustomScene {
       0.9,
     );
 
-    const quitText = this.add.text(centerX, secondButtonY, 'QUIT', {
+    this.quitText = this.add.text(centerX, thirdButtonY, t('ui.quit'), {
       fontFamily: 'KenneyPixel',
       fontSize: `${fontSize}px`,
       color: '#ffffff',
     });
-    quitText.setOrigin(0.5, 0.5);
+    this.quitText.setOrigin(0.5, 0.5);
 
-    const quitZone = this.add.zone(centerX, secondButtonY, buttonWidth, buttonHeight);
+    const quitZone = this.add.zone(centerX, thirdButtonY, buttonWidth, buttonHeight);
     quitZone.setInteractive({ useHandCursor: true });
     quitZone.on('pointerup', () => {
       if (Capacitor.isNativePlatform()) {
@@ -541,14 +568,28 @@ export class UIScene extends CustomScene {
       overlay,
       panelGraphics,
       resumeGraphics,
-      resumeText,
+      this.resumeText,
       resumeZone,
+      this.enFlagImg,
+      this.frFlagImg,
       quitGraphics,
-      quitText,
+      this.quitText,
       quitZone,
     ]);
     this.menuContainer.setDepth(FRONT_DEPTH + 50);
     this.menuContainer.setVisible(false);
+  }
+
+  private refreshFlagAlpha() {
+    const isEnglish = getLanguage() === 'en';
+    this.enFlagImg.setAlpha(isEnglish ? 1 : 0.35);
+    this.frFlagImg.setAlpha(isEnglish ? 0.35 : 1);
+  }
+
+  private refreshMenuTexts() {
+    this.resumeText.setText(t('ui.resume'));
+    this.quitText.setText(t('ui.quit'));
+    this.refreshFlagAlpha();
   }
 
   openMenu() {

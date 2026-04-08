@@ -3,7 +3,6 @@ import { Progression } from '../Progression';
 import { MainScene } from '../scenes/MainScene';
 
 export interface UpgradeDefinition {
-  name: string;
   baseCost: number;
   growthFactor: number;
   maxLevel: number;
@@ -13,7 +12,6 @@ export interface UpgradeDefinition {
 
 export const UPGRADES: Record<string, UpgradeDefinition> = {
   particlesPerClick: {
-    name: 'Particles/Click',
     baseCost: 10,
     growthFactor: 1.25,
     maxLevel: 100,
@@ -23,7 +21,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   autoClicker: {
-    name: 'Autoclicker',
     baseCost: 50,
     growthFactor: 1.5,
     maxLevel: 100,
@@ -33,7 +30,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   cooldownReduction: {
-    name: 'Cooldown -',
     baseCost: 75,
     growthFactor: 1.45,
     maxLevel: 25,
@@ -43,7 +39,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   addSprite: {
-    name: 'Add Sprite',
     baseCost: 100,
     growthFactor: 1.3,
     maxLevel: 100,
@@ -54,7 +49,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   bounce: {
-    name: 'Bounce',
     baseCost: 800,
     growthFactor: 1,
     maxLevel: 1,
@@ -64,7 +58,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   spriteMovement: {
-    name: 'Movement',
     baseCost: 4000,
     growthFactor: 1,
     maxLevel: 1,
@@ -74,7 +67,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   bounceParticles: {
-    name: 'Bounce Particles',
     baseCost: 10000,
     growthFactor: 1,
     maxLevel: 1,
@@ -84,7 +76,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   spriteCollision: {
-    name: 'Collision',
     baseCost: 25000,
     growthFactor: 1,
     maxLevel: 1,
@@ -94,7 +85,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   spriteRotation: {
-    name: 'Rotation',
     baseCost: 120000,
     growthFactor: 1,
     maxLevel: 1,
@@ -104,7 +94,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   spriteJuiceUp: {
-    name: 'Sprite Juice +',
     baseCost: 150,
     growthFactor: 1.4,
     maxLevel: 25,
@@ -114,7 +103,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   bounceJuiceUp: {
-    name: 'Bounce Juice +',
     baseCost: 1200,
     growthFactor: 1.4,
     maxLevel: 25,
@@ -124,7 +112,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   movementJuiceUp: {
-    name: 'Movement Juice +',
     baseCost: 6000,
     growthFactor: 1.4,
     maxLevel: 25,
@@ -134,7 +121,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   rotationJuiceUp: {
-    name: 'Rotation Juice +',
     baseCost: 180000,
     growthFactor: 1.4,
     maxLevel: 25,
@@ -144,7 +130,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   yellowParticle: {
-    name: 'Yellow Particle',
     baseCost: 300,
     growthFactor: 1,
     maxLevel: 1,
@@ -154,7 +139,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   redParticle: {
-    name: 'Red Particle',
     baseCost: 20000,
     growthFactor: 1,
     maxLevel: 1,
@@ -164,7 +148,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   blueParticle: {
-    name: 'Blue Particle',
     baseCost: 3500000,
     growthFactor: 1,
     maxLevel: 1,
@@ -174,7 +157,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   greenParticle: {
-    name: 'Green Particle',
     baseCost: 1500000000,
     growthFactor: 1,
     maxLevel: 1,
@@ -184,7 +166,6 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   purpleParticle: {
-    name: 'Purple Particle',
     baseCost: 800000000000,
     growthFactor: 1,
     maxLevel: 1,

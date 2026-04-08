@@ -1,6 +1,7 @@
 import { spriteElements } from '../elements/SpriteAtlas';
 import { Progression } from '../Progression';
 import { UIScene } from '../scenes/UIScene';
+import { t } from '../utils/i18n';
 import { createUIPanel, formatNumber, FRONT_DEPTH } from '../utils/utils';
 import { UPGRADES } from './ShopUpgrades';
 
@@ -57,6 +58,11 @@ export class Shop {
   private tabUnlocksZone!: Phaser.GameObjects.Zone;
   private tabHeight: number = 0;
 
+  private tooltipGraphics!: Phaser.GameObjects.Graphics;
+  private tooltipText!: Phaser.GameObjects.Text;
+  private longPressTimer: Phaser.Time.TimerEvent | null = null;
+  private tooltipVisible: boolean = false;
+
   constructor(
     scene: UIScene,
     container: Phaser.GameObjects.Container,
@@ -80,6 +86,7 @@ export class Shop {
       this.createUpgradeButton(key);
     }
     this.setupScrollInput();
+    this.createTooltip();
   }
 
   
@@ -135,7 +142,7 @@ export class Shop {
     this.tabUpgradesText = this.scene.add.text(
       tabLeftX + tabWidth / 2,
       tabY + this.tabHeight / 2,
-      'Upgrades',
+      t('ui.upgrades'),
       {
         fontFamily: 'KenneyPixel',
         fontSize: `${fontSize}px`,
@@ -148,7 +155,7 @@ export class Shop {
     this.tabUnlocksText = this.scene.add.text(
       tabRightX + tabWidth / 2,
       tabY + this.tabHeight / 2,
-      'Unlocks',
+      t('ui.unlocks'),
       {
         fontFamily: 'KenneyPixel',
         fontSize: `${fontSize}px`,
@@ -235,7 +242,9 @@ export class Shop {
     );
     this.tabUnlocksGraphics.strokeRect(tabRightX, tabY, tabWidth, this.tabHeight);
 
+    this.tabUpgradesText.setText(t('ui.upgrades'));
     this.tabUpgradesText.setColor(this.activeTab === 'upgrades' ? '#ffffff' : '#666688');
+    this.tabUnlocksText.setText(t('ui.unlocks'));
     this.tabUnlocksText.setColor(this.activeTab === 'unlocks' ? '#ffffff' : '#666688');
   }
 
@@ -329,6 +338,8 @@ export class Shop {
         this.dragMoved = true;
       }
       if (this.dragMoved) {
+        this.cancelLongPress();
+        this.hideTooltip();
         this.scrollOffset = Phaser.Math.Clamp(
           this.dragStartOffset + deltaY,
           0,
@@ -347,7 +358,79 @@ export class Shop {
         this.isDragging = false;
         this.dragMoved = false;
       }
+      this.cancelLongPress();
+      this.hideTooltip();
     });
+  }
+
+  private createTooltip() {
+    const pixelUnit = this.scene.pixelUnit;
+    const fontSize = Math.round(pixelUnit * 10);
+
+    this.tooltipGraphics = this.scene.add.graphics();
+    this.tooltipGraphics.setDepth(FRONT_DEPTH + 20);
+    this.tooltipGraphics.setVisible(false);
+
+    this.tooltipText = this.scene.add.text(0, 0, '', {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+      wordWrap: { width: this.panelInnerWidth - pixelUnit * 16 },
+      align: 'center',
+    });
+    this.tooltipText.setOrigin(0.5, 0.5);
+    this.tooltipText.setDepth(FRONT_DEPTH + 21);
+    this.tooltipText.setVisible(false);
+
+    this.container.add([this.tooltipGraphics, this.tooltipText]);
+  }
+
+  private showTooltip(upgradeKey: string, pointerX: number, pointerY: number) {
+    const pixelUnit = this.scene.pixelUnit;
+    const padding = pixelUnit * 6;
+    const offset = pixelUnit * 8;
+
+    this.tooltipText.setText(t(`upgrade.${upgradeKey}.desc`));
+
+    const bgWidth = this.tooltipText.width + padding * 2;
+    const bgHeight = this.tooltipText.height + padding * 2;
+
+    const screenWidth = this.scene.cameras.main.width;
+    const screenHeight = this.scene.cameras.main.height;
+
+    let bgX = pointerX + offset;
+    let bgY = pointerY - bgHeight / 2;
+
+    if (bgX + bgWidth > screenWidth) {
+      bgX = pointerX - offset - bgWidth;
+    }
+    bgX = Phaser.Math.Clamp(bgX, 0, screenWidth - bgWidth);
+    bgY = Phaser.Math.Clamp(bgY, 0, screenHeight - bgHeight);
+
+    this.tooltipText.setPosition(bgX + bgWidth / 2, bgY + bgHeight / 2);
+
+    this.tooltipGraphics.clear();
+    this.tooltipGraphics.fillStyle(0x111133, 0.95);
+    this.tooltipGraphics.fillRect(bgX, bgY, bgWidth, bgHeight);
+    createUIPanel(this.tooltipGraphics, bgX, bgY, bgWidth, bgHeight, pixelUnit, 0x8888cc, 1);
+
+    this.tooltipGraphics.setVisible(true);
+    this.tooltipText.setVisible(true);
+    this.tooltipVisible = true;
+  }
+
+  private hideTooltip() {
+    if (!this.tooltipVisible) return;
+    this.tooltipGraphics.setVisible(false);
+    this.tooltipText.setVisible(false);
+    this.tooltipVisible = false;
+  }
+
+  private cancelLongPress() {
+    if (this.longPressTimer) {
+      this.longPressTimer.remove();
+      this.longPressTimer = null;
+    }
   }
 
   private refreshXpBar() {
@@ -368,7 +451,6 @@ export class Shop {
   private createUpgradeButton(upgradeKey: string) {
     const pixelUnit = this.scene.pixelUnit;
     const tileSize = this.scene.tileSize;
-    const definition = UPGRADES[upgradeKey];
 
     const buttonX = this.panelX + pixelUnit * 2;
     const buttonWidth = this.panelInnerWidth - pixelUnit * 4;
@@ -384,7 +466,7 @@ export class Shop {
     const smallFontSize = Math.round(pixelUnit * 10);
     const centerX = buttonX + buttonWidth / 2;
 
-    const nameText = this.scene.add.text(centerX, buttonY + buttonHeight * 0.15, definition.name, {
+    const nameText = this.scene.add.text(centerX, buttonY + buttonHeight * 0.15, t(`upgrade.${upgradeKey}.name`), {
       fontFamily: 'KenneyPixel',
       fontSize: `${fontSize}px`,
       color: '#ffffff',
@@ -437,7 +519,24 @@ export class Shop {
 
     this.scrollContainer.add([graphics, nameText, costText, levelText, hitZone]);
 
+    hitZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      this.cancelLongPress();
+      this.hideTooltip();
+      const pointerX = pointer.x;
+      const pointerY = pointer.y;
+      this.longPressTimer = this.scene.time.delayedCall(1000, () => {
+        this.showTooltip(upgradeKey, pointerX, pointerY);
+        this.longPressTimer = null;
+      });
+    });
+
     hitZone.on('pointerup', () => {
+      if (this.tooltipVisible) {
+        this.hideTooltip();
+        this.cancelLongPress();
+        return;
+      }
+      this.cancelLongPress();
       if (!this.dragMoved) {
         this.purchaseUpgrade(button);
       }
@@ -525,11 +624,13 @@ export class Shop {
       0.9,
     );
 
+    button.nameText.setText(t(`upgrade.${button.upgradeKey}.name`));
+
     const currentValue = Progression.getUpgradeValue(button.upgradeKey);
     button.levelText.setText(`${currentValue}  (${level}/${definition.maxLevel})`);
 
     if (isMaxed) {
-      button.costText.setText('MAX');
+      button.costText.setText(t('ui.max'));
       button.costText.setColor('#aaaacc');
     } else {
       const cost = Progression.getUpgradeCost(button.upgradeKey);

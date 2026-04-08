@@ -12,6 +12,12 @@ export const uiAtlasElements = [
   {
     id: 'menuBtn',
     atlasObj: { x: 2, y: 0, w: 1, h: 1 },
+  },  {
+    id: 'enFlag',
+    atlasObj: { x: 3, y: 0, w: 1, h: 1 },
+  },  {
+    id: 'frFlag',
+    atlasObj: { x: 4, y: 0, w: 1, h: 1 },
   },
 ];
 

@@ -3,6 +3,7 @@ import {
   type ParticleColorDefinition,
   UPGRADES,
 } from './objects/ShopUpgrades';
+import { t } from './utils/i18n';
 
 export const CPU_COSTS: Record<string, number> = {
   sprite: 1.0,
@@ -170,15 +171,15 @@ export class Progression {
       case 'rotationJuiceUp':
         return `${Progression.rotationJuiceAmount.toFixed(1)}`;
       case 'bounce':
-        return Progression.isBounceEnabled ? 'ON' : 'OFF';
+        return Progression.isBounceEnabled ? t('ui.on') : t('ui.off');
       case 'spriteMovement':
-        return Progression.isSpriteMovementEnabled ? 'ON' : 'OFF';
+        return Progression.isSpriteMovementEnabled ? t('ui.on') : t('ui.off');
       case 'bounceParticles':
-        return Progression.isBounceParticlesEnabled ? 'ON' : 'OFF';
+        return Progression.isBounceParticlesEnabled ? t('ui.on') : t('ui.off');
       case 'spriteCollision':
-        return Progression.isSpriteCollisionEnabled ? 'ON' : 'OFF';
+        return Progression.isSpriteCollisionEnabled ? t('ui.on') : t('ui.off');
       case 'spriteRotation':
-        return Progression.isSpriteRotationEnabled ? 'ON' : 'OFF';
+        return Progression.isSpriteRotationEnabled ? t('ui.on') : t('ui.off');
       case 'yellowParticle':
       case 'redParticle':
       case 'blueParticle':
@@ -186,7 +187,7 @@ export class Progression {
       case 'purpleParticle': {
         const colorDef = PARTICLE_COLOR_UPGRADES[upgradeKey];
         const owned = (Progression.upgradeLevels[upgradeKey] ?? 0) > 0;
-        return owned ? `x${colorDef.juicePerParticle}` : 'OFF';
+        return owned ? `x${colorDef.juicePerParticle}` : t('ui.off');
       }
       default:
         return '';
