@@ -84,9 +84,26 @@ export class MainScene extends CustomScene {
     Progression.sprites++;
 
     const margin = this.tileSize / 2;
-    const spawnX = getRandomInt(margin, this.camera.width - margin);
-    const spawnY = getRandomInt(margin, this.camera.height - margin);
-
+    let spawnX = getRandomInt(margin, this.camera.width - margin);
+    let spawnY = getRandomInt(margin, this.camera.height - margin);
+    let isSpawnValid = false;
+    while (!isSpawnValid) {
+      if (
+        spawnX > this.uiScene.shop.juicePanelBounds.x - margin &&
+        spawnX <
+          this.uiScene.shop.juicePanelBounds.x +
+            this.uiScene.shop.juicePanelBounds.width +
+            margin &&
+        spawnY > this.uiScene.shop.juicePanelBounds.y - margin &&
+        spawnY <
+          this.uiScene.shop.juicePanelBounds.y + this.uiScene.shop.juicePanelBounds.height + margin
+      ) {
+        spawnX = getRandomInt(margin, this.camera.width - margin);
+        spawnY = getRandomInt(margin, this.camera.height - margin);
+      } else {
+        isSpawnValid = true;
+      }
+    }
     const newSprite = new Sprite(this, spawnX, spawnY);
 
     newSprite.init(frame);
