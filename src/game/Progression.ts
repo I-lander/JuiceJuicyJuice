@@ -21,12 +21,13 @@ const CPU_COEFFICIENT = 0.002;
 export class Progression {
   static juice = 0;
   static sprites = 0;
+  static particlesPerClick = 1;
   static autoClickers = 0;
   static autoClickerCooldown = 3000;
-  static spriteJuiceRate = 0.1;
-  static bounceJuiceRate = 0.1;
-  static movementJuiceRate = 0.1;
-  static rotationJuiceRate = 0.1;
+  static spriteJuiceAmount = 0.1;
+  static bounceJuiceAmount = 0.1;
+  static movementJuiceAmount = 0.1;
+  static rotationJuiceAmount = 0.1;
   static isBounceEnabled = false;
   static isSpriteMovementEnabled = false;
   static isBounceParticlesEnabled = false;
@@ -108,16 +109,16 @@ export class Progression {
   }
 
   static getTotalJuicePerSecond(): number {
-    let juicePerSecond = Progression.spriteJuiceRate * Progression.sprites;
+    let juicePerSecond = Progression.spriteJuiceAmount * Progression.sprites;
 
     if (Progression.isBounceEnabled) {
-      juicePerSecond += Progression.bounceJuiceRate * Progression.sprites;
+      juicePerSecond += Progression.bounceJuiceAmount * Progression.sprites;
     }
     if (Progression.isSpriteMovementEnabled) {
-      juicePerSecond += Progression.movementJuiceRate * Progression.sprites;
+      juicePerSecond += Progression.movementJuiceAmount * Progression.sprites;
     }
     if (Progression.isSpriteRotationEnabled) {
-      juicePerSecond += Progression.rotationJuiceRate * Progression.sprites;
+      juicePerSecond += Progression.rotationJuiceAmount * Progression.sprites;
     }
 
     return Math.round(juicePerSecond * 10) / 10;
@@ -139,10 +140,10 @@ export class Progression {
     bounceParticles: 0,
     spriteCollision: 0,
     spriteRotation: 0,
-    spriteFragRate: 0,
-    bounceFragRate: 0,
-    movementFragRate: 0,
-    rotationFragRate: 0,
+    spriteJuiceUp: 0,
+    bounceJuiceUp: 0,
+    movementJuiceUp: 0,
+    rotationJuiceUp: 0,
     yellowParticle: 0,
     redParticle: 0,
     blueParticle: 0,
@@ -155,19 +156,19 @@ export class Progression {
       case 'addSprite':
         return `${Progression.sprites}`;
       case 'particlesPerClick':
-        return `${Progression.upgradeLevels['particlesPerClick'] ?? 0}`;
+        return `${Progression.upgradeLevels['particlesPerClick']}`;
       case 'autoClicker':
         return `${Progression.autoClickers}`;
       case 'cooldownReduction':
         return `${(Progression.autoClickerCooldown / 1000).toFixed(1)}s`;
-      case 'spriteFragRate':
-        return `${Progression.spriteJuiceRate.toFixed(1)}/s`;
-      case 'bounceFragRate':
-        return `${Progression.bounceJuiceRate.toFixed(1)}/s`;
-      case 'movementFragRate':
-        return `${Progression.movementJuiceRate.toFixed(1)}/s`;
-      case 'rotationFragRate':
-        return `${Progression.rotationJuiceRate.toFixed(1)}/s`;
+      case 'spriteJuiceUp':
+        return `${Progression.spriteJuiceAmount.toFixed(1)}`;
+      case 'bounceJuiceUp':
+        return `${Progression.bounceJuiceAmount.toFixed(1)}`;
+      case 'movementJuiceUp':
+        return `${Progression.movementJuiceAmount.toFixed(1)}`;
+      case 'rotationJuiceUp':
+        return `${Progression.rotationJuiceAmount.toFixed(1)}`;
       case 'bounce':
         return Progression.isBounceEnabled ? 'ON' : 'OFF';
       case 'spriteMovement':

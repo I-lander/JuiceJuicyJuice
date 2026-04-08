@@ -2,7 +2,7 @@ import { spriteElements } from '../elements/SpriteAtlas';
 import { Progression } from '../Progression';
 import { UIScene } from '../scenes/UIScene';
 import { createUIPanel, formatNumber, FRONT_DEPTH } from '../utils/utils';
-import { PARTICLE_COLOR_UPGRADES, UPGRADES } from './ShopUpgrades';
+import { UPGRADES } from './ShopUpgrades';
 
 interface UpgradeButton {
   upgradeKey: string;
@@ -496,54 +496,23 @@ export class Shop {
     if (!Progression.isUpgradeUnlocked(button.upgradeKey)) return;
     if (!Progression.purchaseUpgrade(button.upgradeKey)) return;
 
-    switch (button.upgradeKey) {
-      case 'autoClicker':
-        Progression.autoClickers++;
-        break;
-      case 'cooldownReduction':
-        Progression.autoClickerCooldown -= 100;
-        break;
-      case 'addSprite':
-        const randomFrame = spriteElements[Math.floor(Math.random() * spriteElements.length)].id;
-        this.scene.mainScene.spawnSprite(randomFrame);
-        break;
-      case 'bounce':
-        Progression.isBounceEnabled = true;
-        break;
-      case 'spriteMovement':
-        Progression.isSpriteMovementEnabled = true;
-        break;
-      case 'bounceParticles':
-        Progression.isBounceParticlesEnabled = true;
-        break;
-      case 'spriteCollision':
-        Progression.isSpriteCollisionEnabled = true;
-        break;
-      case 'spriteRotation':
-        Progression.isSpriteRotationEnabled = true;
-        break;
-      case 'spriteFragRate':
-        Progression.spriteJuiceRate += 0.1;
-        break;
-      case 'bounceFragRate':
-        Progression.bounceJuiceRate += 0.1;
-        break;
-      case 'movementFragRate':
-        Progression.movementJuiceRate += 0.1;
-        break;
-      case 'rotationFragRate':
-        Progression.rotationJuiceRate += 0.1;
-        break;
-      case 'yellowParticle':
-      case 'redParticle':
-      case 'blueParticle':
-      case 'greenParticle':
-      case 'purpleParticle':
-        Progression.unlockedParticleColors.push(PARTICLE_COLOR_UPGRADES[button.upgradeKey]);
-        break;
-    }
+    UPGRADES[button.upgradeKey].onPurchase(this.scene.mainScene);
 
+    this.flashButton(button);
     this.refreshButton(button);
+  }
+
+  private flashButton(button: UpgradeButton) {
+    const flash = this.scene.add.graphics();
+    flash.setDepth(FRONT_DEPTH);
+    flash.fillStyle(0xffffff, 0.6);
+    flash.fillRect(button.x, button.y, button.width, button.height);
+    this.scene.tweens.add({
+      targets: flash,
+      alpha: 0,
+      duration: 150,
+      onComplete: () => flash.destroy(),
+    });
   }
 
   private setButtonVisible(button: UpgradeButton, visible: boolean) {
