@@ -23,11 +23,12 @@ export function removeSplashScreen(scene: Phaser.Scene) {
 }
 
 export function formatNumber(value: number): string {
-  if (value < 1_000) return `${value}`;
-  if (value < 1_000_000) return `${(value / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
-  if (value < 1_000_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
-  if (value < 1_000_000_000_000) return `${(value / 1_000_000_000).toFixed(1).replace(/\.0$/, '')}B`;
-  return `${(value / 1_000_000_000_000).toFixed(1).replace(/\.0$/, '')}T`;
+  const flooredValue = Math.floor(value);
+  if (value < 1_000) return `${flooredValue}`;
+  if (value < 1_000_000) return `${(flooredValue / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+  if (value < 1_000_000_000) return `${(flooredValue / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+  if (value < 1_000_000_000_000) return `${(flooredValue / 1_000_000_000).toFixed(1).replace(/\.0$/, '')}B`;
+  return `${(flooredValue / 1_000_000_000_000).toFixed(1).replace(/\.0$/, '')}T`;
 }
 
 export function getRandomInt(min: number, max: number) {

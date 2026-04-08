@@ -506,7 +506,6 @@ export class Shop {
       case 'addSprite':
         const randomFrame = spriteElements[Math.floor(Math.random() * spriteElements.length)].id;
         this.scene.mainScene.spawnSprite(randomFrame);
-        Progression.sprites++;
         break;
       case 'bounce':
         Progression.isBounceEnabled = true;

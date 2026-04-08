@@ -25,6 +25,7 @@ export class MainScene extends CustomScene {
   particles: Particle[] = [];
   maxParticlesPerClick: number = 500;
   private autoClickTimer: number = 0;
+  private passiveJuiceTimer: number = 0;
 
   constructor() {
     super('MainScene');
@@ -53,10 +54,10 @@ export class MainScene extends CustomScene {
   }
 
   initCamera() {
-      this.camera = {
+    this.camera = {
       x: 0,
       y: 0,
-      width: this.canvasWidth ,
+      width: this.canvasWidth,
       height: this.canvasHeight,
     };
     this.cameras.main.setViewport(
@@ -80,6 +81,8 @@ export class MainScene extends CustomScene {
   }
 
   spawnSprite(frame: string) {
+    Progression.sprites++;
+
     const margin = this.tileSize / 2;
     const spawnX = getRandomInt(margin, this.camera.width - margin);
     const spawnY = getRandomInt(margin, this.camera.height - margin);
@@ -102,6 +105,16 @@ export class MainScene extends CustomScene {
   update(_time: number, delta: number) {
     for (let i = 0; i < this.sprites.length; i++) {
       this.sprites[i].update(delta);
+    }
+
+    this.passiveJuiceTimer += delta;
+    if (this.passiveJuiceTimer >= 1000) {
+      this.passiveJuiceTimer -= 1000;
+      const juicePerSecond = Progression.getTotalJuicePerSecond();
+
+      if (juicePerSecond > 0) {
+        Progression.addJuice(juicePerSecond);
+      }
     }
 
     if (Progression.autoClickers > 0) {

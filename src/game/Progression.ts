@@ -107,6 +107,22 @@ export class Progression {
     return Progression.getJuiceInCurrentLevel() / Progression.getJuiceForLevel(Progression.level);
   }
 
+  static getTotalJuicePerSecond(): number {
+    let juicePerSecond = Progression.spriteJuiceRate * Progression.sprites;
+
+    if (Progression.isBounceEnabled) {
+      juicePerSecond += Progression.bounceJuiceRate * Progression.sprites;
+    }
+    if (Progression.isSpriteMovementEnabled) {
+      juicePerSecond += Progression.movementJuiceRate * Progression.sprites;
+    }
+    if (Progression.isSpriteRotationEnabled) {
+      juicePerSecond += Progression.rotationJuiceRate * Progression.sprites;
+    }
+
+    return Math.round(juicePerSecond * 10) / 10;
+  }
+
   static isUpgradeUnlocked(upgradeKey: string): boolean {
     const definition = UPGRADES[upgradeKey];
     return Progression.level >= definition.levelToUnlock;
