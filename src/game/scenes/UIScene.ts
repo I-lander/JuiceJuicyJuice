@@ -1,3 +1,5 @@
+import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { CustomScene } from '../customClasses/CustomScene';
 import { Progression } from '../Progression';
 import { Shop } from '../objects/Shop';
@@ -27,6 +29,12 @@ export class UIScene extends CustomScene {
   private toggleImg!: Phaser.GameObjects.Image;
   private toggleZone!: Phaser.GameObjects.Zone;
 
+  private menuContainer!: Phaser.GameObjects.Container;
+  private menuOpen: boolean = false;
+  private menuBtnGraphics!: Phaser.GameObjects.Graphics;
+  private menuBtnImg!: Phaser.GameObjects.Image;
+  private menuBtnZone!: Phaser.GameObjects.Zone;
+
   constructor() {
     super('UIScene');
   }
@@ -54,7 +62,9 @@ export class UIScene extends CustomScene {
       panelLayout.panelBottomY,
     );
 
+    this.createMenuButton();
     this.createToggleButton();
+    this.createMenu();
     this.createHud();
     this.createNotification();
     this.initUnlockedUpgrades();
@@ -105,7 +115,7 @@ export class UIScene extends CustomScene {
     this.panelGraphics = this.add.graphics();
     this.panelGraphics.setDepth(FRONT_DEPTH);
 
-    this.panelGraphics.fillStyle(0x000033, 1);
+    this.panelGraphics.fillStyle(0x000033, 0.8);
     this.panelGraphics.fillRect(0, 0, panelWidth, screenHeight);
 
     this.panelGraphics.fillStyle(0xffffff, 1);
@@ -127,7 +137,8 @@ export class UIScene extends CustomScene {
     const buttonWidth = pixelUnit * 14;
     const buttonHeight = pixelUnit * 14;
     const buttonX = panelWidth + buttonWidth / 2 + pixelUnit / 2;
-    const buttonY = pixelUnit * 3.5 + buttonHeight / 2;
+    const menuY = pixelUnit * 3.5 + buttonHeight / 2;
+    const buttonY = menuY + this.tileSize + pixelUnit * 2;
 
     this.toggleButton = this.add.graphics();
     this.toggleImg = this.add.image(buttonX, buttonY, 'uiAtlas', 'leftArrow');
@@ -140,6 +151,37 @@ export class UIScene extends CustomScene {
     this.toggleZone.setDepth(FRONT_DEPTH + 31);
     this.toggleZone.setInteractive({ useHandCursor: true });
     this.toggleZone.on('pointerup', () => this.togglePanel());
+  }
+
+  private createMenuButton() {
+    const pixelUnit = this.pixelUnit;
+    const panelWidth = UIScene.leftPanelWidthInTiles * this.tileSize;
+    const buttonSize = pixelUnit * 14;
+    const buttonX = panelWidth + buttonSize / 2 + pixelUnit / 2;
+    const buttonY = pixelUnit * 3.5 + buttonSize / 2;
+
+    this.menuBtnGraphics = this.add.graphics();
+    this.menuBtnGraphics.setDepth(FRONT_DEPTH + 30);
+    this.drawMenuButtonBackground(buttonX, buttonY, this.tileSize, this.tileSize);
+
+    this.menuBtnImg = this.add.image(buttonX, buttonY, 'uiAtlas', 'menuBtn');
+    this.menuBtnImg.setDisplaySize(buttonSize * 0.8, buttonSize * 0.8);
+    this.menuBtnImg.setDepth(FRONT_DEPTH + 30);
+
+    this.menuBtnZone = this.add.zone(buttonX, buttonY, buttonSize, buttonSize);
+    this.menuBtnZone.setDepth(FRONT_DEPTH + 31);
+    this.menuBtnZone.setInteractive({ useHandCursor: true });
+    this.menuBtnZone.on('pointerup', () => this.openMenu());
+  }
+
+  private drawMenuButtonBackground(centerX: number, centerY: number, width: number, height: number) {
+    const pixelUnit = this.pixelUnit;
+    this.menuBtnGraphics.clear();
+    this.menuBtnGraphics.fillStyle(0x000033, 0.9);
+    this.menuBtnGraphics.lineStyle(pixelUnit, 0xffffff, 1);
+    this.menuBtnGraphics.fillRect(centerX - width / 2, centerY - height / 2, width, height);
+    this.menuBtnGraphics.strokeRect(centerX - width / 2, centerY - height / 2, width, height);
+    this.menuBtnGraphics.fillStyle(0xffffff, 1);
   }
 
   private drawToggleArrow(centerX: number, centerY: number, width: number, height: number) {
@@ -169,7 +211,7 @@ export class UIScene extends CustomScene {
       this.toggleImg.setFlipX(false);
     }
     this.tweens.add({
-      targets: [this.panelContainer, this.toggleButton, this.toggleImg, this.toggleZone],
+      targets: [this.panelContainer, this.toggleButton, this.toggleImg, this.toggleZone, this.menuBtnGraphics, this.menuBtnImg, this.menuBtnZone],
       x: `+=${delta}`,
       duration: 250,
       ease: 'Power2',
@@ -263,8 +305,95 @@ export class UIScene extends CustomScene {
     }
   }
 
+  private createMenu() {
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    const pixelUnit = this.pixelUnit;
+    const fontSize = Math.round(pixelUnit * 14);
+    const buttonWidth = pixelUnit * 60;
+    const buttonHeight = pixelUnit * 16;
+    const gap = pixelUnit * 6;
+    const menuWidth = buttonWidth + pixelUnit * 16;
+    const menuHeight = buttonHeight * 2 + gap * 3 + pixelUnit * 16;
+    const menuX = (screenWidth - menuWidth) / 2;
+    const menuY = (screenHeight - menuHeight) / 2;
+
+    const overlay = this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000, 0.7);
+    overlay.setOrigin(0, 0);
+    overlay.setInteractive();
+
+    const panelGraphics = this.add.graphics();
+    panelGraphics.fillStyle(0x000033, 1);
+    panelGraphics.fillRect(menuX, menuY, menuWidth, menuHeight);
+    createUIPanel(panelGraphics, menuX, menuY, menuWidth, menuHeight, pixelUnit, 0xffffff, 1);
+
+    const centerX = screenWidth / 2;
+    const firstButtonY = menuY + pixelUnit * 8 + buttonHeight / 2;
+
+    const resumeGraphics = this.add.graphics();
+    resumeGraphics.fillStyle(0x225522, 0.9);
+    resumeGraphics.fillRect(centerX - buttonWidth / 2, firstButtonY - buttonHeight / 2, buttonWidth, buttonHeight);
+    createUIPanel(resumeGraphics, centerX - buttonWidth / 2, firstButtonY - buttonHeight / 2, buttonWidth, buttonHeight, pixelUnit, 0x44aa44, 0.9);
+
+    const resumeText = this.add.text(centerX, firstButtonY, 'RESUME', {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+    });
+    resumeText.setOrigin(0.5, 0.5);
+
+    const resumeZone = this.add.zone(centerX, firstButtonY, buttonWidth, buttonHeight);
+    resumeZone.setInteractive({ useHandCursor: true });
+    resumeZone.on('pointerup', () => this.closeMenu());
+
+    const secondButtonY = firstButtonY + buttonHeight + gap;
+
+    const quitGraphics = this.add.graphics();
+    quitGraphics.fillStyle(0x552222, 0.9);
+    quitGraphics.fillRect(centerX - buttonWidth / 2, secondButtonY - buttonHeight / 2, buttonWidth, buttonHeight);
+    createUIPanel(quitGraphics, centerX - buttonWidth / 2, secondButtonY - buttonHeight / 2, buttonWidth, buttonHeight, pixelUnit, 0xaa4444, 0.9);
+
+    const quitText = this.add.text(centerX, secondButtonY, 'QUIT', {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+    });
+    quitText.setOrigin(0.5, 0.5);
+
+    const quitZone = this.add.zone(centerX, secondButtonY, buttonWidth, buttonHeight);
+    quitZone.setInteractive({ useHandCursor: true });
+    quitZone.on('pointerup', () => {
+      if (Capacitor.isNativePlatform()) {
+        App.exitApp();
+      } else if (window.electron) {
+        window.electron.quitApp();
+      }
+    });
+
+    this.menuContainer = this.add.container(0, 0, [
+      overlay, panelGraphics,
+      resumeGraphics, resumeText, resumeZone,
+      quitGraphics, quitText, quitZone,
+    ]);
+    this.menuContainer.setDepth(FRONT_DEPTH + 50);
+    this.menuContainer.setVisible(false);
+  }
+
+  openMenu() {
+    if (this.menuOpen) return;
+    this.menuOpen = true;
+    this.menuContainer.setVisible(true);
+    this.scene.pause('MainScene');
+  }
+
+  private closeMenu() {
+    this.menuOpen = false;
+    this.menuContainer.setVisible(false);
+    this.scene.resume('MainScene');
+  }
+
   update() {
-    if (!this.collapsed) {
+    if (!this.collapsed && !this.menuOpen) {
       this.shop.update();
     }
     this.refreshHud();

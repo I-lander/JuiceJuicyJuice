@@ -153,11 +153,10 @@ export class Shop {
     this.xpBarBackground.setDepth(FRONT_DEPTH + 1);
     this.xpBarBackground.lineStyle(pixelUnit, 0x4444aa, 1);
     this.xpBarBackground.strokeRect(this.xpBarX, this.xpBarY, this.xpBarWidth, this.xpBarHeight);
-    this.container.add(this.xpBarBackground);
 
     this.xpBarFill = this.scene.add.graphics();
     this.xpBarFill.setDepth(FRONT_DEPTH + 1);
-    this.container.add(this.xpBarFill);
+    this.container.add([this.xpBarFill, this.xpBarBackground]);
 
     this.buttonsStartY = this.xpBarY + this.xpBarHeight + pixelUnit * 6;
     this.visibleHeight = this.panelBottomY - this.buttonsStartY;
