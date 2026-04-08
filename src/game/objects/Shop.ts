@@ -89,8 +89,6 @@ export class Shop {
     this.createTooltip();
   }
 
-  
-
   private createXpBar() {
     const pixelUnit = this.scene.pixelUnit;
     const tileSize = this.scene.tileSize;
@@ -441,11 +439,12 @@ export class Shop {
     this.levelText.setText(
       `Lv.${Progression.level}  ${formatNumber(currentJuice)}/${formatNumber(requiredJuice)}`,
     );
-
+    const effectWidth =
+      this.xpBarWidth * progress > this.xpBarWidth ? this.xpBarWidth : this.xpBarWidth * progress;
     this.xpBarFill.clear();
     this.xpBarFill.fillStyle(0x44ddff, 1);
     this.xpBarFill.setDepth(FRONT_DEPTH);
-    this.xpBarFill.fillRect(this.xpBarX, this.xpBarY, this.xpBarWidth * progress, this.xpBarHeight);
+    this.xpBarFill.fillRect(this.xpBarX, this.xpBarY, effectWidth, this.xpBarHeight);
   }
 
   private createUpgradeButton(upgradeKey: string) {
@@ -466,11 +465,16 @@ export class Shop {
     const smallFontSize = Math.round(pixelUnit * 10);
     const centerX = buttonX + buttonWidth / 2;
 
-    const nameText = this.scene.add.text(centerX, buttonY + buttonHeight * 0.15, t(`upgrade.${upgradeKey}.name`), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
+    const nameText = this.scene.add.text(
+      centerX,
+      buttonY + buttonHeight * 0.15,
+      t(`upgrade.${upgradeKey}.name`),
+      {
+        fontFamily: 'KenneyPixel',
+        fontSize: `${fontSize}px`,
+        color: '#ffffff',
+      },
+    );
     nameText.setOrigin(0.5, 0);
     nameText.setDepth(FRONT_DEPTH + 2);
 
@@ -640,7 +644,6 @@ export class Shop {
   }
 
   update() {
-
     this.refreshXpBar();
     this.refreshTabs();
 

@@ -12,7 +12,7 @@ export class UIScene extends CustomScene {
   mainScene!: MainScene;
 
   static leftPanelWidthInTiles = 8;
-  static bottomPanelHeightInTiles = 15;
+  static bottomPanelHeightInTiles = 14;
 
   private panelGraphics!: Phaser.GameObjects.Graphics;
   shop!: Shop;
