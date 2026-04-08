@@ -11,7 +11,7 @@ import { MainScene } from './MainScene';
 export class UIScene extends CustomScene {
   mainScene!: MainScene;
 
-  static leftPanelWidthInTiles = 5;
+  static leftPanelWidthInTiles = 8;
   static bottomPanelHeightInTiles = 15;
 
   private panelGraphics!: Phaser.GameObjects.Graphics;
@@ -458,7 +458,9 @@ export class UIScene extends CustomScene {
     const buttonHeight = pixelUnit * 16;
     const gap = pixelUnit * 6;
     const menuWidth = buttonWidth + pixelUnit * 16;
-    const menuHeight = buttonHeight * 3 + gap * 2 + pixelUnit * 16;
+    const tileSize = this.tileSize;
+    const flagSize = tileSize;
+    const menuHeight = buttonHeight * 2 + gap + pixelUnit * 16 + tileSize * 2 + flagSize;
     const menuX = (screenWidth - menuWidth) / 2;
     const menuY = (screenHeight - menuHeight) / 2;
 
@@ -505,41 +507,19 @@ export class UIScene extends CustomScene {
     resumeZone.on('pointerup', () => this.closeMenu());
 
     const secondButtonY = firstButtonY + buttonHeight + gap;
-    const flagSize = buttonHeight * 0.8;
-    const flagGap = pixelUnit * 6;
-
-    this.enFlagImg = this.add.image(centerX - flagGap / 2 - flagSize / 2, secondButtonY, 'uiAtlas', 'enFlag');
-    this.enFlagImg.setDisplaySize(flagSize, flagSize);
-    this.enFlagImg.setInteractive({ useHandCursor: true });
-    this.enFlagImg.on('pointerup', () => {
-      setLanguage('en');
-      this.refreshMenuTexts();
-    });
-
-    this.frFlagImg = this.add.image(centerX + flagGap / 2 + flagSize / 2, secondButtonY, 'uiAtlas', 'frFlag');
-    this.frFlagImg.setDisplaySize(flagSize, flagSize);
-    this.frFlagImg.setInteractive({ useHandCursor: true });
-    this.frFlagImg.on('pointerup', () => {
-      setLanguage('fr');
-      this.refreshMenuTexts();
-    });
-
-    this.refreshFlagAlpha();
-
-    const thirdButtonY = secondButtonY + buttonHeight + gap;
 
     const quitGraphics = this.add.graphics();
     quitGraphics.fillStyle(0x552222, 0.9);
     quitGraphics.fillRect(
       centerX - buttonWidth / 2,
-      thirdButtonY - buttonHeight / 2,
+      secondButtonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
     );
     createUIPanel(
       quitGraphics,
       centerX - buttonWidth / 2,
-      thirdButtonY - buttonHeight / 2,
+      secondButtonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
       pixelUnit,
@@ -547,14 +527,14 @@ export class UIScene extends CustomScene {
       0.9,
     );
 
-    this.quitText = this.add.text(centerX, thirdButtonY, t('ui.quit'), {
+    this.quitText = this.add.text(centerX, secondButtonY, t('ui.quit'), {
       fontFamily: 'KenneyPixel',
       fontSize: `${fontSize}px`,
       color: '#ffffff',
     });
     this.quitText.setOrigin(0.5, 0.5);
 
-    const quitZone = this.add.zone(centerX, thirdButtonY, buttonWidth, buttonHeight);
+    const quitZone = this.add.zone(centerX, secondButtonY, buttonWidth, buttonHeight);
     quitZone.setInteractive({ useHandCursor: true });
     quitZone.on('pointerup', () => {
       if (Capacitor.isNativePlatform()) {
@@ -564,17 +544,38 @@ export class UIScene extends CustomScene {
       }
     });
 
+    const flagY = menuY + menuHeight - pixelUnit * 8 - flagSize / 2;
+    const flagGap = pixelUnit * 6;
+
+    this.enFlagImg = this.add.image(centerX - flagGap / 2 - flagSize / 2, flagY, 'uiAtlas', 'enFlag');
+    this.enFlagImg.setDisplaySize(flagSize, flagSize);
+    this.enFlagImg.setInteractive({ useHandCursor: true });
+    this.enFlagImg.on('pointerup', () => {
+      setLanguage('en');
+      this.refreshMenuTexts();
+    });
+
+    this.frFlagImg = this.add.image(centerX + flagGap / 2 + flagSize / 2, flagY, 'uiAtlas', 'frFlag');
+    this.frFlagImg.setDisplaySize(flagSize, flagSize);
+    this.frFlagImg.setInteractive({ useHandCursor: true });
+    this.frFlagImg.on('pointerup', () => {
+      setLanguage('fr');
+      this.refreshMenuTexts();
+    });
+
+    this.refreshFlagAlpha();
+
     this.menuContainer = this.add.container(0, 0, [
       overlay,
       panelGraphics,
       resumeGraphics,
       this.resumeText,
       resumeZone,
-      this.enFlagImg,
-      this.frFlagImg,
       quitGraphics,
       this.quitText,
       quitZone,
+      this.enFlagImg,
+      this.frFlagImg,
     ]);
     this.menuContainer.setDepth(FRONT_DEPTH + 50);
     this.menuContainer.setVisible(false);
