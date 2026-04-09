@@ -3,7 +3,7 @@ import { Particle } from '../objects/Particle';
 import { Progression } from '../Progression';
 import { MainScene } from '../scenes/MainScene';
 import { UIScene } from '../scenes/UIScene';
-import { SPRITE_BASE_UNIT, toggleDebugGrid } from './utils';
+import { playSfx, SPRITE_BASE_UNIT, toggleDebugGrid } from './utils';
 
 export class EventHandler {
   mainScene: MainScene;
@@ -75,6 +75,7 @@ export class EventHandler {
       this.mainScene.particles.push(particle);
     }
     Progression.addJuice(totalJuice);
+    playSfx(this.mainScene, 'clickParticles', 0.3);
   }
 
   getTwoActivePointers(): Phaser.Input.Pointer[] | null {

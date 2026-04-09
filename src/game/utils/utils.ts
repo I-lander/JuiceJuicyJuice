@@ -4,6 +4,17 @@ import CrtShader from '../shaders/CrtShader';
 export const SPRITE_BASE_UNIT = 16;
 export const FRONT_DEPTH = 1000000;
 
+export let sfxMuted = false;
+export function setSfxMuted(muted: boolean) {
+  sfxMuted = muted;
+}
+
+export function playSfx(scene: Phaser.Scene, key: string, volume: number = 0.3) {
+  if (!sfxMuted) {
+    scene.sound.play(key, { volume });
+  }
+}
+
 export function getColors(color: string): number {
   return Phaser.Display.Color.ValueToColor(color).color;
 }

@@ -25,6 +25,7 @@ export class MainScene extends CustomScene {
   sprites: Sprite[] = [];
   particles: Particle[] = [];
   maxParticlesPerClick: number = 500;
+  bgMusic!: Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound;
   private autoClickTimer: number = 0;
   private passiveJuiceTimer: number = 0;
 
@@ -54,7 +55,8 @@ export class MainScene extends CustomScene {
     this.eventHandler = new EventHandler(this);
     this.initCamera();
 
-    this.sound.add('bgMusic', { loop: true, volume: 0.4 }).play();
+    this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.4 }) as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound;
+    this.bgMusic.play();
 
   }
 

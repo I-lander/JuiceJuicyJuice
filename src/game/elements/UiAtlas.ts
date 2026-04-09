@@ -29,6 +29,14 @@ export const uiAtlasElements = [
     id: 'soundOff',
     atlasObj: { x: 6, y: 0, w: 1, h: 1 },
   },
+  {
+    id: 'musicOn',
+    atlasObj: { x: 7, y: 0, w: 1, h: 1 },
+  },
+  {
+    id: 'musicOff',
+    atlasObj: { x: 8, y: 0, w: 1, h: 1 },
+  },
 ];
 
 export const uiAtlas = createAtlasFromArray(uiAtlasElements);

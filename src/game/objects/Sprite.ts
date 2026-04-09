@@ -1,6 +1,6 @@
 import { MainScene } from '../scenes/MainScene';
 
-import { getRandomInt, SPRITE_BASE_UNIT } from '../utils/utils';
+import { getRandomInt, playSfx, SPRITE_BASE_UNIT } from '../utils/utils';
 import { Progression } from '../Progression';
 import { Particle } from './Particle';
 
@@ -11,6 +11,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   velocity: { x: number; y: number };
   speed: number;
   rotationSpeed: number = 0;
+  private static lastBounceSound: number = 0;
 
   constructor(scene: MainScene, x: number, y: number) {
     super(scene, x, y, 'spriteAtlas', '');
@@ -44,6 +45,12 @@ export class Sprite extends Phaser.GameObjects.Sprite {
           this.setScale(this.originalScale);
         },
       });
+    }
+
+    const now = this.scene.time.now;
+    if (now - Sprite.lastBounceSound > 60) {
+      Sprite.lastBounceSound = now;
+      playSfx(this.scene, 'wallBounce', 0.15);
     }
   }
 
@@ -173,6 +180,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
 
           this.bounce();
           other.bounce();
+          playSfx(this.scene, 'spriteBounce', 0.1);
           const contactX = (this.x + other.x) / 2;
           const contactY = (this.y + other.y) / 2;
           this.spawnBounceParticles(contactX, contactY);

@@ -5,7 +5,7 @@ import { Progression } from '../Progression';
 import { Shop } from '../objects/Shop';
 import { UPGRADES } from '../objects/ShopUpgrades';
 import { t, getLanguage, setLanguage } from '../utils/i18n';
-import { createUIPanel, formatNumber, FRONT_DEPTH, getColors } from '../utils/utils';
+import { createUIPanel, formatNumber, FRONT_DEPTH, getColors, playSfx, setSfxMuted } from '../utils/utils';
 import { MainScene } from './MainScene';
 
 export class UIScene extends CustomScene {
@@ -44,6 +44,8 @@ export class UIScene extends CustomScene {
   private enFlagImg!: Phaser.GameObjects.Image;
   private frFlagImg!: Phaser.GameObjects.Image;
   private soundToggleImg!: Phaser.GameObjects.Image;
+  private musicToggleImg!: Phaser.GameObjects.Image;
+  private sfxMuted: boolean = false;
 
   constructor() {
     super('UIScene');
@@ -317,6 +319,7 @@ export class UIScene extends CustomScene {
     if (this.animating) return;
     this.animating = true;
     this.collapsed = !this.collapsed;
+    playSfx(this, 'buttonClick', 0.3);
 
     if (this.isPortrait) {
       const panelHeight = UIScene.bottomPanelHeightInTiles * this.tileSize;
@@ -506,7 +509,10 @@ export class UIScene extends CustomScene {
 
     const resumeZone = this.add.zone(centerX, firstButtonY, buttonWidth, buttonHeight);
     resumeZone.setInteractive({ useHandCursor: true });
-    resumeZone.on('pointerup', () => this.closeMenu());
+    resumeZone.on('pointerup', () => {
+      playSfx(this, 'buttonClick', 0.3);
+      this.closeMenu();
+    });
 
     const secondButtonY = firstButtonY + buttonHeight + gap;
 
@@ -539,6 +545,7 @@ export class UIScene extends CustomScene {
     const quitZone = this.add.zone(centerX, secondButtonY, buttonWidth, buttonHeight);
     quitZone.setInteractive({ useHandCursor: true });
     quitZone.on('pointerup', () => {
+      playSfx(this, 'buttonClick', 0.3);
       if (Capacitor.isNativePlatform()) {
         App.exitApp();
       } else if (window.electron) {
@@ -548,18 +555,34 @@ export class UIScene extends CustomScene {
 
     const flagGap = pixelUnit * 6;
     const soundY = menuY + menuHeight - pixelUnit * 8 - flagSize - flagGap - flagSize / 2;
-    const isMuted = this.sound.mute;
+
     this.soundToggleImg = this.add.image(
-      centerX,
+      centerX - flagGap / 2 - flagSize / 2,
       soundY,
       'uiAtlas',
-      isMuted ? 'soundOff' : 'soundOn',
+      this.sfxMuted ? 'soundOff' : 'soundOn',
     );
     this.soundToggleImg.setDisplaySize(flagSize, flagSize);
     this.soundToggleImg.setInteractive({ useHandCursor: true });
     this.soundToggleImg.on('pointerup', () => {
-      this.sound.mute = !this.sound.mute;
-      this.soundToggleImg.setFrame(this.sound.mute ? 'soundOn' : 'soundOff');
+      this.sfxMuted = !this.sfxMuted;
+      setSfxMuted(this.sfxMuted);
+      this.soundToggleImg.setFrame(this.sfxMuted ? 'soundOff' : 'soundOn');
+    });
+
+    const mainScene = this.scene.get('MainScene') as MainScene;
+    const musicMuted = mainScene.bgMusic?.mute ?? false;
+    this.musicToggleImg = this.add.image(
+      centerX + flagGap / 2 + flagSize / 2,
+      soundY,
+      'uiAtlas',
+      musicMuted ? 'musicOff' : 'musicOn',
+    );
+    this.musicToggleImg.setDisplaySize(flagSize, flagSize);
+    this.musicToggleImg.setInteractive({ useHandCursor: true });
+    this.musicToggleImg.on('pointerup', () => {
+      mainScene.bgMusic.mute = !mainScene.bgMusic.mute;
+      this.musicToggleImg.setFrame(mainScene.bgMusic.mute ? 'musicOff' : 'musicOn');
     });
 
     const flagY = menuY + menuHeight - pixelUnit * 8 - flagSize / 2;
@@ -573,6 +596,7 @@ export class UIScene extends CustomScene {
     this.enFlagImg.setDisplaySize(flagSize, flagSize);
     this.enFlagImg.setInteractive({ useHandCursor: true });
     this.enFlagImg.on('pointerup', () => {
+      playSfx(this, 'buttonClick', 0.3);
       setLanguage('en');
       this.refreshMenuTexts();
     });
@@ -586,6 +610,7 @@ export class UIScene extends CustomScene {
     this.frFlagImg.setDisplaySize(flagSize, flagSize);
     this.frFlagImg.setInteractive({ useHandCursor: true });
     this.frFlagImg.on('pointerup', () => {
+      playSfx(this, 'buttonClick', 0.3);
       setLanguage('fr');
       this.refreshMenuTexts();
     });
@@ -604,6 +629,7 @@ export class UIScene extends CustomScene {
       this.enFlagImg,
       this.frFlagImg,
       this.soundToggleImg,
+      this.musicToggleImg,
     ]);
     this.menuContainer.setDepth(FRONT_DEPTH + 50);
     this.menuContainer.setVisible(false);
@@ -624,6 +650,7 @@ export class UIScene extends CustomScene {
   openMenu() {
     if (this.menuOpen) return;
     this.menuOpen = true;
+    playSfx(this, 'buttonClick', 0.3);
     this.menuContainer.setVisible(true);
     this.scene.pause('MainScene');
   }

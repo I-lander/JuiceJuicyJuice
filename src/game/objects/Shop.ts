@@ -2,7 +2,7 @@ import { spriteElements } from '../elements/SpriteAtlas';
 import { Progression } from '../Progression';
 import { UIScene } from '../scenes/UIScene';
 import { t } from '../utils/i18n';
-import { createUIPanel, formatNumber, FRONT_DEPTH } from '../utils/utils';
+import { createUIPanel, formatNumber, FRONT_DEPTH, playSfx } from '../utils/utils';
 import { UPGRADES } from './ShopUpgrades';
 
 interface UpgradeButton {
@@ -558,6 +558,8 @@ export class Shop {
 
     this.flashButton(button);
     this.refreshButton(button);
+    playSfx(this.scene, 'purchase', 0.3);
+
   }
 
   private flashButton(button: UpgradeButton) {
