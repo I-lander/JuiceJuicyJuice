@@ -153,6 +153,102 @@ export const spriteElements = [
     id: 'cat',
     atlasObj: { x: 5, y: 2, w: 1, h: 1 },
   },
+  {
+    id: 'heart',
+    atlasObj: { x: 6, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'key',
+    atlasObj: { x: 7, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'crown',
+    atlasObj: { x: 8, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'potion',
+    atlasObj: { x: 9, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'candle',
+    atlasObj: { x: 10, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'bell',
+    atlasObj: { x: 11, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'umbrella',
+    atlasObj: { x: 12, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'rocket',
+    atlasObj: { x: 13, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'camera',
+    atlasObj: { x: 14, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'fire',
+    atlasObj: { x: 15, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'note',
+    atlasObj: { x: 0, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'lock',
+    atlasObj: { x: 1, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'dice',
+    atlasObj: { x: 2, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'hourglass',
+    atlasObj: { x: 3, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'pencil',
+    atlasObj: { x: 4, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'book',
+    atlasObj: { x: 5, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'envelope',
+    atlasObj: { x: 6, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'trophy',
+    atlasObj: { x: 7, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'present',
+    atlasObj: { x: 8, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'magicHat',
+    atlasObj: { x: 9, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'anchor',
+    atlasObj: { x: 10, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'chest',
+    atlasObj: { x: 11, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'scissors',
+    atlasObj: { x: 12, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'hammer',
+    atlasObj: { x: 13, y: 3, w: 1, h: 1 },
+  },
 ];
 
 export const spriteAtlas = createAtlasFromArray(spriteElements);
