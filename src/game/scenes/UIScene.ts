@@ -43,6 +43,7 @@ export class UIScene extends CustomScene {
   private quitText!: Phaser.GameObjects.Text;
   private enFlagImg!: Phaser.GameObjects.Image;
   private frFlagImg!: Phaser.GameObjects.Image;
+  private soundToggleImg!: Phaser.GameObjects.Image;
 
   constructor() {
     super('UIScene');
@@ -460,7 +461,8 @@ export class UIScene extends CustomScene {
     const menuWidth = buttonWidth + pixelUnit * 16;
     const tileSize = this.tileSize;
     const flagSize = tileSize;
-    const menuHeight = buttonHeight * 2 + gap + pixelUnit * 16 + tileSize * 2 + flagSize;
+    const menuHeight =
+      buttonHeight * 2 + gap + pixelUnit * 16 + tileSize * 2 + flagSize + gap + flagSize;
     const menuX = (screenWidth - menuWidth) / 2;
     const menuY = (screenHeight - menuHeight) / 2;
 
@@ -544,10 +546,30 @@ export class UIScene extends CustomScene {
       }
     });
 
-    const flagY = menuY + menuHeight - pixelUnit * 8 - flagSize / 2;
     const flagGap = pixelUnit * 6;
+    const soundY = menuY + menuHeight - pixelUnit * 8 - flagSize - flagGap - flagSize / 2;
+    const isMuted = this.sound.mute;
+    this.soundToggleImg = this.add.image(
+      centerX,
+      soundY,
+      'uiAtlas',
+      isMuted ? 'soundOff' : 'soundOn',
+    );
+    this.soundToggleImg.setDisplaySize(flagSize, flagSize);
+    this.soundToggleImg.setInteractive({ useHandCursor: true });
+    this.soundToggleImg.on('pointerup', () => {
+      this.sound.mute = !this.sound.mute;
+      this.soundToggleImg.setFrame(this.sound.mute ? 'soundOn' : 'soundOff');
+    });
 
-    this.enFlagImg = this.add.image(centerX - flagGap / 2 - flagSize / 2, flagY, 'uiAtlas', 'enFlag');
+    const flagY = menuY + menuHeight - pixelUnit * 8 - flagSize / 2;
+
+    this.enFlagImg = this.add.image(
+      centerX - flagGap / 2 - flagSize / 2,
+      flagY,
+      'uiAtlas',
+      'enFlag',
+    );
     this.enFlagImg.setDisplaySize(flagSize, flagSize);
     this.enFlagImg.setInteractive({ useHandCursor: true });
     this.enFlagImg.on('pointerup', () => {
@@ -555,7 +577,12 @@ export class UIScene extends CustomScene {
       this.refreshMenuTexts();
     });
 
-    this.frFlagImg = this.add.image(centerX + flagGap / 2 + flagSize / 2, flagY, 'uiAtlas', 'frFlag');
+    this.frFlagImg = this.add.image(
+      centerX + flagGap / 2 + flagSize / 2,
+      flagY,
+      'uiAtlas',
+      'frFlag',
+    );
     this.frFlagImg.setDisplaySize(flagSize, flagSize);
     this.frFlagImg.setInteractive({ useHandCursor: true });
     this.frFlagImg.on('pointerup', () => {
@@ -576,6 +603,7 @@ export class UIScene extends CustomScene {
       quitZone,
       this.enFlagImg,
       this.frFlagImg,
+      this.soundToggleImg,
     ]);
     this.menuContainer.setDepth(FRONT_DEPTH + 50);
     this.menuContainer.setVisible(false);

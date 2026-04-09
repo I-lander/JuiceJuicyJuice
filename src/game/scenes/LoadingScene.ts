@@ -13,6 +13,7 @@ export class LoadingScene extends Phaser.Scene {
     this.load.atlas('spriteAtlas', './assets/images/sprite-atlas.png', spriteAtlas);
     this.load.atlas('particleAtlas', './assets/images/particle-atlas.png', particleAtlas);
     this.load.atlas('uiAtlas', './assets/images/ui-atlas.png', uiAtlas);
+    this.load.audio('bgMusic', './assets/music/ambient_loop.wav');
   }
 
   async create() {

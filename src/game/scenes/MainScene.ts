@@ -53,6 +53,9 @@ export class MainScene extends CustomScene {
     this.uiScene = this.scene.get('UIScene') as UIScene;
     this.eventHandler = new EventHandler(this);
     this.initCamera();
+
+    this.sound.add('bgMusic', { loop: true, volume: 0.4 }).play();
+
   }
 
   initCamera() {
