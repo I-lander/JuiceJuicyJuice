@@ -133,6 +133,26 @@ export const spriteElements = [
     id: 'star',
     atlasObj: { x: 0, y: 2, w: 1, h: 1 },
   },
+  {
+    id: 'orange',
+    atlasObj: { x: 1, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'coin',
+    atlasObj: { x: 2, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'sword',
+    atlasObj: { x: 3, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'gun ',
+    atlasObj: { x: 4, y: 2, w: 1, h: 1 },
+  },
+  {
+    id: 'cat',
+    atlasObj: { x: 5, y: 2, w: 1, h: 1 },
+  },
 ];
 
 export const spriteAtlas = createAtlasFromArray(spriteElements);
