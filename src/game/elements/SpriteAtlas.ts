@@ -249,6 +249,74 @@ export const spriteElements = [
     id: 'hammer',
     atlasObj: { x: 13, y: 3, w: 1, h: 1 },
   },
+  {
+    id: 'burger',
+    atlasObj: { x: 14, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'cookie',
+    atlasObj: { x: 15, y: 3, w: 1, h: 1 },
+  },
+  {
+    id: 'sun',
+    atlasObj: { x: 0, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'moon',
+    atlasObj: { x: 1, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'thunder',
+    atlasObj: { x: 2, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'water',
+    atlasObj: { x: 3, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'ladybug',
+    atlasObj: { x: 4, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'bat',
+    atlasObj: { x: 5, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'penguin',
+    atlasObj: { x: 6, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'goose',
+    atlasObj: { x: 7, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'dog',
+    atlasObj: { x: 8, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'donnut',
+    atlasObj: { x: 9, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'mouse',
+    atlasObj: { x: 10, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'cactus',
+    atlasObj: { x: 11, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'mushroom',
+    atlasObj: { x: 13, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'pumpkin',
+    atlasObj: { x: 14, y: 4, w: 1, h: 1 },
+  },
+  {
+    id: 'icecream',
+    atlasObj: { x: 15, y: 4, w: 1, h: 1 },
+  },
 ];
 
 export const spriteAtlas = createAtlasFromArray(spriteElements);
