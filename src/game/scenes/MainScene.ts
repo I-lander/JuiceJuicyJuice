@@ -57,7 +57,6 @@ export class MainScene extends CustomScene {
 
     // this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.4 }) as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound;
     // this.bgMusic.play();
-
   }
 
   initCamera() {
@@ -97,13 +96,9 @@ export class MainScene extends CustomScene {
     while (!isSpawnValid) {
       if (
         spawnX > this.uiScene.juicePanelBounds.x - margin &&
-        spawnX <
-          this.uiScene.juicePanelBounds.x +
-            this.uiScene.juicePanelBounds.width +
-            margin &&
+        spawnX < this.uiScene.juicePanelBounds.x + this.uiScene.juicePanelBounds.width + margin &&
         spawnY > this.uiScene.juicePanelBounds.y - margin &&
-        spawnY <
-          this.uiScene.juicePanelBounds.y + this.uiScene.juicePanelBounds.height + margin
+        spawnY < this.uiScene.juicePanelBounds.y + this.uiScene.juicePanelBounds.height + margin
       ) {
         spawnX = getRandomInt(margin, this.camera.width - margin);
         spawnY = getRandomInt(margin, this.camera.height - margin);
@@ -122,7 +117,9 @@ export class MainScene extends CustomScene {
     for (let i = 0; i < Progression.autoClickers; i++) {
       const randomX = getRandomInt(this.camera.x, this.camera.x + this.camera.width);
       const randomY = getRandomInt(this.camera.y, this.camera.y + this.camera.height);
-      this.eventHandler.spawnParticles(randomX, randomY);
+      this.time.delayedCall(i * Math.random() * 200, () => {
+        this.eventHandler.spawnParticles(randomX, randomY);
+      });
     }
   }
 

@@ -59,11 +59,7 @@ export class EventHandler {
   }
 
   spawnParticles(x: number, y: number) {
-    const aliveParticles = this.mainScene.getAliveParticleCount();
-    const juiceToAdd = Math.min(
-      Progression.particlesPerClick,
-      this.mainScene.maxParticlesPerClick - aliveParticles,
-    );
+    const juiceToAdd = Progression.particlesPerClick;
 
     if (juiceToAdd <= 0) return;
 
