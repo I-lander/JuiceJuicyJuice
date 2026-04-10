@@ -55,8 +55,8 @@ export class MainScene extends CustomScene {
     this.eventHandler = new EventHandler(this);
     this.initCamera();
 
-    this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.4 }) as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound;
-    this.bgMusic.play();
+    // this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.4 }) as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound;
+    // this.bgMusic.play();
 
   }
 

@@ -564,7 +564,8 @@ export class UIScene extends CustomScene {
     const soundY = menuY + menuHeight - pixelUnit * 8 - flagSize - flagGap - flagSize / 2;
 
     this.soundToggleImg = this.add.image(
-      centerX - flagGap / 2 - flagSize / 2,
+      // centerX - flagGap / 2 - flagSize / 2,
+      centerX,
       soundY,
       'uiAtlas',
       this.sfxMuted ? 'soundOff' : 'soundOn',
@@ -577,21 +578,21 @@ export class UIScene extends CustomScene {
       this.soundToggleImg.setFrame(this.sfxMuted ? 'soundOff' : 'soundOn');
     });
 
-    const mainScene = this.scene.get('MainScene') as MainScene;
-    const musicMuted = mainScene.bgMusic?.mute ?? false;
-    this.musicToggleImg = this.add.image(
-      centerX + flagGap / 2 + flagSize / 2,
-      soundY,
-      'uiAtlas',
-      musicMuted ? 'musicOff' : 'musicOn',
-    );
-    this.musicToggleImg.setDisplaySize(flagSize, flagSize);
-    this.musicToggleImg.setInteractive({ useHandCursor: true });
-    this.musicToggleImg.on('pointerup', () => {
-      mainScene.bgMusic.mute = !mainScene.bgMusic.mute;
+    // const mainScene = this.scene.get('MainScene') as MainScene;
+    // const musicMuted = mainScene.bgMusic?.mute ?? false;
+    // this.musicToggleImg = this.add.image(
+    //   centerX + flagGap / 2 + flagSize / 2,
+    //   soundY,
+    //   'uiAtlas',
+    //   musicMuted ? 'musicOff' : 'musicOn',
+    // );
+    // this.musicToggleImg.setDisplaySize(flagSize, flagSize);
+    // this.musicToggleImg.setInteractive({ useHandCursor: true });
+    // this.musicToggleImg.on('pointerup', () => {
+    //   mainScene.bgMusic.mute = !mainScene.bgMusic.mute;
 
-      this.musicToggleImg.setFrame(mainScene.bgMusic.mute ? 'musicOn' : 'musicOff');
-    });
+    //   this.musicToggleImg.setFrame(mainScene.bgMusic.mute ? 'musicOn' : 'musicOff');
+    // });
 
     const flagY = menuY + menuHeight - pixelUnit * 8 - flagSize / 2;
 
@@ -637,7 +638,7 @@ export class UIScene extends CustomScene {
       this.enFlagImg,
       this.frFlagImg,
       this.soundToggleImg,
-      this.musicToggleImg,
+      // this.musicToggleImg,
     ]);
     this.menuContainer.setDepth(FRONT_DEPTH + 50);
     this.menuContainer.setVisible(false);
