@@ -11,7 +11,9 @@ export function setSfxMuted(muted: boolean) {
 
 export function playSfx(scene: Phaser.Scene, key: string, volume: number = 0.3) {
   if (!sfxMuted) {
-    scene.sound.play(key, { volume });
+    const pitchVariation = 1 + (Math.random() - 0.5) * 0.15;
+    const volumeVariation = volume * (1 + (Math.random() - 0.5) * 0.1);
+    scene.sound.play(key, { volume: volumeVariation, rate: pitchVariation });
   }
 }
 
