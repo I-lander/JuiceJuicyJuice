@@ -317,6 +317,94 @@ export const spriteElements = [
     id: 'icecream',
     atlasObj: { x: 15, y: 4, w: 1, h: 1 },
   },
+  {
+    id: 'car',
+    atlasObj: { x: 0, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'helmet',
+    atlasObj: { x: 1, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'hotdog',
+    atlasObj: { x: 2, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'cat2',
+    atlasObj: { x: 3, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'bird',
+    atlasObj: { x: 4, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'chickenThigh',
+    atlasObj: { x: 5, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'axe',
+    atlasObj: { x: 6, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'bow',
+    atlasObj: { x: 7, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'arrow',
+    atlasObj: { x: 8, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'flag',
+    atlasObj: { x: 9, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'sushi',
+    atlasObj: { x: 10, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'cupcake',
+    atlasObj: { x: 11, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'torch',
+    atlasObj: { x: 12, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'sign',
+    atlasObj: { x: 13, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'clownFish',
+    atlasObj: { x: 14, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'book2',
+    atlasObj: { x: 15, y: 5, w: 1, h: 1 },
+  },
+  {
+    id: 'cupcake2',
+    atlasObj: { x: 0, y: 6, w: 1, h: 1 },
+  },
+  {
+    id: 'oldPhone',
+    atlasObj: { x: 1, y: 6, w: 1, h: 1 },
+  },
+  {
+    id: 'wrench',
+    atlasObj: { x: 2, y: 6, w: 1, h: 1 },
+  },
+  {
+    id: 'pickaxe',
+    atlasObj: { x: 3, y: 6, w: 1, h: 1 },
+  },
+  {
+    id: 'lamp',
+    atlasObj: { x: 4, y: 6, w: 1, h: 1 },
+  },
+  {
+    id: 'tshirt',
+    atlasObj: { x: 5, y: 6, w: 1, h: 1 },
+  },
 ];
 
 export const spriteAtlas = createAtlasFromArray(spriteElements);
