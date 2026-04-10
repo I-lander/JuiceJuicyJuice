@@ -13,26 +13,26 @@ export interface UpgradeDefinition {
 }
 
 export const UPGRADES: Record<string, UpgradeDefinition> = {
-  autoClicker: {
+  addSprite: {
     baseCost: 15,
     levelToUnlock: 0,
+    onPurchase: (scene: MainScene) => {
+      const randomFrame = spriteElements[Math.floor(Math.random() * spriteElements.length)].id;
+      scene.spawnSprite(randomFrame);
+    },
+  },
+  autoClicker: {
+    baseCost: 1_100,
+    levelToUnlock: 10,
     onPurchase: () => {
       Progression.autoClickers++;
     },
   },
   particlesPerClick: {
     baseCost: 3_000,
-    levelToUnlock: 12,
+    levelToUnlock: 15,
     onPurchase: () => {
       Progression.particlesPerClick++;
-    },
-  },
-  addSprite: {
-    baseCost: 1_100,
-    levelToUnlock: 10,
-    onPurchase: (scene: MainScene) => {
-      const randomFrame = spriteElements[Math.floor(Math.random() * spriteElements.length)].id;
-      scene.spawnSprite(randomFrame);
     },
   },
   bounce: {
