@@ -1,15 +1,17 @@
 const frag = `
-precision mediump float;
+precision highp float;
 
 uniform sampler2D uMainSampler;
 varying vec2 outTexCoord;
 
 uniform float glitchIntensity;
 uniform float time;
-uniform vec2 resolution;
 
-float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+float hash(float seed) {
+    float wrapped = fract(seed * 0.1031);
+    wrapped *= wrapped + 33.33;
+    wrapped *= wrapped + wrapped;
+    return fract(wrapped);
 }
 
 void main() {
@@ -21,62 +23,41 @@ void main() {
         return;
     }
 
-    float timeStep = floor(time * (5.0 + intensity * 20.0));
+    float timeStep = floor(time * (5.0 + intensity * 15.0));
 
-    float blockHeight = 0.02 + (1.0 - intensity) * 0.06;
-    float blockIndex = floor(uv.y / blockHeight);
-    float blockSeed = hash(vec2(blockIndex, timeStep));
-    if (blockSeed < intensity * 0.5) {
-        uv.x += (blockSeed - 0.25) * intensity * 0.2;
+    float blockIndex = floor(uv.y * (10.0 + intensity * 30.0));
+    float blockRand = hash(blockIndex + timeStep * 3.17);
+    if (blockRand < intensity * 0.4) {
+        float offset = (hash(blockIndex + timeStep * 7.13) - 0.5) * intensity * 0.06;
+        uv.x += offset;
     }
 
-    float lineSeed = hash(vec2(floor(uv.y * resolution.y * 0.5), timeStep * 1.7));
-    if (lineSeed < intensity * 0.2) {
-        uv.x += (lineSeed - 0.5) * intensity * 0.1;
-    }
-
-    float verticalShift = (hash(vec2(timeStep * 0.3, 7.0)) - 0.5) * intensity * intensity * 0.03;
-    uv.y += verticalShift;
-
-    if (intensity > 0.2) {
-        float tearPosition = fract(time * 0.5 + hash(vec2(timeStep, 99.0)));
-        float tearWidth = 0.005 + intensity * 0.02;
-        if (abs(uv.y - tearPosition) < tearWidth) {
-            uv.x += (intensity - 0.2) * 0.15 * sign(hash(vec2(timeStep, 88.0)) - 0.5);
+    if (intensity > 0.3) {
+        float tearY = hash(timeStep * 1.13);
+        float tearWidth = 0.003 + intensity * 0.008;
+        if (abs(uv.y - tearY) < tearWidth) {
+            uv.x += (intensity - 0.3) * 0.05 * sign(hash(timeStep * 0.37) - 0.5);
         }
     }
 
-    float aberration = intensity * 15.0 / resolution.x;
-    float vertAberration = intensity * 5.0 / resolution.y;
+    float aberration = intensity * 0.008;
 
-    vec4 redChannel = texture2D(uMainSampler, vec2(uv.x + aberration, uv.y + vertAberration * 0.3));
+    vec4 redChannel = texture2D(uMainSampler, vec2(uv.x + aberration, uv.y));
     vec4 greenChannel = texture2D(uMainSampler, uv);
-    vec4 blueChannel = texture2D(uMainSampler, vec2(uv.x - aberration, uv.y - vertAberration * 0.3));
+    vec4 blueChannel = texture2D(uMainSampler, vec2(uv.x - aberration, uv.y));
 
     vec3 color = vec3(redChannel.r, greenChannel.g, blueChannel.b);
     float alpha = greenChannel.a;
 
-    float noiseSeed = hash(uv * resolution + vec2(time * 543.21));
-    if (noiseSeed < intensity * intensity * 0.1) {
-        color = mix(color, vec3(hash(uv + time)), 0.8);
+    float noiseRand = hash(uv.x * 37.0 + uv.y * 59.0 + time * 13.0);
+    if (noiseRand < intensity * intensity * 0.05) {
+        float noiseVal = hash(uv.y * 41.0 + time * 7.0);
+        color = mix(color, vec3(noiseVal), 0.5);
     }
 
-    float corruptSeed = hash(vec2(timeStep * 0.5, 42.0));
-    if (corruptSeed < intensity * 0.25) {
-        float corruptType = hash(vec2(timeStep * 0.7, 13.0));
-        if (corruptType < 0.33) {
-            color.rgb = color.grb;
-        } else if (corruptType < 0.66) {
-            color.rgb = color.bgr;
-        } else {
-            color.rgb = color.gbr;
-        }
-    }
-
-    if (intensity > 0.6) {
-        float flickerAmount = (intensity - 0.6) * 2.5;
-        float flicker = 1.0 + (hash(vec2(timeStep * 2.0, 55.0)) - 0.5) * flickerAmount * 0.3;
-        color *= flicker;
+    if (intensity > 0.7) {
+        float flicker = 1.0 + (hash(timeStep * 2.0 + 55.0) - 0.5) * (intensity - 0.7) * 0.3;
+        color *= max(flicker, 0.85);
     }
 
     gl_FragColor = vec4(color, alpha);
