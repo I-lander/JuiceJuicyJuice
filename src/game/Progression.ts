@@ -17,7 +17,7 @@ export const CPU_COSTS: Record<string, number> = {
   rotatingSprite: 0.7,
 };
 
-const CPU_COEFFICIENT = 0.002;
+const CPU_COEFFICIENT = 0.0002;
 
 export class Progression {
   static juice = 0;
@@ -25,10 +25,10 @@ export class Progression {
   static particlesPerClick = 1;
   static autoClickers = 0;
   static autoClickerCooldown = 3000;
-  static spriteJuiceAmount = 0.1;
-  static bounceJuiceAmount = 0.1;
-  static movementJuiceAmount = 0.1;
-  static rotationJuiceAmount = 0.1;
+  static spriteJuiceAmount = 5;
+  static bounceJuiceAmount = 50;
+  static movementJuiceAmount = 500;
+  static rotationJuiceAmount = 50000;
   static isBounceEnabled = false;
   static isSpriteMovementEnabled = false;
   static isBounceParticlesEnabled = false;
@@ -127,13 +127,17 @@ export class Progression {
 
   static isUpgradeUnlocked(upgradeKey: string): boolean {
     const definition = UPGRADES[upgradeKey];
-    return Progression.level >= definition.levelToUnlock;
+    if (Progression.level < definition.levelToUnlock) return false;
+    if (definition.requires) {
+      const requiredLevel = Progression.upgradeLevels[definition.requires] ?? 0;
+      if (requiredLevel <= 0) return false;
+    }
+    return true;
   }
 
   static upgradeLevels: Record<string, number> = {
     addSprite: 0,
     particlesPerClick: 1,
-    maxParticles: 0,
     autoClicker: 0,
     cooldownReduction: 0,
     bounce: 0,

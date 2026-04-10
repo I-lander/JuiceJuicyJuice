@@ -7,6 +7,7 @@ export interface UpgradeDefinition {
   growthFactor: number;
   maxLevel: number;
   levelToUnlock: number;
+  requires?: string;
   onPurchase: (scene: MainScene) => void;
 }
 
@@ -22,7 +23,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
   },
   autoClicker: {
     baseCost: 50,
-    growthFactor: 1.5,
+    growthFactor: 1.3,
     maxLevel: 100,
     levelToUnlock: 5,
     onPurchase: () => {
@@ -35,7 +36,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     maxLevel: 25,
     levelToUnlock: 7,
     onPurchase: () => {
-      Progression.autoClickerCooldown -= 100;
+      Progression.autoClickerCooldown = Math.max(200, Progression.autoClickerCooldown - 100);
     },
   },
   addSprite: {
@@ -58,7 +59,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   spriteMovement: {
-    baseCost: 4000,
+    baseCost: 4_000,
     growthFactor: 1,
     maxLevel: 1,
     levelToUnlock: 20,
@@ -67,7 +68,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   bounceParticles: {
-    baseCost: 10000,
+    baseCost: 10_000,
     growthFactor: 1,
     maxLevel: 1,
     levelToUnlock: 23,
@@ -76,7 +77,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   spriteCollision: {
-    baseCost: 25000,
+    baseCost: 25_000,
     growthFactor: 1,
     maxLevel: 1,
     levelToUnlock: 25,
@@ -85,7 +86,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   spriteRotation: {
-    baseCost: 120000,
+    baseCost: 120_000,
     growthFactor: 1,
     maxLevel: 1,
     levelToUnlock: 30,
@@ -99,7 +100,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     maxLevel: 25,
     levelToUnlock: 11,
     onPurchase: () => {
-      Progression.spriteJuiceAmount += 0.1;
+      Progression.spriteJuiceAmount += 5;
     },
   },
   bounceJuiceUp: {
@@ -107,26 +108,29 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     growthFactor: 1.4,
     maxLevel: 25,
     levelToUnlock: 16,
+    requires: 'bounce',
     onPurchase: () => {
-      Progression.bounceJuiceAmount += 0.1;
+      Progression.bounceJuiceAmount += 50;
     },
   },
   movementJuiceUp: {
-    baseCost: 6000,
+    baseCost: 6_000,
     growthFactor: 1.4,
     maxLevel: 25,
     levelToUnlock: 21,
+    requires: 'spriteMovement',
     onPurchase: () => {
-      Progression.movementJuiceAmount += 0.1;
+      Progression.movementJuiceAmount += 500;
     },
   },
   rotationJuiceUp: {
-    baseCost: 180000,
+    baseCost: 180_000,
     growthFactor: 1.4,
     maxLevel: 25,
     levelToUnlock: 31,
+    requires: 'spriteRotation',
     onPurchase: () => {
-      Progression.rotationJuiceAmount += 0.1;
+      Progression.rotationJuiceAmount += 50_000;
     },
   },
   yellowParticle: {
@@ -139,7 +143,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   redParticle: {
-    baseCost: 20000,
+    baseCost: 20_000,
     growthFactor: 1,
     maxLevel: 1,
     levelToUnlock: 22,
@@ -148,7 +152,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   blueParticle: {
-    baseCost: 3500000,
+    baseCost: 2_000_000,
     growthFactor: 1,
     maxLevel: 1,
     levelToUnlock: 38,
@@ -157,7 +161,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   greenParticle: {
-    baseCost: 1500000000,
+    baseCost: 500_000_000,
     growthFactor: 1,
     maxLevel: 1,
     levelToUnlock: 52,
@@ -166,7 +170,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   purpleParticle: {
-    baseCost: 800000000000,
+    baseCost: 100_000_000_000,
     growthFactor: 1,
     maxLevel: 1,
     levelToUnlock: 65,
@@ -183,9 +187,9 @@ export interface ParticleColorDefinition {
 
 export const PARTICLE_COLOR_UPGRADES: Record<string, ParticleColorDefinition> = {
   whiteParticle: { tint: 0xffffff, juicePerParticle: 1 },
-  yellowParticle: { tint: 0xffd700, juicePerParticle: 2 },
-  redParticle: { tint: 0xff4444, juicePerParticle: 3 },
-  blueParticle: { tint: 0x44aaff, juicePerParticle: 5 },
-  greenParticle: { tint: 0x44ff44, juicePerParticle: 8 },
-  purpleParticle: { tint: 0xaa44ff, juicePerParticle: 13 },
+  yellowParticle: { tint: 0xffd700, juicePerParticle: 10 },
+  redParticle: { tint: 0xff4444, juicePerParticle: 100 },
+  blueParticle: { tint: 0x44aaff, juicePerParticle: 1000 },
+  greenParticle: { tint: 0x44ff44, juicePerParticle: 100_000 },
+  purpleParticle: { tint: 0xaa44ff, juicePerParticle: 1_000_000 },
 };

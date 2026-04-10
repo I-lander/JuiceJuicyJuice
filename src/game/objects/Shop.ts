@@ -388,23 +388,23 @@ export class Shop {
   private showTooltip(upgradeKey: string, pointerX: number, pointerY: number) {
     const pixelUnit = this.scene.pixelUnit;
     const padding = pixelUnit * 6;
-    const offset = pixelUnit * 8;
+    const fingerOffset = pixelUnit * 20;
 
     this.tooltipText.setText(t(`upgrade.${upgradeKey}.desc`));
 
     const bgWidth = this.tooltipText.width + padding * 2;
     const bgHeight = this.tooltipText.height + padding * 2;
 
-    const screenWidth = this.scene.cameras.main.width;
     const screenHeight = this.scene.cameras.main.height;
 
-    let bgX = pointerX + offset;
-    let bgY = pointerY - bgHeight / 2;
+    let bgX = pointerX - bgWidth / 2;
+    let bgY = pointerY - bgHeight - fingerOffset;
 
-    if (bgX + bgWidth > screenWidth) {
-      bgX = pointerX - offset - bgWidth;
+    if (bgY < 0) {
+      bgY = pointerY + fingerOffset;
     }
-    bgX = Phaser.Math.Clamp(bgX, 0, screenWidth - bgWidth);
+
+    bgX = Phaser.Math.Clamp(bgX, this.panelX, this.panelX + this.panelInnerWidth - bgWidth);
     bgY = Phaser.Math.Clamp(bgY, 0, screenHeight - bgHeight);
 
     this.tooltipText.setPosition(bgX + bgWidth / 2, bgY + bgHeight / 2);
