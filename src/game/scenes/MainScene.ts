@@ -134,6 +134,7 @@ export class MainScene extends CustomScene {
       particle.destroy();
     }
     this.particles = [];
+    this.time.removeAllEvents();
     this.autoClickTimer = 0;
     this.passiveJuiceTimer = 0;
   }
