@@ -9,6 +9,7 @@ import { Particle } from '../objects/Particle';
 import { SaveManager } from '../utils/SaveManager';
 const GLITCH_FPS_THRESHOLD = 45;
 const GLITCH_FPS_FLOOR = 5;
+const UI_GLITCH_RATIO = 0.15;
 
 export class MainScene extends CustomScene {
   uiScene!: UIScene;
@@ -54,7 +55,7 @@ export class MainScene extends CustomScene {
       this.canvasHeight,
       0x42a72e,
     );
-
+    initShader(this);
     this.uiScene = this.scene.get('UIScene') as UIScene;
     this.eventHandler = new EventHandler(this);
     this.initCamera();
@@ -191,11 +192,12 @@ export class MainScene extends CustomScene {
           (GLITCH_FPS_THRESHOLD - GLITCH_FPS_FLOOR),
       ),
     );
+
     if (this.glitchShader) {
       this.glitchShader.glitchIntensity = glitchIntensity;
     }
     if (this.uiScene?.glitchShader) {
-      this.uiScene.glitchShader.glitchIntensity = glitchIntensity;
+      this.uiScene.glitchShader.glitchIntensity = glitchIntensity * UI_GLITCH_RATIO;
     }
 
     SaveManager.updateAutoSave(delta, this);
