@@ -1,12 +1,15 @@
 import { CustomScene } from '../customClasses/CustomScene';
 import { Progression } from '../Progression';
 import { Sprite } from '../objects/Sprite';
-import { getRandomInt, initShader, removeSplashScreen } from '../utils/utils';
+import { getRandomInt, initGlitchShader, initShader, removeSplashScreen } from '../utils/utils';
 import { UIScene } from './UIScene';
 import { spriteElements } from '../elements/SpriteAtlas';
 import { EventHandler } from '../utils/EventHandler';
 import { Particle } from '../objects/Particle';
 import { SaveManager } from '../utils/SaveManager';
+const GLITCH_FPS_THRESHOLD = 45;
+const GLITCH_FPS_FLOOR = 5;
+
 export class MainScene extends CustomScene {
   uiScene!: UIScene;
   eventHandler!: EventHandler;
@@ -61,6 +64,7 @@ export class MainScene extends CustomScene {
       SaveManager.applyLoad(saveData, this);
     }
     SaveManager.setupVisibilityListener(this);
+    initGlitchShader(this);
 
     // this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.4 }) as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound;
     // this.bgMusic.play();
@@ -178,6 +182,21 @@ export class MainScene extends CustomScene {
       rotatingSpriteCount,
       delta,
     );
+
+    const glitchIntensity = Math.max(
+      0,
+      Math.min(
+        1,
+        (GLITCH_FPS_THRESHOLD - Progression.simulatedFps) /
+          (GLITCH_FPS_THRESHOLD - GLITCH_FPS_FLOOR),
+      ),
+    );
+    if (this.glitchShader) {
+      this.glitchShader.glitchIntensity = glitchIntensity;
+    }
+    if (this.uiScene?.glitchShader) {
+      this.uiScene.glitchShader.glitchIntensity = glitchIntensity;
+    }
 
     SaveManager.updateAutoSave(delta, this);
   }

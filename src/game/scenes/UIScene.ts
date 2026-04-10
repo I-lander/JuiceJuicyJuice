@@ -10,6 +10,7 @@ import {
   formatNumber,
   FRONT_DEPTH,
   getColors,
+  initGlitchShader,
   playSfx,
   setSfxMuted,
 } from '../utils/utils';
@@ -93,6 +94,7 @@ export class UIScene extends CustomScene {
     this.createHud();
     this.createNotification();
     this.initUnlockedUpgrades();
+    initGlitchShader(this);
   }
 
   private createJuiceCounter() {

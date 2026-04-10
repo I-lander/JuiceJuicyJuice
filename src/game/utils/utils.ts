@@ -1,5 +1,6 @@
 import { CustomScene } from '../customClasses/CustomScene';
 import CrtShader from '../shaders/CrtShader';
+import GlitchShader from '../shaders/GlitchShader';
 
 export const SPRITE_BASE_UNIT = 16;
 export const FRONT_DEPTH = 1000000;
@@ -190,6 +191,18 @@ export function initShader(scene: Phaser.Scene) {
       }
     }
   });
+}
+
+export function initGlitchShader(scene: Phaser.Scene) {
+  const customScene = scene as CustomScene;
+  const renderer = scene.renderer as Phaser.Renderer.WebGL.WebGLRenderer;
+  renderer.pipelines.addPostPipeline('GlitchShader', GlitchShader);
+  if (scene.cameras.main) {
+    scene.cameras.main.setPostPipeline('GlitchShader');
+    const pipelineInstance = scene.cameras.main.getPostPipeline('GlitchShader') as GlitchShader;
+    customScene.glitchShader = pipelineInstance;
+    customScene.updateGlitchShader();
+  }
 }
 
 export function clearShader(scene: Phaser.Scene) {

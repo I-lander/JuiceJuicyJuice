@@ -1,7 +1,9 @@
 import CrtShader from '../shaders/CrtShader';
+import GlitchShader from '../shaders/GlitchShader';
 
 export class CustomScene extends Phaser.Scene {
   crtShader!: CrtShader;
+  glitchShader!: GlitchShader;
   tileSize!: number;
   pixelUnit!: number;
 
@@ -20,6 +22,13 @@ export class CustomScene extends Phaser.Scene {
       this.crtShader.dynamicOffsetX = 0;
       this.crtShader.screenWidth = this.sys.canvas.width;
       this.crtShader.screenHeight = this.sys.canvas.height;
+    }
+  }
+
+  updateGlitchShader() {
+    if (this.glitchShader) {
+      this.glitchShader.screenWidth = this.sys.canvas.width;
+      this.glitchShader.screenHeight = this.sys.canvas.height;
     }
   }
 

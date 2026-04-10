@@ -18,7 +18,7 @@ export const CPU_COSTS: Record<string, number> = {
   rotatingSprite: 0.7,
 };
 
-const CPU_COEFFICIENT = 0.0002;
+const CPU_COEFFICIENT = 0.002;
 
 export class Progression {
   static juice = 0;
