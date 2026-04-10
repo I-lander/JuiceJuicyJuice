@@ -87,6 +87,8 @@ export class Shop {
     }
     this.setupScrollInput();
     this.createTooltip();
+    this.container.bringToTop(this.tabUpgradesZone);
+    this.container.bringToTop(this.tabUnlocksZone);
   }
 
   private createXpBar() {
@@ -559,7 +561,6 @@ export class Shop {
     this.flashButton(button);
     this.refreshButton(button);
     playSfx(this.scene, 'purchase', 0.3);
-
   }
 
   private flashButton(button: UpgradeButton) {
@@ -567,6 +568,7 @@ export class Shop {
     flash.setDepth(FRONT_DEPTH);
     flash.fillStyle(0xffffff, 0.6);
     flash.fillRect(button.x, button.y, button.width, button.height);
+    this.scrollContainer.add(flash);
     this.scene.tweens.add({
       targets: flash,
       alpha: 0,
@@ -669,6 +671,11 @@ export class Shop {
       if (isVisible) {
         this.repositionButton(button, visibleIndex);
         this.refreshButton(button);
+        const buttonScreenY = button.y - this.scrollOffset;
+        const isInView =
+          buttonScreenY + buttonHeight > this.buttonsStartY &&
+          buttonScreenY < this.buttonsStartY + this.visibleHeight;
+        button.hitZone.input!.enabled = isInView;
         visibleIndex++;
       }
     }
