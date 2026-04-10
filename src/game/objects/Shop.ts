@@ -37,8 +37,8 @@ export class Shop {
   private contentStartY: number;
   private panelBottomY: number;
 
-  private scrollContainer!: Phaser.GameObjects.Container;
-  private scrollOffset: number = 0;
+  public scrollContainer!: Phaser.GameObjects.Container;
+  public scrollOffset: number = 0;
   private maxScrollOffset: number = 0;
   private visibleHeight: number = 0;
 

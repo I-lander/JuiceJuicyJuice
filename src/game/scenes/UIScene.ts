@@ -342,7 +342,8 @@ export class UIScene extends CustomScene {
     this.animating = true;
     this.collapsed = !this.collapsed;
     playSfx(this, 'buttonClick', 0.3);
-
+    this.shop.scrollOffset = 0;
+    this.shop.scrollContainer.y = 0;
     if (this.isPortrait) {
       const panelHeight = UIScene.bottomPanelHeightInTiles * this.tileSize;
       const targetY = this.collapsed ? panelHeight : 0;
