@@ -15,6 +15,10 @@ const translations: Record<Language, Record<string, string>> = {
     'ui.on': 'ON',
     'ui.off': 'OFF',
     'ui.language': 'ENGLISH',
+    'ui.reset': 'RESET',
+    'ui.resetConfirm': 'Reset all progress?',
+    'ui.yes': 'YES',
+    'ui.no': 'NO',
 
     'upgrade.particlesPerClick.name': 'Particles/Click',
     'upgrade.autoClicker.name': 'Autoclicker',
@@ -64,6 +68,10 @@ const translations: Record<Language, Record<string, string>> = {
     'ui.on': 'ON',
     'ui.off': 'OFF',
     'ui.language': 'FRANCAIS',
+    'ui.reset': 'RESET',
+    'ui.resetConfirm': 'Effacer toute la progression ?',
+    'ui.yes': 'OUI',
+    'ui.no': 'NON',
 
     'upgrade.particlesPerClick.name': 'Particules/Clic',
     'upgrade.autoClicker.name': 'Auto-clic',

@@ -77,6 +77,50 @@ export class Progression {
     Progression.simulatedFps = Math.max(0, 60 / (1 + totalCpu * CPU_COEFFICIENT));
   }
 
+  static reset() {
+    Progression.juice = 0;
+    Progression.totalJuice = 0;
+    Progression.level = 1;
+    Progression.sprites = 0;
+    Progression.particlesPerClick = 1;
+    Progression.autoClickers = 0;
+    Progression.autoClickerCooldown = 3000;
+    Progression.spriteJuiceAmount = 5;
+    Progression.bounceJuiceAmount = 50;
+    Progression.movementJuiceAmount = 500;
+    Progression.rotationJuiceAmount = 50000;
+    Progression.isBounceEnabled = false;
+    Progression.isSpriteMovementEnabled = false;
+    Progression.isBounceParticlesEnabled = false;
+    Progression.isSpriteCollisionEnabled = false;
+    Progression.isSpriteRotationEnabled = false;
+    Progression.unlockedParticleColors = [PARTICLE_COLOR_UPGRADES.whiteParticle];
+    Progression.cpuUsage = 0;
+    Progression.simulatedFps = 60;
+    Progression.cpuMultiplier = 1;
+    Progression.activeCollisionCpu = 0;
+    Progression.upgradeLevels = {
+      addSprite: 0,
+      particlesPerClick: 1,
+      autoClicker: 0,
+      cooldownReduction: 0,
+      bounce: 0,
+      spriteMovement: 0,
+      bounceParticles: 0,
+      spriteCollision: 0,
+      spriteRotation: 0,
+      spriteJuiceUp: 0,
+      bounceJuiceUp: 0,
+      movementJuiceUp: 0,
+      rotationJuiceUp: 0,
+      yellowParticle: 0,
+      redParticle: 0,
+      blueParticle: 0,
+      greenParticle: 0,
+      purpleParticle: 0,
+    };
+  }
+
   static getJuiceForLevel(level: number): number {
     return Math.floor(10 * Math.pow(1.4, level - 1));
   }

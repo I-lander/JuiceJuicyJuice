@@ -6,6 +6,7 @@ import { UIScene } from './UIScene';
 import { spriteElements } from '../elements/SpriteAtlas';
 import { EventHandler } from '../utils/EventHandler';
 import { Particle } from '../objects/Particle';
+import { SaveManager } from '../utils/SaveManager';
 export class MainScene extends CustomScene {
   uiScene!: UIScene;
   eventHandler!: EventHandler;
@@ -54,6 +55,12 @@ export class MainScene extends CustomScene {
     this.uiScene = this.scene.get('UIScene') as UIScene;
     this.eventHandler = new EventHandler(this);
     this.initCamera();
+
+    const saveData = SaveManager.load();
+    if (saveData) {
+      SaveManager.applyLoad(saveData, this);
+    }
+    SaveManager.setupVisibilityListener(this);
 
     // this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.4 }) as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound;
     // this.bgMusic.play();
@@ -113,6 +120,19 @@ export class MainScene extends CustomScene {
     this.sprites.push(newSprite);
   }
 
+  clearEntities() {
+    for (const sprite of this.sprites) {
+      sprite.destroy();
+    }
+    this.sprites = [];
+    for (const particle of this.particles) {
+      particle.destroy();
+    }
+    this.particles = [];
+    this.autoClickTimer = 0;
+    this.passiveJuiceTimer = 0;
+  }
+
   private autoClick() {
     for (let i = 0; i < Progression.autoClickers; i++) {
       const randomX = getRandomInt(this.camera.x, this.camera.x + this.camera.width);
@@ -158,5 +178,7 @@ export class MainScene extends CustomScene {
       rotatingSpriteCount,
       delta,
     );
+
+    SaveManager.updateAutoSave(delta, this);
   }
 }

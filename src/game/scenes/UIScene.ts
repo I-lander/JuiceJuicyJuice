@@ -14,6 +14,7 @@ import {
   setSfxMuted,
 } from '../utils/utils';
 import { MainScene } from './MainScene';
+import { SaveManager } from '../utils/SaveManager';
 
 export class UIScene extends CustomScene {
   mainScene!: MainScene;
@@ -49,11 +50,13 @@ export class UIScene extends CustomScene {
   private menuBtnZone!: Phaser.GameObjects.Zone;
   private resumeText!: Phaser.GameObjects.Text;
   private quitText!: Phaser.GameObjects.Text;
+  private resetText!: Phaser.GameObjects.Text;
   private enFlagImg!: Phaser.GameObjects.Image;
   private frFlagImg!: Phaser.GameObjects.Image;
   private soundToggleImg!: Phaser.GameObjects.Image;
   private musicToggleImg!: Phaser.GameObjects.Image;
   private sfxMuted: boolean = false;
+  private confirmContainer!: Phaser.GameObjects.Container;
 
   constructor() {
     super('UIScene');
@@ -488,7 +491,7 @@ export class UIScene extends CustomScene {
     const tileSize = this.tileSize;
     const flagSize = tileSize;
     const menuHeight =
-      buttonHeight * 2 + gap + pixelUnit * 16 + tileSize * 2 + flagSize + gap + flagSize;
+      buttonHeight * 3 + gap * 2 + pixelUnit * 16 + tileSize * 2 + flagSize + gap + flagSize;
     const menuX = (screenWidth - menuWidth) / 2;
     const menuY = (screenHeight - menuHeight) / 2;
 
@@ -576,6 +579,41 @@ export class UIScene extends CustomScene {
       }
     });
 
+    const thirdButtonY = secondButtonY + buttonHeight + gap;
+
+    const resetGraphics = this.add.graphics();
+    resetGraphics.fillStyle(0x443322, 0.9);
+    resetGraphics.fillRect(
+      centerX - buttonWidth / 2,
+      thirdButtonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+    );
+    createUIPanel(
+      resetGraphics,
+      centerX - buttonWidth / 2,
+      thirdButtonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      pixelUnit,
+      0xaa8844,
+      0.9,
+    );
+
+    this.resetText = this.add.text(centerX, thirdButtonY, t('ui.reset'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+    });
+    this.resetText.setOrigin(0.5, 0.5);
+
+    const resetZone = this.add.zone(centerX, thirdButtonY, buttonWidth, buttonHeight);
+    resetZone.setInteractive({ useHandCursor: true });
+    resetZone.on('pointerup', () => {
+      playSfx(this, 'buttonClick', 0.3);
+      this.showResetConfirm();
+    });
+
     const flagGap = pixelUnit * 6;
     const soundY = menuY + menuHeight - pixelUnit * 8 - flagSize - flagGap - flagSize / 2;
 
@@ -651,6 +689,9 @@ export class UIScene extends CustomScene {
       quitGraphics,
       this.quitText,
       quitZone,
+      resetGraphics,
+      this.resetText,
+      resetZone,
       this.enFlagImg,
       this.frFlagImg,
       this.soundToggleImg,
@@ -669,7 +710,121 @@ export class UIScene extends CustomScene {
   private refreshMenuTexts() {
     this.resumeText.setText(t('ui.resume'));
     this.quitText.setText(t('ui.quit'));
+    this.resetText.setText(t('ui.reset'));
     this.refreshFlagAlpha();
+  }
+
+  private createResetConfirm() {
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    const pixelUnit = this.pixelUnit;
+    const fontSize = Math.round(pixelUnit * 14);
+    const padding = pixelUnit * 8;
+    const gap = pixelUnit * 6;
+    const centerX = screenWidth / 2;
+
+    const confirmText = this.add.text(0, 0, t('ui.resetConfirm'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+    });
+    confirmText.setOrigin(0.5, 0.5);
+
+    const yesText = this.add.text(0, 0, t('ui.yes'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+    });
+    yesText.setOrigin(0.5, 0.5);
+
+    const noText = this.add.text(0, 0, t('ui.no'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+    });
+    noText.setOrigin(0.5, 0.5);
+
+    const buttonWidth = Math.max(yesText.width, noText.width) + padding * 2;
+    const buttonHeight = yesText.height + padding;
+    const buttonsRowWidth = buttonWidth * 2 + gap;
+    const panelWidth = Math.max(confirmText.width, buttonsRowWidth) + padding * 2;
+    const panelHeight = confirmText.height + buttonHeight + gap + padding * 2;
+    const panelX = (screenWidth - panelWidth) / 2;
+    const panelY = (screenHeight - panelHeight) / 2;
+
+    const textY = panelY + padding + confirmText.height / 2;
+    confirmText.setPosition(centerX, textY);
+
+    const buttonsY = panelY + panelHeight - padding - buttonHeight / 2;
+
+    const overlay = this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000, 0.7);
+    overlay.setOrigin(0, 0);
+    overlay.setInteractive();
+
+    const panelGraphics = this.add.graphics();
+    panelGraphics.fillStyle(0x000033, 0.95);
+    panelGraphics.fillRect(panelX, panelY, panelWidth, panelHeight);
+    createUIPanel(panelGraphics, panelX, panelY, panelWidth, panelHeight, pixelUnit, 0xffffff, 1);
+
+    const yesGraphics = this.add.graphics();
+    const yesX = centerX - gap / 2 - buttonWidth / 2;
+    yesGraphics.fillStyle(0x552222, 0.9);
+    yesGraphics.fillRect(yesX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight);
+    createUIPanel(yesGraphics, yesX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight, pixelUnit, 0xaa4444, 0.9);
+    yesText.setPosition(yesX, buttonsY);
+
+    const yesZone = this.add.zone(yesX, buttonsY, buttonWidth, buttonHeight);
+    yesZone.setInteractive({ useHandCursor: true });
+    yesZone.on('pointerup', () => {
+      playSfx(this, 'buttonClick', 0.3);
+      SaveManager.deleteSave();
+      this.mainScene.clearEntities();
+      Progression.reset();
+      this.previouslyUnlocked.clear();
+      this.initUnlockedUpgrades();
+      this.closeMenu();
+    });
+
+    const noGraphics = this.add.graphics();
+    const noX = centerX + gap / 2 + buttonWidth / 2;
+    noGraphics.fillStyle(0x225522, 0.9);
+    noGraphics.fillRect(noX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight);
+    createUIPanel(noGraphics, noX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight, pixelUnit, 0x44aa44, 0.9);
+    noText.setPosition(noX, buttonsY);
+
+    const noZone = this.add.zone(noX, buttonsY, buttonWidth, buttonHeight);
+    noZone.setInteractive({ useHandCursor: true });
+    noZone.on('pointerup', () => {
+      playSfx(this, 'buttonClick', 0.3);
+      this.hideResetConfirm();
+    });
+
+    this.confirmContainer = this.add.container(0, 0, [
+      overlay,
+      panelGraphics,
+      confirmText,
+      yesGraphics,
+      yesText,
+      yesZone,
+      noGraphics,
+      noText,
+      noZone,
+    ]);
+    this.confirmContainer.setDepth(FRONT_DEPTH + 60);
+  }
+
+  private showResetConfirm() {
+    if (this.confirmContainer) {
+      this.confirmContainer.destroy();
+    }
+    this.createResetConfirm();
+    this.confirmContainer.setVisible(true);
+  }
+
+  private hideResetConfirm() {
+    if (this.confirmContainer) {
+      this.confirmContainer.destroy();
+    }
   }
 
   openMenu() {
@@ -682,6 +837,9 @@ export class UIScene extends CustomScene {
 
   private closeMenu() {
     this.menuOpen = false;
+    if (this.confirmContainer) {
+      this.confirmContainer.destroy();
+    }
     this.menuContainer.setVisible(false);
     this.scene.resume('MainScene');
   }
