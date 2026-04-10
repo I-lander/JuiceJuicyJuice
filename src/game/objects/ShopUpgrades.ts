@@ -13,18 +13,18 @@ export interface UpgradeDefinition {
 }
 
 export const UPGRADES: Record<string, UpgradeDefinition> = {
-  particlesPerClick: {
+  autoClicker: {
     baseCost: 15,
     levelToUnlock: 0,
     onPurchase: () => {
-      Progression.particlesPerClick++;
+      Progression.autoClickers++;
     },
   },
-  autoClicker: {
-    baseCost: 100,
-    levelToUnlock: 5,
+  particlesPerClick: {
+    baseCost: 3_000,
+    levelToUnlock: 12,
     onPurchase: () => {
-      Progression.autoClickers++;
+      Progression.particlesPerClick++;
     },
   },
   addSprite: {

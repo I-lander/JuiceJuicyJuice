@@ -8,10 +8,10 @@ import { t } from './utils/i18n';
 
 export const CPU_COSTS: Record<string, number> = {
   sprite: 1.0,
-  particle: 0.3,
-  tween: 0.5,
+  particle: 0.08,
+  tween: 0.3,
   movingSprite: 0.5,
-  autoClicker: 0.2,
+  autoClicker: 0.5,
   shader: 2.0,
   uiParasite: 1.5,
   collision: 0.8,
