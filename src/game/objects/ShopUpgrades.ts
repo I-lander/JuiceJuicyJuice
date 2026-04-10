@@ -2,10 +2,11 @@ import { spriteElements } from '../elements/SpriteAtlas';
 import { Progression } from '../Progression';
 import { MainScene } from '../scenes/MainScene';
 
+export const PRICE_INCREASE = 1.15;
+
 export interface UpgradeDefinition {
   baseCost: number;
-  growthFactor: number;
-  maxLevel: number;
+  maxLevel?: number;
   levelToUnlock: number;
   requires?: string;
   onPurchase: (scene: MainScene) => void;
@@ -13,36 +14,21 @@ export interface UpgradeDefinition {
 
 export const UPGRADES: Record<string, UpgradeDefinition> = {
   particlesPerClick: {
-    baseCost: 10,
-    growthFactor: 1.25,
-    maxLevel: 100,
+    baseCost: 15,
     levelToUnlock: 0,
     onPurchase: () => {
       Progression.particlesPerClick++;
     },
   },
   autoClicker: {
-    baseCost: 50,
-    growthFactor: 1.3,
-    maxLevel: 100,
+    baseCost: 100,
     levelToUnlock: 5,
     onPurchase: () => {
       Progression.autoClickers++;
     },
   },
-  cooldownReduction: {
-    baseCost: 75,
-    growthFactor: 1.45,
-    maxLevel: 25,
-    levelToUnlock: 7,
-    onPurchase: () => {
-      Progression.autoClickerCooldown = Math.max(200, Progression.autoClickerCooldown - 100);
-    },
-  },
   addSprite: {
-    baseCost: 100,
-    growthFactor: 1.3,
-    maxLevel: 100,
+    baseCost: 1_100,
     levelToUnlock: 10,
     onPurchase: (scene: MainScene) => {
       const randomFrame = spriteElements[Math.floor(Math.random() * spriteElements.length)].id;
@@ -50,130 +36,112 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     },
   },
   bounce: {
-    baseCost: 800,
-    growthFactor: 1,
+    baseCost: 10_000,
     maxLevel: 1,
-    levelToUnlock: 15,
+    levelToUnlock: 20,
     onPurchase: () => {
       Progression.isBounceEnabled = true;
     },
   },
   spriteMovement: {
-    baseCost: 4_000,
-    growthFactor: 1,
+    baseCost: 1_000_000,
     maxLevel: 1,
-    levelToUnlock: 20,
+    levelToUnlock: 35,
     onPurchase: () => {
       Progression.isSpriteMovementEnabled = true;
     },
   },
   bounceParticles: {
-    baseCost: 10_000,
-    growthFactor: 1,
+    baseCost: 3_000_000,
     maxLevel: 1,
-    levelToUnlock: 23,
+    levelToUnlock: 38,
     onPurchase: () => {
       Progression.isBounceParticlesEnabled = true;
     },
   },
   spriteCollision: {
-    baseCost: 25_000,
-    growthFactor: 1,
+    baseCost: 10_000_000,
     maxLevel: 1,
-    levelToUnlock: 25,
+    levelToUnlock: 42,
     onPurchase: () => {
       Progression.isSpriteCollisionEnabled = true;
     },
   },
   spriteRotation: {
-    baseCost: 120_000,
-    growthFactor: 1,
+    baseCost: 300_000_000,
     maxLevel: 1,
-    levelToUnlock: 30,
+    levelToUnlock: 52,
     onPurchase: () => {
       Progression.isSpriteRotationEnabled = true;
     },
   },
   spriteJuiceUp: {
-    baseCost: 150,
-    growthFactor: 1.4,
-    maxLevel: 25,
-    levelToUnlock: 11,
+    baseCost: 12_000,
+    levelToUnlock: 15,
     onPurchase: () => {
       Progression.spriteJuiceAmount += 5;
     },
   },
   bounceJuiceUp: {
-    baseCost: 1200,
-    growthFactor: 1.4,
-    maxLevel: 25,
-    levelToUnlock: 16,
+    baseCost: 1_400_000,
+    levelToUnlock: 30,
     requires: 'bounce',
     onPurchase: () => {
       Progression.bounceJuiceAmount += 50;
     },
   },
   movementJuiceUp: {
-    baseCost: 6_000,
-    growthFactor: 1.4,
-    maxLevel: 25,
-    levelToUnlock: 21,
+    baseCost: 20_000_000,
+    levelToUnlock: 45,
     requires: 'spriteMovement',
     onPurchase: () => {
       Progression.movementJuiceAmount += 500;
     },
   },
   rotationJuiceUp: {
-    baseCost: 180_000,
-    growthFactor: 1.4,
-    maxLevel: 25,
-    levelToUnlock: 31,
+    baseCost: 330_000_000,
+    levelToUnlock: 60,
     requires: 'spriteRotation',
     onPurchase: () => {
       Progression.rotationJuiceAmount += 50_000;
     },
   },
   yellowParticle: {
-    baseCost: 300,
-    growthFactor: 1,
+    baseCost: 150,
     maxLevel: 1,
-    levelToUnlock: 12,
+    levelToUnlock: 3,
     onPurchase: () => {
       Progression.unlockedParticleColors.push(PARTICLE_COLOR_UPGRADES.yellowParticle);
     },
   },
   redParticle: {
-    baseCost: 20_000,
-    growthFactor: 1,
+    baseCost: 50_000,
     maxLevel: 1,
-    levelToUnlock: 22,
+    levelToUnlock: 24,
     onPurchase: () => {
       Progression.unlockedParticleColors.push(PARTICLE_COLOR_UPGRADES.redParticle);
     },
   },
   blueParticle: {
-    baseCost: 2_000_000,
-    growthFactor: 1,
+    baseCost: 1_000_000_000,
     maxLevel: 1,
-    levelToUnlock: 38,
+    levelToUnlock: 55,
     onPurchase: () => {
       Progression.unlockedParticleColors.push(PARTICLE_COLOR_UPGRADES.blueParticle);
     },
   },
   greenParticle: {
-    baseCost: 500_000_000,
-    growthFactor: 1,
+    baseCost: 70_000_000_000,
     maxLevel: 1,
-    levelToUnlock: 52,
+    levelToUnlock: 68,
     onPurchase: () => {
       Progression.unlockedParticleColors.push(PARTICLE_COLOR_UPGRADES.greenParticle);
     },
   },
   purpleParticle: {
-    baseCost: 100_000_000_000,
-    growthFactor: 1,
+    baseCost: 5_000_000_000_000,
     maxLevel: 1,
-    levelToUnlock: 65,
+    levelToUnlock: 80,
     onPurchase: () => {
       Progression.unlockedParticleColors.push(PARTICLE_COLOR_UPGRADES.purpleParticle);
     },

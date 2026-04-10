@@ -249,7 +249,7 @@ export class Shop {
   }
 
   private isMultiLevelUpgrade(upgradeKey: string): boolean {
-    return UPGRADES[upgradeKey].maxLevel > 1;
+    return UPGRADES[upgradeKey].maxLevel === undefined;
   }
 
   private createScrollContainer() {
@@ -606,7 +606,7 @@ export class Shop {
     const pixelUnit = this.scene.pixelUnit;
     const definition = UPGRADES[button.upgradeKey];
     const level = Progression.upgradeLevels[button.upgradeKey] ?? 0;
-    const isMaxed = level >= definition.maxLevel;
+    const isMaxed = definition.maxLevel !== undefined && level >= definition.maxLevel;
     const canAfford = Progression.canAffordUpgrade(button.upgradeKey);
 
     button.graphics.clear();
@@ -635,7 +635,7 @@ export class Shop {
     button.nameText.setText(t(`upgrade.${button.upgradeKey}.name`));
 
     const currentValue = Progression.getUpgradeValue(button.upgradeKey);
-    button.levelText.setText(`${currentValue}  (${level}/${definition.maxLevel})`);
+    button.levelText.setText(`${currentValue}  (${level})`);
 
     if (isMaxed) {
       button.costText.setText(t('ui.max'));

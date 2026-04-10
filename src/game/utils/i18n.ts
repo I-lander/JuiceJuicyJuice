@@ -22,7 +22,6 @@ const translations: Record<Language, Record<string, string>> = {
 
     'upgrade.particlesPerClick.name': 'Particles/Click',
     'upgrade.autoClicker.name': 'Autoclicker',
-    'upgrade.cooldownReduction.name': 'Cooldown -',
     'upgrade.addSprite.name': 'Add Sprite',
     'upgrade.bounce.name': 'Bounce',
     'upgrade.spriteMovement.name': 'Movement',
@@ -41,7 +40,6 @@ const translations: Record<Language, Record<string, string>> = {
 
     'upgrade.particlesPerClick.desc': '+1 particle spawned per click',
     'upgrade.autoClicker.desc': '+1 automatic clicker',
-    'upgrade.cooldownReduction.desc': '-0.1s autoclicker cooldown',
     'upgrade.addSprite.desc': 'Spawn a new random sprite',
     'upgrade.bounce.desc': 'Sprites bounce off walls',
     'upgrade.spriteMovement.desc': 'Sprites start moving around',
@@ -75,7 +73,6 @@ const translations: Record<Language, Record<string, string>> = {
 
     'upgrade.particlesPerClick.name': 'Particules/Clic',
     'upgrade.autoClicker.name': 'Auto-clic',
-    'upgrade.cooldownReduction.name': 'Recharge -',
     'upgrade.addSprite.name': '+ Sprite',
     'upgrade.bounce.name': 'Rebond',
     'upgrade.spriteMovement.name': 'Mouvement',
@@ -94,7 +91,6 @@ const translations: Record<Language, Record<string, string>> = {
 
     'upgrade.particlesPerClick.desc': '+1 particule par clic',
     'upgrade.autoClicker.desc': '+1 clic automatique',
-    'upgrade.cooldownReduction.desc': '-0.1s recharge auto-clic',
     'upgrade.addSprite.desc': 'Ajoute un sprite aleatoire',
     'upgrade.bounce.desc': 'Les sprites rebondissent',
     'upgrade.spriteMovement.desc': 'Les sprites se deplacent',

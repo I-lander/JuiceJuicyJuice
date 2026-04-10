@@ -1,6 +1,7 @@
 import {
   PARTICLE_COLOR_UPGRADES,
   type ParticleColorDefinition,
+  PRICE_INCREASE,
   UPGRADES,
 } from './objects/ShopUpgrades';
 import { t } from './utils/i18n';
@@ -103,7 +104,6 @@ export class Progression {
       addSprite: 0,
       particlesPerClick: 1,
       autoClicker: 0,
-      cooldownReduction: 0,
       bounce: 0,
       spriteMovement: 0,
       bounceParticles: 0,
@@ -198,7 +198,6 @@ export class Progression {
     addSprite: 0,
     particlesPerClick: 1,
     autoClicker: 0,
-    cooldownReduction: 0,
     bounce: 0,
     spriteMovement: 0,
     bounceParticles: 0,
@@ -223,8 +222,6 @@ export class Progression {
         return `${Progression.upgradeLevels['particlesPerClick']}`;
       case 'autoClicker':
         return `${Progression.autoClickers}`;
-      case 'cooldownReduction':
-        return `${(Progression.autoClickerCooldown / 1000).toFixed(1)}s`;
       case 'spriteJuiceUp':
         return `${Progression.spriteJuiceAmount.toFixed(1)}`;
       case 'bounceJuiceUp':
@@ -260,7 +257,7 @@ export class Progression {
   static getUpgradeCost(upgradeKey: string): number {
     const definition = UPGRADES[upgradeKey];
     const level = Progression.upgradeLevels[upgradeKey] ?? 0;
-    return Math.floor(definition.baseCost * Math.pow(definition.growthFactor, level));
+    return Math.ceil(definition.baseCost * Math.pow(PRICE_INCREASE, level));
   }
 
   static canAffordUpgrade(upgradeKey: string): boolean {
@@ -272,7 +269,8 @@ export class Progression {
     const definition = UPGRADES[upgradeKey];
     const level = Progression.upgradeLevels[upgradeKey] ?? 0;
 
-    if (Progression.juice < cost || level >= definition.maxLevel) return false;
+    if (Progression.juice < cost) return false;
+    if (definition.maxLevel !== undefined && level >= definition.maxLevel) return false;
 
     Progression.juice -= cost;
     Progression.upgradeLevels[upgradeKey] = level + 1;
