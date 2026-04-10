@@ -110,11 +110,16 @@ export class UIScene extends CustomScene {
     this.juiceText.setDepth(FRONT_DEPTH + 11);
 
     const smallFontSize = Math.round(pixelUnit * 10);
-    this.juicePerSecondText = this.add.text(centerX, topY + padding + fontSize + pixelUnit * 2, '', {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${smallFontSize}px`,
-      color: '#aaaaaa',
-    });
+    this.juicePerSecondText = this.add.text(
+      centerX,
+      topY + padding + fontSize - pixelUnit * 2,
+      '',
+      {
+        fontFamily: 'KenneyPixel',
+        fontSize: `${smallFontSize}px`,
+        color: '#aaaaaa',
+      },
+    );
     this.juicePerSecondText.setOrigin(0.5, 0);
     this.juicePerSecondText.setDepth(FRONT_DEPTH + 11);
 
@@ -685,8 +690,9 @@ export class UIScene extends CustomScene {
       this.shop.update();
     }
     this.juiceText.setText(formatNumber(Progression.juice));
-    const juicePerSecond = Progression.getTotalJuicePerSecond();
-    this.juicePerSecondText.setText(juicePerSecond > 0 ? `${formatNumber(juicePerSecond)}/s` : '');
+    const isReadOnly = true;
+    const juicePerSecond = Progression.getTotalJuicePerSecond(isReadOnly);
+    this.juicePerSecondText.setText(juicePerSecond > 0 ? `${formatNumber(juicePerSecond)}/s` : '0/s');
     this.refreshJuicePanel();
     this.refreshHud();
     this.checkNewUnlocks();

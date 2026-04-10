@@ -109,7 +109,7 @@ export class Progression {
     return Progression.getJuiceInCurrentLevel() / Progression.getJuiceForLevel(Progression.level);
   }
 
-  static getTotalJuicePerSecond(): number {
+  static getTotalJuicePerSecond(isReadOnly: boolean = false): number {
     let juicePerSecond = Progression.spriteJuiceAmount * Progression.sprites;
 
     if (Progression.isBounceEnabled) {
@@ -120,6 +120,21 @@ export class Progression {
     }
     if (Progression.isSpriteRotationEnabled) {
       juicePerSecond += Progression.rotationJuiceAmount * Progression.sprites;
+    }
+    if (isReadOnly) {
+      if (Progression.autoClickers > 0 && Progression.unlockedParticleColors.length > 0) {
+        const averageJuicePerParticle =
+          Progression.unlockedParticleColors.reduce(
+            (sum, color) => sum + color.juicePerParticle,
+            0,
+          ) / Progression.unlockedParticleColors.length;
+        const clicksPerSecond = 1000 / Progression.autoClickerCooldown;
+        juicePerSecond +=
+          Progression.autoClickers *
+          Progression.particlesPerClick *
+          averageJuicePerParticle *
+          clicksPerSecond;
+      }
     }
 
     return Math.round(juicePerSecond * 10) / 10;
