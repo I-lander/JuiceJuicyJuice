@@ -5,7 +5,14 @@ import { Progression } from '../Progression';
 import { Shop } from '../objects/Shop';
 import { UPGRADES } from '../objects/ShopUpgrades';
 import { t, getLanguage, setLanguage } from '../utils/i18n';
-import { createUIPanel, formatNumber, FRONT_DEPTH, getColors, playSfx, setSfxMuted } from '../utils/utils';
+import {
+  createUIPanel,
+  formatNumber,
+  FRONT_DEPTH,
+  getColors,
+  playSfx,
+  setSfxMuted,
+} from '../utils/utils';
 import { MainScene } from './MainScene';
 
 export class UIScene extends CustomScene {
@@ -582,7 +589,8 @@ export class UIScene extends CustomScene {
     this.musicToggleImg.setInteractive({ useHandCursor: true });
     this.musicToggleImg.on('pointerup', () => {
       mainScene.bgMusic.mute = !mainScene.bgMusic.mute;
-      this.musicToggleImg.setFrame(mainScene.bgMusic.mute ? 'musicOff' : 'musicOn');
+
+      this.musicToggleImg.setFrame(mainScene.bgMusic.mute ? 'musicOn' : 'musicOff');
     });
 
     const flagY = menuY + menuHeight - pixelUnit * 8 - flagSize / 2;
