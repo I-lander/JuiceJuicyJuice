@@ -13,6 +13,7 @@ import {
   initGlitchShader,
   playSfx,
   setSfxMuted,
+  sfxMuted,
 } from '../utils/utils';
 import { MainScene } from './MainScene';
 import { SaveManager } from '../utils/SaveManager';
@@ -622,6 +623,7 @@ export class UIScene extends CustomScene {
     const flagGap = pixelUnit * 6;
     const soundY = menuY + menuHeight - pixelUnit * 8 - flagSize - flagGap - flagSize / 2;
 
+    this.sfxMuted = sfxMuted;
     this.soundToggleImg = this.add.image(
       // centerX - flagGap / 2 - flagSize / 2,
       centerX,

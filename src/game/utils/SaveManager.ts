@@ -1,6 +1,8 @@
 import { Progression } from '../Progression';
 import { PARTICLE_COLOR_UPGRADES } from '../objects/ShopUpgrades';
 import type { MainScene } from '../scenes/MainScene';
+import { sfxMuted, setSfxMuted } from './utils';
+import { getLanguage, setLanguage, type Language } from './i18n';
 
 const SAVE_KEY = 'juice_save_data';
 const AUTO_SAVE_INTERVAL = 30_000;
@@ -23,6 +25,8 @@ interface SaveData {
   isBounceParticlesEnabled: boolean;
   isSpriteCollisionEnabled: boolean;
   isSpriteRotationEnabled: boolean;
+  sfxMuted: boolean;
+  language: Language;
 }
 
 const PARTICLE_COLOR_KEYS = [
@@ -57,6 +61,8 @@ export class SaveManager {
       isBounceParticlesEnabled: Progression.isBounceParticlesEnabled,
       isSpriteCollisionEnabled: Progression.isSpriteCollisionEnabled,
       isSpriteRotationEnabled: Progression.isSpriteRotationEnabled,
+      sfxMuted,
+      language: getLanguage(),
     };
 
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -88,6 +94,8 @@ export class SaveManager {
     Progression.isBounceParticlesEnabled = data.isBounceParticlesEnabled;
     Progression.isSpriteCollisionEnabled = data.isSpriteCollisionEnabled;
     Progression.isSpriteRotationEnabled = data.isSpriteRotationEnabled;
+    setSfxMuted(data.sfxMuted ?? false);
+    if (data.language) setLanguage(data.language);
 
     Progression.unlockedParticleColors = [PARTICLE_COLOR_UPGRADES.whiteParticle];
     for (const key of PARTICLE_COLOR_KEYS) {
