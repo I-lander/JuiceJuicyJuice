@@ -255,7 +255,8 @@ export class TitleScene extends CustomScene {
     const pixelUnit = this.pixelUnit;
     const fontSize = Math.round(pixelUnit * 10);
     const margin = pixelUnit * 6;
-    const versionText = this.add.text(margin, this.canvasHeight - margin, `v${APP_VERSION}`, {
+    const demoSuffix = import.meta.env?.VITE_DEMO_MODE === 'true' ? '-DEMO' : '';
+    const versionText = this.add.text(margin, this.canvasHeight - margin, `v${APP_VERSION}${demoSuffix}`, {
       fontFamily: 'KenneyPixel',
       fontSize: `${fontSize}px`,
       color: '#ffffff',
