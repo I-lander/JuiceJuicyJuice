@@ -2,6 +2,21 @@ import Phaser from 'phaser';
 import { MainScene } from './scenes/MainScene';
 import { UIScene } from './scenes/UIScene';
 import { LoadingScene } from './scenes/LoadingScene';
+import { TitleScene } from './scenes/TitleScene';
+
+Phaser.GameObjects.TextStyle.prototype.syncStyle = function (
+  this: { color: string; stroke: string; strokeThickness: number },
+  _canvas: HTMLCanvasElement,
+  context: CanvasRenderingContext2D,
+) {
+  context.textBaseline = 'alphabetic';
+  context.fillStyle = this.color;
+  context.strokeStyle = this.stroke;
+  context.lineWidth = this.strokeThickness;
+  context.lineCap = 'butt';
+  context.lineJoin = 'miter';
+  context.miterLimit = 10;
+};
 
 export function initPhaserGame() {
   window.splashStartTime = Date.now();
@@ -23,7 +38,7 @@ export function initPhaserGame() {
     },
     disableContextMenu: true,
     parent: 'game-container',
-    scene: [LoadingScene, MainScene, UIScene],
+    scene: [LoadingScene, TitleScene, MainScene, UIScene],
     powerPreference: 'high-performance',
     autoMobilePipeline: true,
     fps: {

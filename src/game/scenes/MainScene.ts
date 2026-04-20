@@ -55,7 +55,6 @@ export class MainScene extends CustomScene {
       this.canvasHeight,
       0x42a72e,
     );
-    initShader(this);
     this.uiScene = this.scene.get('UIScene') as UIScene;
     this.eventHandler = new EventHandler(this);
     this.initCamera();
