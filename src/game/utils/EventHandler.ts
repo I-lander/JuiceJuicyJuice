@@ -52,6 +52,9 @@ export class EventHandler {
             spriteElements[Math.floor(Math.random() * spriteElements.length)].id,
           );
         }
+        if (key.code === 'KeyC') {
+          this.mainScene.uiScene.showCrashScreen();
+        }
       }
     });
 
