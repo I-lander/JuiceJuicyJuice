@@ -1,7 +1,7 @@
 import { MainScene } from '../scenes/MainScene';
 
 import { getRandomInt, playSfx, SPRITE_BASE_UNIT } from '../utils/utils';
-import { Progression } from '../Progression';
+import { BASE_BOUNCE_INTERVAL_MS, Progression } from '../Progression';
 import { Particle } from './Particle';
 
 export class Sprite extends Phaser.GameObjects.Sprite {
@@ -11,6 +11,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
   velocity: { x: number; y: number };
   speed: number;
   rotationSpeed: number = 0;
+  autoBounceTimer: number;
   private static lastBounceSound: number = 0;
 
   constructor(scene: MainScene, x: number, y: number) {
@@ -25,6 +26,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     scene.add.existing(this);
 
     this.velocity = { x: Math.random() * 2 - 1, y: Math.random() * 2 - 1 };
+    this.autoBounceTimer = Math.random() * BASE_BOUNCE_INTERVAL_MS;
   }
 
   init(texture: string) {
@@ -34,7 +36,7 @@ export class Sprite extends Phaser.GameObjects.Sprite {
 
   bounce() {
     if (Progression.isBounceEnabled && this.scale === this.originalScale) {
-      const bounceAmount = 0.2;
+      const bounceAmount = 0.2 * Progression.bounceScaleMultiplier;
       this.scene.tweens.add({
         targets: this,
         scale: this.scale * (1 + bounceAmount),
@@ -66,8 +68,9 @@ export class Sprite extends Phaser.GameObjects.Sprite {
 
   move(delta: number) {
     const radius = (this.width * this.scale) / 2;
-    this.x += this.velocity.x * this.speed * (delta / 1000);
-    this.y += this.velocity.y * this.speed * (delta / 1000);
+    const effectiveSpeed = this.speed * Progression.spriteSpeedMultiplier;
+    this.x += this.velocity.x * effectiveSpeed * (delta / 1000);
+    this.y += this.velocity.y * effectiveSpeed * (delta / 1000);
 
     if (this.x < radius) {
       this.x = radius;
@@ -197,7 +200,21 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     }
 
     if (Progression.isSpriteRotationEnabled) {
-      this.rotation += this.rotationSpeed * (delta / 1000);
+      this.rotation += this.rotationSpeed * Progression.spriteRotationSpeedMultiplier * (delta / 1000);
+    }
+
+    if (Progression.isBounceEnabled) {
+      this.autoBounceTimer += delta;
+      if (this.autoBounceTimer >= BASE_BOUNCE_INTERVAL_MS) {
+        this.autoBounceTimer -= BASE_BOUNCE_INTERVAL_MS;
+        this.bounce();
+        this.spawnBounceParticles(this.x, this.y);
+        const bounceJuice =
+          Progression.bounceJuiceAmount *
+          Progression.bounceScaleMultiplier *
+          (BASE_BOUNCE_INTERVAL_MS / 1000);
+        Progression.addJuice(bounceJuice);
+      }
     }
   }
 }

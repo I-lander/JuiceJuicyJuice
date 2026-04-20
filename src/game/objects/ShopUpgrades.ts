@@ -75,35 +75,28 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
       Progression.isSpriteRotationEnabled = true;
     },
   },
-  spriteJuiceUp: {
-    baseCost: 12_000,
-    levelToUnlock: 15,
-    onPurchase: () => {
-      Progression.spriteJuiceAmount += 5;
-    },
-  },
-  bounceJuiceUp: {
-    baseCost: 1_400_000,
-    levelToUnlock: 30,
+  bounceSizeUp: {
+    baseCost: 1_000_000,
+    levelToUnlock: 20,
     requires: 'bounce',
     onPurchase: () => {
-      Progression.bounceJuiceAmount += 50;
+      Progression.bounceScaleMultiplier += 0.25;
     },
   },
-  movementJuiceUp: {
+  spriteSpeedUp: {
     baseCost: 20_000_000,
-    levelToUnlock: 45,
+    levelToUnlock: 35,
     requires: 'spriteMovement',
     onPurchase: () => {
-      Progression.movementJuiceAmount += 500;
+      Progression.spriteSpeedMultiplier += 0.25;
     },
   },
-  rotationJuiceUp: {
+  spriteRotationSpeedUp: {
     baseCost: 330_000_000,
-    levelToUnlock: 60,
+    levelToUnlock: 52,
     requires: 'spriteRotation',
     onPurchase: () => {
-      Progression.rotationJuiceAmount += 50_000;
+      Progression.spriteRotationSpeedMultiplier += 0.25;
     },
   },
   yellowParticle: {

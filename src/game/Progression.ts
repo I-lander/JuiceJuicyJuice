@@ -14,7 +14,10 @@ export const CPU_COSTS: Record<string, number> = {
   autoClicker: 0.5,
   collision: 0.8,
   rotatingSprite: 0.7,
+  bounce: 0.6,
 };
+
+export const BASE_BOUNCE_INTERVAL_MS = 5000;
 
 const CPU_CAPACITY_MHZ = 500;
 
@@ -33,6 +36,9 @@ export class Progression {
   static isBounceParticlesEnabled = false;
   static isSpriteCollisionEnabled = false;
   static isSpriteRotationEnabled = false;
+  static spriteSpeedMultiplier = 1;
+  static spriteRotationSpeedMultiplier = 1;
+  static bounceScaleMultiplier = 1;
   static unlockedParticleColors: ParticleColorDefinition[] = [
     PARTICLE_COLOR_UPGRADES.whiteParticle,
   ];
@@ -56,6 +62,7 @@ export class Progression {
     activeTweenCount: number,
     movingSpriteCount: number,
     rotatingSpriteCount: number,
+    bouncingSpriteCount: number,
     delta: number,
   ) {
     Progression.activeCollisionCpu = Math.max(
@@ -67,9 +74,10 @@ export class Progression {
     totalCpu += spriteCount * CPU_COSTS.sprite;
     totalCpu += particleCount * CPU_COSTS.particle;
     totalCpu += activeTweenCount * CPU_COSTS.tween;
-    totalCpu += movingSpriteCount * CPU_COSTS.movingSprite;
+    totalCpu += movingSpriteCount * CPU_COSTS.movingSprite * Progression.spriteSpeedMultiplier;
     totalCpu += Progression.autoClickers * CPU_COSTS.autoClicker;
-    totalCpu += rotatingSpriteCount * CPU_COSTS.rotatingSprite;
+    totalCpu += rotatingSpriteCount * CPU_COSTS.rotatingSprite * Progression.spriteRotationSpeedMultiplier;
+    totalCpu += bouncingSpriteCount * CPU_COSTS.bounce * Progression.bounceScaleMultiplier;
     totalCpu += Progression.activeCollisionCpu;
     totalCpu *= Progression.cpuMultiplier;
 
@@ -94,6 +102,9 @@ export class Progression {
     Progression.isBounceParticlesEnabled = false;
     Progression.isSpriteCollisionEnabled = false;
     Progression.isSpriteRotationEnabled = false;
+    Progression.spriteSpeedMultiplier = 1;
+    Progression.spriteRotationSpeedMultiplier = 1;
+    Progression.bounceScaleMultiplier = 1;
     Progression.unlockedParticleColors = [PARTICLE_COLOR_UPGRADES.whiteParticle];
     Progression.cpuUsage = 0;
     Progression.cpuCapacityMhz = CPU_CAPACITY_MHZ;
@@ -110,9 +121,9 @@ export class Progression {
       spriteCollision: 0,
       spriteRotation: 0,
       spriteJuiceUp: 0,
-      bounceJuiceUp: 0,
-      movementJuiceUp: 0,
-      rotationJuiceUp: 0,
+      bounceSizeUp: 0,
+      spriteSpeedUp: 0,
+      spriteRotationSpeedUp: 0,
       yellowParticle: 0,
       redParticle: 0,
       blueParticle: 0,
@@ -156,16 +167,21 @@ export class Progression {
   static getTotalJuicePerSecond(isReadOnly: boolean = false): number {
     let juicePerSecond = Progression.spriteJuiceAmount * Progression.sprites;
 
-    if (Progression.isBounceEnabled) {
-      juicePerSecond += Progression.bounceJuiceAmount * Progression.sprites;
-    }
     if (Progression.isSpriteMovementEnabled) {
-      juicePerSecond += Progression.movementJuiceAmount * Progression.sprites;
+      juicePerSecond +=
+        Progression.movementJuiceAmount * Progression.sprites * Progression.spriteSpeedMultiplier;
     }
     if (Progression.isSpriteRotationEnabled) {
-      juicePerSecond += Progression.rotationJuiceAmount * Progression.sprites;
+      juicePerSecond +=
+        Progression.rotationJuiceAmount *
+        Progression.sprites *
+        Progression.spriteRotationSpeedMultiplier;
     }
     if (isReadOnly) {
+      if (Progression.isBounceEnabled) {
+        juicePerSecond +=
+          Progression.bounceJuiceAmount * Progression.sprites * Progression.bounceScaleMultiplier;
+      }
       if (Progression.autoClickers > 0 && Progression.unlockedParticleColors.length > 0) {
         const averageJuicePerParticle =
           Progression.unlockedParticleColors.reduce(
@@ -204,9 +220,9 @@ export class Progression {
     spriteCollision: 0,
     spriteRotation: 0,
     spriteJuiceUp: 0,
-    bounceJuiceUp: 0,
-    movementJuiceUp: 0,
-    rotationJuiceUp: 0,
+    bounceSizeUp: 0,
+    spriteSpeedUp: 0,
+    spriteRotationSpeedUp: 0,
     yellowParticle: 0,
     redParticle: 0,
     blueParticle: 0,
@@ -224,12 +240,12 @@ export class Progression {
         return `${Progression.autoClickers}`;
       case 'spriteJuiceUp':
         return `${Progression.spriteJuiceAmount.toFixed(1)}`;
-      case 'bounceJuiceUp':
-        return `${Progression.bounceJuiceAmount.toFixed(1)}`;
-      case 'movementJuiceUp':
-        return `${Progression.movementJuiceAmount.toFixed(1)}`;
-      case 'rotationJuiceUp':
-        return `${Progression.rotationJuiceAmount.toFixed(1)}`;
+      case 'bounceSizeUp':
+        return `x${Progression.bounceScaleMultiplier.toFixed(2)}`;
+      case 'spriteSpeedUp':
+        return `x${Progression.spriteSpeedMultiplier.toFixed(2)}`;
+      case 'spriteRotationSpeedUp':
+        return `x${Progression.spriteRotationSpeedMultiplier.toFixed(2)}`;
       case 'bounce':
         return Progression.isBounceEnabled ? t('ui.on') : t('ui.off');
       case 'spriteMovement':

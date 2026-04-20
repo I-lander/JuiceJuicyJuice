@@ -3,10 +3,10 @@ import { Progression } from '../Progression';
 import { Sprite } from '../objects/Sprite';
 import { getRandomInt, initGlitchShader, initShader, removeSplashScreen } from '../utils/utils';
 import { UIScene } from './UIScene';
-import { spriteElements } from '../elements/SpriteAtlas';
 import { EventHandler } from '../utils/EventHandler';
 import { Particle } from '../objects/Particle';
 import { SaveManager } from '../utils/SaveManager';
+
 const GLITCH_CPU_THRESHOLD = 50;
 const GLITCH_CPU_MAX = 100;
 const UI_GLITCH_RATIO = 0.15;
@@ -175,6 +175,12 @@ export class MainScene extends CustomScene {
 
     const movingSpriteCount = Progression.isSpriteMovementEnabled ? this.sprites.length : 0;
     const rotatingSpriteCount = Progression.isSpriteRotationEnabled ? this.sprites.length : 0;
+    let bouncingSpriteCount = 0;
+    if (Progression.isBounceEnabled) {
+      for (const sprite of this.sprites) {
+        if (sprite.scale !== sprite.originalScale) bouncingSpriteCount++;
+      }
+    }
     const activeTweenCount = this.tweens.getTweens().length;
     Progression.calculateCpuUsage(
       this.sprites.length,
@@ -182,6 +188,7 @@ export class MainScene extends CustomScene {
       activeTweenCount,
       movingSpriteCount,
       rotatingSpriteCount,
+      bouncingSpriteCount,
       delta,
     );
 
@@ -189,8 +196,7 @@ export class MainScene extends CustomScene {
       0,
       Math.min(
         1,
-        (Progression.cpuPercent - GLITCH_CPU_THRESHOLD) /
-          (GLITCH_CPU_MAX - GLITCH_CPU_THRESHOLD),
+        (Progression.cpuPercent - GLITCH_CPU_THRESHOLD) / (GLITCH_CPU_MAX - GLITCH_CPU_THRESHOLD),
       ),
     );
 
