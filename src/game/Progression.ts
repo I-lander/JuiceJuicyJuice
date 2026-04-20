@@ -12,8 +12,6 @@ export const CPU_COSTS: Record<string, number> = {
   tween: 0.3,
   movingSprite: 0.5,
   autoClicker: 0.5,
-  shader: 2.0,
-  uiParasite: 1.5,
   collision: 0.8,
   rotatingSprite: 0.7,
 };

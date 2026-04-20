@@ -201,6 +201,10 @@ export class MainScene extends CustomScene {
       this.uiScene.glitchShader.glitchIntensity = glitchIntensity * UI_GLITCH_RATIO;
     }
 
+    if (Progression.cpuPercent >= 100) {
+      this.uiScene.showCrashScreen();
+    }
+
     SaveManager.updateAutoSave(delta, this);
   }
 }

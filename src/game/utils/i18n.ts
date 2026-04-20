@@ -55,6 +55,11 @@ const translations: Record<Language, Record<string, string>> = {
     'upgrade.blueParticle.desc': 'Unlock blue particles (x1K juice)',
     'upgrade.greenParticle.desc': 'Unlock green particles (x100K juice)',
     'upgrade.purpleParticle.desc': 'Unlock purple particles (x1M juice)',
+
+    'crash.title': 'SYSTEM CRASH',
+    'crash.subtitle': 'CPU OVERLOAD — 100%',
+    'crash.message': 'Too much juice. The system couldn\'t handle it.',
+    'crash.restart': 'REBOOT',
   },
   fr: {
     'ui.resume': 'REPRENDRE',
@@ -106,6 +111,11 @@ const translations: Record<Language, Record<string, string>> = {
     'upgrade.blueParticle.desc': 'Particules bleues (x1K jus)',
     'upgrade.greenParticle.desc': 'Particules vertes (x100K jus)',
     'upgrade.purpleParticle.desc': 'Particules violettes (x1M jus)',
+
+    'crash.title': 'SYSTEM CRASH',
+    'crash.subtitle': 'SURCHARGE CPU — 100%',
+    'crash.message': 'Trop de jus. Le systeme n\'a pas tenu.',
+    'crash.restart': 'REDEMARRER',
   },
 };
 

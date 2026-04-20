@@ -58,6 +58,8 @@ export class UIScene extends CustomScene {
   private musicToggleImg!: Phaser.GameObjects.Image;
   private sfxMuted: boolean = false;
   private confirmContainer!: Phaser.GameObjects.Container;
+  private crashContainer!: Phaser.GameObjects.Container;
+  private crashActive: boolean = false;
 
   constructor() {
     super('UIScene');
@@ -845,6 +847,147 @@ export class UIScene extends CustomScene {
     }
     this.menuContainer.setVisible(false);
     this.scene.resume('MainScene');
+  }
+
+  showCrashScreen() {
+    if (this.crashActive) return;
+    this.crashActive = true;
+    this.scene.pause('MainScene');
+
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    const pixelUnit = this.pixelUnit;
+
+    const overlay = this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000, 0);
+    overlay.setOrigin(0, 0);
+    overlay.setInteractive();
+
+    const titleFontSize = Math.round(pixelUnit * 24);
+    const subtitleFontSize = Math.round(pixelUnit * 14);
+    const messageFontSize = Math.round(pixelUnit * 10);
+    const buttonFontSize = Math.round(pixelUnit * 14);
+    const centerX = screenWidth / 2;
+    const centerY = screenHeight / 2;
+
+    const titleText = this.add.text(centerX, centerY - pixelUnit * 30, t('crash.title'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${titleFontSize}px`,
+      color: '#ff0000',
+    });
+    titleText.setOrigin(0.5, 0.5);
+    titleText.setAlpha(0);
+
+    const subtitleText = this.add.text(centerX, centerY - pixelUnit * 12, t('crash.subtitle'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${subtitleFontSize}px`,
+      color: '#ff4444',
+    });
+    subtitleText.setOrigin(0.5, 0.5);
+    subtitleText.setAlpha(0);
+
+    const messageText = this.add.text(centerX, centerY + pixelUnit * 6, t('crash.message'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${messageFontSize}px`,
+      color: '#aaaaaa',
+    });
+    messageText.setOrigin(0.5, 0.5);
+    messageText.setAlpha(0);
+
+    const buttonWidth = pixelUnit * 60;
+    const buttonHeight = pixelUnit * 16;
+    const buttonY = centerY + pixelUnit * 30;
+
+    const buttonGraphics = this.add.graphics();
+    buttonGraphics.fillStyle(0x552222, 0.9);
+    buttonGraphics.fillRect(
+      centerX - buttonWidth / 2,
+      buttonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+    );
+    createUIPanel(
+      buttonGraphics,
+      centerX - buttonWidth / 2,
+      buttonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      pixelUnit,
+      0xaa4444,
+      0.9,
+    );
+    buttonGraphics.setAlpha(0);
+
+    const buttonText = this.add.text(centerX, buttonY, t('crash.restart'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${buttonFontSize}px`,
+      color: '#ffffff',
+    });
+    buttonText.setOrigin(0.5, 0.5);
+    buttonText.setAlpha(0);
+
+    const buttonZone = this.add.zone(centerX, buttonY, buttonWidth, buttonHeight);
+    buttonZone.setInteractive({ useHandCursor: true });
+    buttonZone.on('pointerup', () => {
+      playSfx(this, 'buttonClick', 0.3);
+      this.crashContainer.destroy();
+      this.crashActive = false;
+      this.mainScene.clearEntities();
+      Progression.reset();
+      this.previouslyUnlocked.clear();
+      this.initUnlockedUpgrades();
+      SaveManager.deleteSave();
+      this.scene.resume('MainScene');
+    });
+
+    this.crashContainer = this.add.container(0, 0, [
+      overlay,
+      titleText,
+      subtitleText,
+      messageText,
+      buttonGraphics,
+      buttonText,
+      buttonZone,
+    ]);
+    this.crashContainer.setDepth(FRONT_DEPTH + 100);
+
+    this.tweens.add({
+      targets: overlay,
+      fillAlpha: 0.85,
+      duration: 1500,
+      ease: 'Power2',
+    });
+
+    this.tweens.add({
+      targets: titleText,
+      alpha: 1,
+      delay: 800,
+      duration: 600,
+      ease: 'Power2',
+    });
+
+    this.tweens.add({
+      targets: subtitleText,
+      alpha: 1,
+      delay: 1400,
+      duration: 600,
+      ease: 'Power2',
+    });
+
+    this.tweens.add({
+      targets: messageText,
+      alpha: 1,
+      delay: 2000,
+      duration: 600,
+      ease: 'Power2',
+    });
+
+    this.tweens.add({
+      targets: [buttonGraphics, buttonText],
+      alpha: 1,
+      delay: 2800,
+      duration: 600,
+      ease: 'Power2',
+    });
   }
 
   update() {
