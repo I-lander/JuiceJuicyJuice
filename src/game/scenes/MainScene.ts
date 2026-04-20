@@ -7,8 +7,8 @@ import { spriteElements } from '../elements/SpriteAtlas';
 import { EventHandler } from '../utils/EventHandler';
 import { Particle } from '../objects/Particle';
 import { SaveManager } from '../utils/SaveManager';
-const GLITCH_FPS_THRESHOLD = 45;
-const GLITCH_FPS_FLOOR = 5;
+const GLITCH_CPU_THRESHOLD = 50;
+const GLITCH_CPU_MAX = 100;
 const UI_GLITCH_RATIO = 0.15;
 
 export class MainScene extends CustomScene {
@@ -189,8 +189,8 @@ export class MainScene extends CustomScene {
       0,
       Math.min(
         1,
-        (GLITCH_FPS_THRESHOLD - Progression.simulatedFps) /
-          (GLITCH_FPS_THRESHOLD - GLITCH_FPS_FLOOR),
+        (Progression.cpuPercent - GLITCH_CPU_THRESHOLD) /
+          (GLITCH_CPU_MAX - GLITCH_CPU_THRESHOLD),
       ),
     );
 

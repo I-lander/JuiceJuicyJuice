@@ -18,7 +18,7 @@ export const CPU_COSTS: Record<string, number> = {
   rotatingSprite: 0.7,
 };
 
-const CPU_COEFFICIENT = 0.002;
+const CPU_CAPACITY_MHZ = 500;
 
 export class Progression {
   static juice = 0;
@@ -40,7 +40,8 @@ export class Progression {
   ];
 
   static cpuUsage = 0;
-  static simulatedFps = 60;
+  static cpuCapacityMhz = CPU_CAPACITY_MHZ;
+  static cpuPercent = 0;
   static cpuMultiplier = 1;
   static activeCollisionCpu = 0;
 
@@ -75,7 +76,7 @@ export class Progression {
     totalCpu *= Progression.cpuMultiplier;
 
     Progression.cpuUsage = totalCpu;
-    Progression.simulatedFps = Math.max(0, 60 / (1 + totalCpu * CPU_COEFFICIENT));
+    Progression.cpuPercent = Math.min(100, (totalCpu / Progression.cpuCapacityMhz) * 100);
   }
 
   static reset() {
@@ -97,7 +98,8 @@ export class Progression {
     Progression.isSpriteRotationEnabled = false;
     Progression.unlockedParticleColors = [PARTICLE_COLOR_UPGRADES.whiteParticle];
     Progression.cpuUsage = 0;
-    Progression.simulatedFps = 60;
+    Progression.cpuCapacityMhz = CPU_CAPACITY_MHZ;
+    Progression.cpuPercent = 0;
     Progression.cpuMultiplier = 1;
     Progression.activeCollisionCpu = 0;
     Progression.upgradeLevels = {

@@ -170,21 +170,22 @@ export class UIScene extends CustomScene {
     this.hudText.setDepth(FRONT_DEPTH + 10);
   }
 
-  private getCpuColor(simulatedFps: number): string {
-    if (simulatedFps >= 45) return '#44ff44';
-    if (simulatedFps >= 30) return '#aaff44';
-    if (simulatedFps >= 20) return '#ffdd44';
-    if (simulatedFps >= 10) return '#ff8844';
-    if (simulatedFps >= 5) return '#ff4444';
+  private getCpuColor(cpuPercent: number): string {
+    if (cpuPercent <= 20) return '#44ff44';
+    if (cpuPercent <= 40) return '#aaff44';
+    if (cpuPercent <= 60) return '#ffdd44';
+    if (cpuPercent <= 80) return '#ff8844';
+    if (cpuPercent <= 95) return '#ff4444';
     return '#ff0000';
   }
 
   private refreshHud() {
-    const fps = Math.round(Progression.simulatedFps);
-    const cpu = Math.round(Progression.cpuUsage);
-    const cpuColor = this.getCpuColor(Progression.simulatedFps);
+    const cpuPercent = Math.round(Progression.cpuPercent);
+    const cpuUsed = Math.round(Progression.cpuUsage);
+    const cpuCapacity = Math.round(Progression.cpuCapacityMhz);
+    const cpuColor = this.getCpuColor(Progression.cpuPercent);
 
-    this.hudText.setText(`FPS: ${fps}  CPU: ${cpu}`);
+    this.hudText.setText(`CPU: ${cpuPercent}%  ${cpuUsed}/${cpuCapacity} MHz`);
     this.hudText.setColor(cpuColor);
   }
 
