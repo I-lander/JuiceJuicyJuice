@@ -185,7 +185,9 @@ export class TitleScene extends CustomScene {
       'OPTIONS',
       0x222255,
       0x4444aa,
-      () => {},
+      () => {
+        
+      },
     );
     this.createButton(
       centerX,

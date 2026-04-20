@@ -4,6 +4,7 @@ import {
   PRICE_INCREASE,
   UPGRADES,
 } from './objects/ShopUpgrades';
+import { Prestige } from './Prestige';
 import { t } from './utils/i18n';
 
 export const CPU_COSTS: Record<string, number> = {
@@ -130,6 +131,20 @@ export class Progression {
       greenParticle: 0,
       purpleParticle: 0,
     };
+    Progression.applyPrestigeBonuses();
+  }
+
+  static applyPrestigeBonuses() {
+    Progression.autoClickers = Prestige.getStartingAutoClickers();
+    Progression.cpuCapacityMhz = CPU_CAPACITY_MHZ + Prestige.getCpuCapacityBonus();
+    Progression.unlockedParticleColors = [PARTICLE_COLOR_UPGRADES.whiteParticle];
+    for (const colorKey of Prestige.getUnlockedColorKeys()) {
+      const colorDefinition = PARTICLE_COLOR_UPGRADES[colorKey];
+      if (colorDefinition) {
+        Progression.unlockedParticleColors.push(colorDefinition);
+      }
+      Progression.upgradeLevels[colorKey] = 1;
+    }
   }
 
   static getJuiceForLevel(level: number): number {

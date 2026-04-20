@@ -1,11 +1,20 @@
 import { Progression } from '../Progression';
+import { Prestige } from '../Prestige';
 import { PARTICLE_COLOR_UPGRADES } from '../objects/ShopUpgrades';
 import type { MainScene } from '../scenes/MainScene';
 import { sfxMuted, setSfxMuted } from './utils';
 import { getLanguage, setLanguage, type Language } from './i18n';
 
 const SAVE_KEY = 'juice_save_data';
+const META_SAVE_KEY = 'juice_meta_save_data';
 const AUTO_SAVE_INTERVAL = 30_000;
+
+interface MetaSaveData {
+  version: number;
+  points: number;
+  totalEarned: number;
+  upgradeLevels: Record<string, number>;
+}
 
 interface SaveData {
   version: number;
@@ -122,6 +131,37 @@ export class SaveManager {
 
   static deleteSave(): void {
     localStorage.removeItem(SAVE_KEY);
+  }
+
+  static saveMeta(): void {
+    const data: MetaSaveData = {
+      version: 1,
+      points: Prestige.points,
+      totalEarned: Prestige.totalEarned,
+      upgradeLevels: { ...Prestige.upgradeLevels },
+    };
+    localStorage.setItem(META_SAVE_KEY, JSON.stringify(data));
+  }
+
+  static loadMeta(): void {
+    const raw = localStorage.getItem(META_SAVE_KEY);
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw) as MetaSaveData;
+      Prestige.points = data.points ?? 0;
+      Prestige.totalEarned = data.totalEarned ?? 0;
+      Prestige.upgradeLevels = {
+        ...Prestige.upgradeLevels,
+        ...(data.upgradeLevels ?? {}),
+      };
+    } catch {
+      return;
+    }
+  }
+
+  static deleteMetaSave(): void {
+    localStorage.removeItem(META_SAVE_KEY);
+    Prestige.reset();
   }
 
   static setupVisibilityListener(mainScene: MainScene): void {

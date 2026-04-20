@@ -2,6 +2,7 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { CustomScene } from '../customClasses/CustomScene';
 import { Progression } from '../Progression';
+import { Prestige, PRESTIGE_UPGRADES, CPU_CAPACITY_BONUS_PER_POINT } from '../Prestige';
 import { Shop } from '../objects/Shop';
 import { UPGRADES } from '../objects/ShopUpgrades';
 import { t, getLanguage, setLanguage } from '../utils/i18n';
@@ -59,8 +60,21 @@ export class UIScene extends CustomScene {
   private musicToggleImg!: Phaser.GameObjects.Image;
   private sfxMuted: boolean = false;
   private confirmContainer!: Phaser.GameObjects.Container;
+  private deleteMetaConfirmContainer!: Phaser.GameObjects.Container;
   private crashContainer!: Phaser.GameObjects.Container;
   private crashActive: boolean = false;
+  private deleteMetaText!: Phaser.GameObjects.Text;
+  private prestigePointsText!: Phaser.GameObjects.Text;
+  private prestigeButtons: Array<{
+    key: string;
+    graphics: Phaser.GameObjects.Graphics;
+    nameText: Phaser.GameObjects.Text;
+    infoText: Phaser.GameObjects.Text;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }> = [];
 
   constructor() {
     super('UIScene');
@@ -497,7 +511,7 @@ export class UIScene extends CustomScene {
     const tileSize = this.tileSize;
     const flagSize = tileSize;
     const menuHeight =
-      buttonHeight * 3 + gap * 2 + pixelUnit * 16 + tileSize * 2 + flagSize + gap + flagSize;
+      buttonHeight * 4 + gap * 3 + pixelUnit * 16 + tileSize * 2 + flagSize + gap + flagSize;
     const menuX = (screenWidth - menuWidth) / 2;
     const menuY = (screenHeight - menuHeight) / 2;
 
@@ -620,6 +634,41 @@ export class UIScene extends CustomScene {
       this.showResetConfirm();
     });
 
+    const fourthButtonY = thirdButtonY + buttonHeight + gap;
+
+    const deleteMetaGraphics = this.add.graphics();
+    deleteMetaGraphics.fillStyle(0x330022, 0.9);
+    deleteMetaGraphics.fillRect(
+      centerX - buttonWidth / 2,
+      fourthButtonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+    );
+    createUIPanel(
+      deleteMetaGraphics,
+      centerX - buttonWidth / 2,
+      fourthButtonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      pixelUnit,
+      0xaa2266,
+      0.9,
+    );
+
+    this.deleteMetaText = this.add.text(centerX, fourthButtonY, t('ui.deleteMeta'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+    });
+    this.deleteMetaText.setOrigin(0.5, 0.5);
+
+    const deleteMetaZone = this.add.zone(centerX, fourthButtonY, buttonWidth, buttonHeight);
+    deleteMetaZone.setInteractive({ useHandCursor: true });
+    deleteMetaZone.on('pointerup', () => {
+      playSfx(this, 'buttonClick', 0.3);
+      this.showDeleteMetaConfirm();
+    });
+
     const flagGap = pixelUnit * 6;
     const soundY = menuY + menuHeight - pixelUnit * 8 - flagSize - flagGap - flagSize / 2;
 
@@ -699,6 +748,9 @@ export class UIScene extends CustomScene {
       resetGraphics,
       this.resetText,
       resetZone,
+      deleteMetaGraphics,
+      this.deleteMetaText,
+      deleteMetaZone,
       this.enFlagImg,
       this.frFlagImg,
       this.soundToggleImg,
@@ -718,6 +770,7 @@ export class UIScene extends CustomScene {
     this.resumeText.setText(t('ui.resume'));
     this.quitText.setText(t('ui.quit'));
     this.resetText.setText(t('ui.reset'));
+    this.deleteMetaText.setText(t('ui.deleteMeta'));
     this.refreshFlagAlpha();
   }
 
@@ -787,6 +840,7 @@ export class UIScene extends CustomScene {
       SaveManager.deleteSave();
       this.mainScene.clearEntities();
       Progression.reset();
+      this.mainScene.spawnPrestigeStartingSprites();
       this.previouslyUnlocked.clear();
       this.initUnlockedUpgrades();
       this.closeMenu();
@@ -834,6 +888,117 @@ export class UIScene extends CustomScene {
     }
   }
 
+  private createDeleteMetaConfirm() {
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    const pixelUnit = this.pixelUnit;
+    const fontSize = Math.round(pixelUnit * 12);
+    const padding = pixelUnit * 8;
+    const gap = pixelUnit * 6;
+    const centerX = screenWidth / 2;
+
+    const confirmText = this.add.text(0, 0, t('ui.deleteMetaConfirm'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+      wordWrap: { width: screenWidth * 0.75 },
+      align: 'center',
+    });
+    confirmText.setOrigin(0.5, 0.5);
+
+    const yesText = this.add.text(0, 0, t('ui.yes'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+    });
+    yesText.setOrigin(0.5, 0.5);
+
+    const noText = this.add.text(0, 0, t('ui.no'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+    });
+    noText.setOrigin(0.5, 0.5);
+
+    const buttonWidth = Math.max(yesText.width, noText.width) + padding * 2;
+    const buttonHeight = yesText.height + padding;
+    const buttonsRowWidth = buttonWidth * 2 + gap;
+    const panelWidth = Math.max(confirmText.width, buttonsRowWidth) + padding * 2;
+    const panelHeight = confirmText.height + buttonHeight + gap + padding * 2;
+    const panelX = (screenWidth - panelWidth) / 2;
+    const panelY = (screenHeight - panelHeight) / 2;
+
+    const textY = panelY + padding + confirmText.height / 2;
+    confirmText.setPosition(centerX, textY);
+
+    const buttonsY = panelY + panelHeight - padding - buttonHeight / 2;
+
+    const overlay = this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000, 0.7);
+    overlay.setOrigin(0, 0);
+    overlay.setInteractive();
+
+    const panelGraphics = this.add.graphics();
+    panelGraphics.fillStyle(0x000033, 0.95);
+    panelGraphics.fillRect(panelX, panelY, panelWidth, panelHeight);
+    createUIPanel(panelGraphics, panelX, panelY, panelWidth, panelHeight, pixelUnit, 0xffffff, 1);
+
+    const yesGraphics = this.add.graphics();
+    const yesX = centerX - gap / 2 - buttonWidth / 2;
+    yesGraphics.fillStyle(0x552222, 0.9);
+    yesGraphics.fillRect(yesX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight);
+    createUIPanel(yesGraphics, yesX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight, pixelUnit, 0xaa4444, 0.9);
+    yesText.setPosition(yesX, buttonsY);
+
+    const yesZone = this.add.zone(yesX, buttonsY, buttonWidth, buttonHeight);
+    yesZone.setInteractive({ useHandCursor: true });
+    yesZone.on('pointerup', () => {
+      playSfx(this, 'buttonClick', 0.3);
+      SaveManager.deleteMetaSave();
+      this.hideDeleteMetaConfirm();
+    });
+
+    const noGraphics = this.add.graphics();
+    const noX = centerX + gap / 2 + buttonWidth / 2;
+    noGraphics.fillStyle(0x225522, 0.9);
+    noGraphics.fillRect(noX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight);
+    createUIPanel(noGraphics, noX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight, pixelUnit, 0x44aa44, 0.9);
+    noText.setPosition(noX, buttonsY);
+
+    const noZone = this.add.zone(noX, buttonsY, buttonWidth, buttonHeight);
+    noZone.setInteractive({ useHandCursor: true });
+    noZone.on('pointerup', () => {
+      playSfx(this, 'buttonClick', 0.3);
+      this.hideDeleteMetaConfirm();
+    });
+
+    this.deleteMetaConfirmContainer = this.add.container(0, 0, [
+      overlay,
+      panelGraphics,
+      confirmText,
+      yesGraphics,
+      yesText,
+      yesZone,
+      noGraphics,
+      noText,
+      noZone,
+    ]);
+    this.deleteMetaConfirmContainer.setDepth(FRONT_DEPTH + 60);
+  }
+
+  private showDeleteMetaConfirm() {
+    if (this.deleteMetaConfirmContainer) {
+      this.deleteMetaConfirmContainer.destroy();
+    }
+    this.createDeleteMetaConfirm();
+    this.deleteMetaConfirmContainer.setVisible(true);
+  }
+
+  private hideDeleteMetaConfirm() {
+    if (this.deleteMetaConfirmContainer) {
+      this.deleteMetaConfirmContainer.destroy();
+    }
+  }
+
   openMenu() {
     if (this.menuOpen) return;
     this.menuOpen = true;
@@ -847,6 +1012,9 @@ export class UIScene extends CustomScene {
     if (this.confirmContainer) {
       this.confirmContainer.destroy();
     }
+    if (this.deleteMetaConfirmContainer) {
+      this.deleteMetaConfirmContainer.destroy();
+    }
     this.menuContainer.setVisible(false);
     this.scene.resume('MainScene');
   }
@@ -856,6 +1024,10 @@ export class UIScene extends CustomScene {
     this.crashActive = true;
     this.scene.pause('MainScene');
 
+    const pointsEarned = Prestige.computePointsForLevel(Progression.level);
+    Prestige.awardPoints(pointsEarned);
+    SaveManager.saveMeta();
+
     const screenWidth = this.cameras.main.width;
     const screenHeight = this.cameras.main.height;
     const pixelUnit = this.pixelUnit;
@@ -864,14 +1036,32 @@ export class UIScene extends CustomScene {
     overlay.setOrigin(0, 0);
     overlay.setInteractive();
 
-    const titleFontSize = Math.round(pixelUnit * 24);
-    const subtitleFontSize = Math.round(pixelUnit * 14);
-    const messageFontSize = Math.round(pixelUnit * 10);
+    const titleFontSize = Math.round(pixelUnit * 22);
+    const subtitleFontSize = Math.round(pixelUnit * 13);
+    const messageFontSize = Math.round(pixelUnit * 9);
     const buttonFontSize = Math.round(pixelUnit * 14);
+    const earnedFontSize = Math.round(pixelUnit * 12);
+    const pointsFontSize = Math.round(pixelUnit * 11);
     const centerX = screenWidth / 2;
     const centerY = screenHeight / 2;
 
-    const titleText = this.add.text(centerX, centerY - pixelUnit * 30, t('crash.title'), {
+    const titleY = centerY - pixelUnit * 75;
+    const subtitleY = centerY - pixelUnit * 55;
+    const messageY = centerY - pixelUnit * 40;
+    const earnedY = centerY - pixelUnit * 22;
+    const cpuBonusY = centerY - pixelUnit * 10;
+    const pointsY = centerY + pixelUnit * 4;
+    const firstPrestigeY = centerY + pixelUnit * 20;
+    const prestigeButtonHeight = pixelUnit * 18;
+    const prestigeButtonGap = pixelUnit * 4;
+    const prestigeButtonWidth = pixelUnit * 90;
+    const prestigeKeys = Object.keys(PRESTIGE_UPGRADES);
+    const rebootButtonY =
+      firstPrestigeY +
+      (prestigeButtonHeight + prestigeButtonGap) * prestigeKeys.length +
+      pixelUnit * 10;
+
+    const titleText = this.add.text(centerX, titleY, t('crash.title'), {
       fontFamily: 'KenneyPixel',
       fontSize: `${titleFontSize}px`,
       color: '#ff0000',
@@ -879,7 +1069,7 @@ export class UIScene extends CustomScene {
     titleText.setOrigin(0.5, 0.5);
     titleText.setAlpha(0);
 
-    const subtitleText = this.add.text(centerX, centerY - pixelUnit * 12, t('crash.subtitle'), {
+    const subtitleText = this.add.text(centerX, subtitleY, t('crash.subtitle'), {
       fontFamily: 'KenneyPixel',
       fontSize: `${subtitleFontSize}px`,
       color: '#ff4444',
@@ -887,7 +1077,7 @@ export class UIScene extends CustomScene {
     subtitleText.setOrigin(0.5, 0.5);
     subtitleText.setAlpha(0);
 
-    const messageText = this.add.text(centerX, centerY + pixelUnit * 6, t('crash.message'), {
+    const messageText = this.add.text(centerX, messageY, t('crash.message'), {
       fontFamily: 'KenneyPixel',
       fontSize: `${messageFontSize}px`,
       color: '#aaaaaa',
@@ -895,22 +1085,71 @@ export class UIScene extends CustomScene {
     messageText.setOrigin(0.5, 0.5);
     messageText.setAlpha(0);
 
+    const earnedText = this.add.text(
+      centerX,
+      earnedY,
+      `+${pointsEarned} ${t('ui.prestigeEarned')}`,
+      {
+        fontFamily: 'KenneyPixel',
+        fontSize: `${earnedFontSize}px`,
+        color: '#ffdd44',
+      },
+    );
+    earnedText.setOrigin(0.5, 0.5);
+    earnedText.setAlpha(0);
+
+    const cpuBonusText = this.add.text(
+      centerX,
+      cpuBonusY,
+      `+${CPU_CAPACITY_BONUS_PER_POINT} MHz CPU`,
+      {
+        fontFamily: 'KenneyPixel',
+        fontSize: `${earnedFontSize}px`,
+        color: '#44ddff',
+      },
+    );
+    cpuBonusText.setOrigin(0.5, 0.5);
+    cpuBonusText.setAlpha(0);
+
+    this.prestigePointsText = this.add.text(centerX, pointsY, '', {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${pointsFontSize}px`,
+      color: '#ffffff',
+    });
+    this.prestigePointsText.setOrigin(0.5, 0.5);
+    this.prestigePointsText.setAlpha(0);
+
+    this.prestigeButtons = [];
+    const prestigeContainerChildren: Phaser.GameObjects.GameObject[] = [];
+    for (let i = 0; i < prestigeKeys.length; i++) {
+      const key = prestigeKeys[i];
+      const buttonCenterY =
+        firstPrestigeY + i * (prestigeButtonHeight + prestigeButtonGap) + prestigeButtonHeight / 2;
+      const created = this.createPrestigeButton(
+        key,
+        centerX,
+        buttonCenterY,
+        prestigeButtonWidth,
+        prestigeButtonHeight,
+      );
+      prestigeContainerChildren.push(created.graphics, created.nameText, created.infoText, created.hitZone);
+    }
+
     const buttonWidth = pixelUnit * 60;
     const buttonHeight = pixelUnit * 16;
-    const buttonY = centerY + pixelUnit * 30;
 
     const buttonGraphics = this.add.graphics();
     buttonGraphics.fillStyle(0x552222, 0.9);
     buttonGraphics.fillRect(
       centerX - buttonWidth / 2,
-      buttonY - buttonHeight / 2,
+      rebootButtonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
     );
     createUIPanel(
       buttonGraphics,
       centerX - buttonWidth / 2,
-      buttonY - buttonHeight / 2,
+      rebootButtonY - buttonHeight / 2,
       buttonWidth,
       buttonHeight,
       pixelUnit,
@@ -919,7 +1158,7 @@ export class UIScene extends CustomScene {
     );
     buttonGraphics.setAlpha(0);
 
-    const buttonText = this.add.text(centerX, buttonY, t('crash.restart'), {
+    const buttonText = this.add.text(centerX, rebootButtonY, t('crash.restart'), {
       fontFamily: 'KenneyPixel',
       fontSize: `${buttonFontSize}px`,
       color: '#ffffff',
@@ -927,14 +1166,16 @@ export class UIScene extends CustomScene {
     buttonText.setOrigin(0.5, 0.5);
     buttonText.setAlpha(0);
 
-    const buttonZone = this.add.zone(centerX, buttonY, buttonWidth, buttonHeight);
+    const buttonZone = this.add.zone(centerX, rebootButtonY, buttonWidth, buttonHeight);
     buttonZone.setInteractive({ useHandCursor: true });
     buttonZone.on('pointerup', () => {
       playSfx(this, 'buttonClick', 0.3);
       this.crashContainer.destroy();
       this.crashActive = false;
+      this.prestigeButtons = [];
       this.mainScene.clearEntities();
       Progression.reset();
+      this.mainScene.spawnPrestigeStartingSprites();
       this.previouslyUnlocked.clear();
       this.initUnlockedUpgrades();
       SaveManager.deleteSave();
@@ -946,11 +1187,17 @@ export class UIScene extends CustomScene {
       titleText,
       subtitleText,
       messageText,
+      earnedText,
+      cpuBonusText,
+      this.prestigePointsText,
+      ...prestigeContainerChildren,
       buttonGraphics,
       buttonText,
       buttonZone,
     ]);
     this.crashContainer.setDepth(FRONT_DEPTH + 100);
+
+    this.refreshPrestigeShop();
 
     this.tweens.add({
       targets: overlay,
@@ -984,12 +1231,146 @@ export class UIScene extends CustomScene {
     });
 
     this.tweens.add({
-      targets: [buttonGraphics, buttonText],
+      targets: [earnedText, cpuBonusText, this.prestigePointsText],
+      alpha: 1,
+      delay: 2400,
+      duration: 600,
+      ease: 'Power2',
+    });
+
+    const prestigeVisuals: Phaser.GameObjects.GameObject[] = [];
+    for (const button of this.prestigeButtons) {
+      button.graphics.setAlpha(0);
+      button.nameText.setAlpha(0);
+      button.infoText.setAlpha(0);
+      prestigeVisuals.push(button.graphics, button.nameText, button.infoText);
+    }
+
+    this.tweens.add({
+      targets: prestigeVisuals,
       alpha: 1,
       delay: 2800,
       duration: 600,
       ease: 'Power2',
     });
+
+    this.tweens.add({
+      targets: [buttonGraphics, buttonText],
+      alpha: 1,
+      delay: 3200,
+      duration: 600,
+      ease: 'Power2',
+    });
+  }
+
+  private createPrestigeButton(
+    key: string,
+    centerX: number,
+    centerY: number,
+    width: number,
+    height: number,
+  ): {
+    graphics: Phaser.GameObjects.Graphics;
+    nameText: Phaser.GameObjects.Text;
+    infoText: Phaser.GameObjects.Text;
+    hitZone: Phaser.GameObjects.Zone;
+  } {
+    const pixelUnit = this.pixelUnit;
+    const fontSize = Math.round(pixelUnit * 10);
+    const smallFontSize = Math.round(pixelUnit * 9);
+
+    const graphics = this.add.graphics();
+
+    const nameText = this.add.text(centerX, centerY - height * 0.22, t(`prestige.${key}.name`), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+    });
+    nameText.setOrigin(0.5, 0.5);
+
+    const infoText = this.add.text(centerX, centerY + height * 0.22, '', {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${smallFontSize}px`,
+      color: '#ffdd44',
+    });
+    infoText.setOrigin(0.5, 0.5);
+
+    const hitZone = this.add.zone(centerX, centerY, width, height);
+    hitZone.setInteractive({ useHandCursor: true });
+    hitZone.on('pointerup', () => {
+      if (!Prestige.purchase(key)) return;
+      SaveManager.saveMeta();
+      playSfx(this, 'purchase', 0.3);
+      this.refreshPrestigeShop();
+    });
+
+    this.prestigeButtons.push({
+      key,
+      graphics,
+      nameText,
+      infoText,
+      x: centerX - width / 2,
+      y: centerY - height / 2,
+      width,
+      height,
+    });
+
+    return { graphics, nameText, infoText, hitZone };
+  }
+
+  private refreshPrestigeShop() {
+    if (this.prestigePointsText) {
+      this.prestigePointsText.setText(`${t('ui.prestigePoints')}: ${Prestige.points}`);
+    }
+    for (const button of this.prestigeButtons) {
+      this.refreshPrestigeButton(button);
+    }
+  }
+
+  private refreshPrestigeButton(button: {
+    key: string;
+    graphics: Phaser.GameObjects.Graphics;
+    nameText: Phaser.GameObjects.Text;
+    infoText: Phaser.GameObjects.Text;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }) {
+    const pixelUnit = this.pixelUnit;
+    const level = Prestige.upgradeLevels[button.key] ?? 0;
+    const isMaxed = Prestige.isMaxed(button.key);
+    const canAfford = Prestige.canAfford(button.key);
+    const cost = Prestige.getUpgradeCost(button.key);
+
+    button.graphics.clear();
+    if (isMaxed) {
+      button.graphics.fillStyle(0x333355, 0.9);
+    } else if (canAfford) {
+      button.graphics.fillStyle(0x443366, 0.9);
+    } else {
+      button.graphics.fillStyle(0x1a1a3a, 0.9);
+    }
+    button.graphics.fillRect(button.x, button.y, button.width, button.height);
+    const borderColor = isMaxed ? 0x555577 : canAfford ? 0xcc66ff : 0x4444aa;
+    createUIPanel(
+      button.graphics,
+      button.x,
+      button.y,
+      button.width,
+      button.height,
+      pixelUnit,
+      borderColor,
+      0.9,
+    );
+
+    if (isMaxed) {
+      button.infoText.setText(`Lv.${level}  ${t('ui.max')}`);
+      button.infoText.setColor('#aaaacc');
+    } else {
+      button.infoText.setText(`Lv.${level}  ${cost} pts`);
+      button.infoText.setColor(canAfford ? '#ffdd44' : '#aaaacc');
+    }
   }
 
   update() {

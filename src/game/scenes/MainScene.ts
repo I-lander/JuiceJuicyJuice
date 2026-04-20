@@ -1,6 +1,8 @@
 import { CustomScene } from '../customClasses/CustomScene';
 import { Progression } from '../Progression';
+import { Prestige } from '../Prestige';
 import { Sprite } from '../objects/Sprite';
+import { spriteElements } from '../elements/SpriteAtlas';
 import { getRandomInt, initGlitchShader, initShader, removeSplashScreen } from '../utils/utils';
 import { UIScene } from './UIScene';
 import { EventHandler } from '../utils/EventHandler';
@@ -59,9 +61,13 @@ export class MainScene extends CustomScene {
     this.eventHandler = new EventHandler(this);
     this.initCamera();
 
+    SaveManager.loadMeta();
     const saveData = SaveManager.load();
     if (saveData) {
       SaveManager.applyLoad(saveData, this);
+    } else {
+      Progression.applyPrestigeBonuses();
+      this.spawnPrestigeStartingSprites();
     }
     SaveManager.setupVisibilityListener(this);
     initGlitchShader(this);
@@ -136,6 +142,15 @@ export class MainScene extends CustomScene {
     this.time.removeAllEvents();
     this.autoClickTimer = 0;
     this.passiveJuiceTimer = 0;
+  }
+
+  spawnPrestigeStartingSprites() {
+    const startingSprites = Prestige.getStartingSprites();
+    if (startingSprites <= 0) return;
+    for (let i = 0; i < startingSprites; i++) {
+      const randomFrame = spriteElements[getRandomInt(0, spriteElements.length - 1)].id;
+      this.spawnSprite(randomFrame);
+    }
   }
 
   private autoClick() {
