@@ -2,10 +2,11 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { CustomScene } from '../customClasses/CustomScene';
 import { Progression } from '../Progression';
-import { Prestige, PRESTIGE_UPGRADES, CPU_CAPACITY_BONUS_PER_POINT } from '../Prestige';
+import { Prestige, PRESTIGE_UPGRADES } from '../Prestige';
+import { OptionsMenu } from '../objects/OptionsMenu';
 import { Shop } from '../objects/Shop';
 import { UPGRADES } from '../objects/ShopUpgrades';
-import { t, getLanguage, setLanguage } from '../utils/i18n';
+import { t } from '../utils/i18n';
 import {
   createUIPanel,
   formatNumber,
@@ -13,11 +14,11 @@ import {
   getColors,
   initGlitchShader,
   playSfx,
-  setSfxMuted,
-  sfxMuted,
 } from '../utils/utils';
 import { MainScene } from './MainScene';
 import { SaveManager } from '../utils/SaveManager';
+
+const DEMO_MODE = (import.meta as any).env?.VITE_DEMO_MODE === 'true';
 
 export class UIScene extends CustomScene {
   mainScene!: MainScene;
@@ -46,24 +47,12 @@ export class UIScene extends CustomScene {
   private toggleImg!: Phaser.GameObjects.Image;
   private toggleZone!: Phaser.GameObjects.Zone;
 
-  private menuContainer!: Phaser.GameObjects.Container;
-  private menuOpen: boolean = false;
+  private optionsMenu!: OptionsMenu;
   private menuBtnGraphics!: Phaser.GameObjects.Graphics;
   private menuBtnImg!: Phaser.GameObjects.Image;
   private menuBtnZone!: Phaser.GameObjects.Zone;
-  private resumeText!: Phaser.GameObjects.Text;
-  private quitText!: Phaser.GameObjects.Text;
-  private resetText!: Phaser.GameObjects.Text;
-  private enFlagImg!: Phaser.GameObjects.Image;
-  private frFlagImg!: Phaser.GameObjects.Image;
-  private soundToggleImg!: Phaser.GameObjects.Image;
-  private musicToggleImg!: Phaser.GameObjects.Image;
-  private sfxMuted: boolean = false;
-  private confirmContainer!: Phaser.GameObjects.Container;
-  private deleteMetaConfirmContainer!: Phaser.GameObjects.Container;
   private crashContainer!: Phaser.GameObjects.Container;
   private crashActive: boolean = false;
-  private deleteMetaText!: Phaser.GameObjects.Text;
   private prestigePointsText!: Phaser.GameObjects.Text;
   private prestigeButtons: Array<{
     key: string;
@@ -107,7 +96,26 @@ export class UIScene extends CustomScene {
     this.createJuiceCounter();
     this.createMenuButton();
     this.createToggleButton();
-    this.createMenu();
+    this.optionsMenu = new OptionsMenu(this, {
+      onResume: () => this.closeMenu(),
+      onReset: () => {
+        SaveManager.deleteSave();
+        this.mainScene.clearEntities();
+        Progression.reset();
+        this.mainScene.spawnPrestigeStartingSprites();
+        this.previouslyUnlocked.clear();
+        this.initUnlockedUpgrades();
+        this.closeMenu();
+      },
+      onDeleteMeta: () => SaveManager.deleteMetaSave(),
+      onQuit: () => {
+        if (Capacitor.isNativePlatform()) {
+          App.exitApp();
+        } else if (window.electron) {
+          window.electron.quitApp();
+        }
+      },
+    });
     this.createHud();
     this.createNotification();
     this.initUnlockedUpgrades();
@@ -499,523 +507,14 @@ export class UIScene extends CustomScene {
     }
   }
 
-  private createMenu() {
-    const screenWidth = this.cameras.main.width;
-    const screenHeight = this.cameras.main.height;
-    const pixelUnit = this.pixelUnit;
-    const fontSize = Math.round(pixelUnit * 14);
-    const buttonWidth = pixelUnit * 60;
-    const buttonHeight = pixelUnit * 16;
-    const gap = pixelUnit * 6;
-    const menuWidth = buttonWidth + pixelUnit * 16;
-    const tileSize = this.tileSize;
-    const flagSize = tileSize;
-    const menuHeight =
-      buttonHeight * 4 + gap * 3 + pixelUnit * 16 + tileSize * 2 + flagSize + gap + flagSize;
-    const menuX = (screenWidth - menuWidth) / 2;
-    const menuY = (screenHeight - menuHeight) / 2;
-
-    const overlay = this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000, 0.7);
-    overlay.setOrigin(0, 0);
-    overlay.setInteractive();
-
-    const panelGraphics = this.add.graphics();
-    panelGraphics.fillStyle(0x000033, 0.8);
-    panelGraphics.fillRect(menuX, menuY, menuWidth, menuHeight);
-    createUIPanel(panelGraphics, menuX, menuY, menuWidth, menuHeight, pixelUnit, 0xffffff, 1);
-
-    const centerX = screenWidth / 2;
-    const firstButtonY = menuY + pixelUnit * 8 + buttonHeight / 2;
-
-    const resumeGraphics = this.add.graphics();
-    resumeGraphics.fillStyle(0x225522, 0.8);
-    resumeGraphics.fillRect(
-      centerX - buttonWidth / 2,
-      firstButtonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-    );
-    createUIPanel(
-      resumeGraphics,
-      centerX - buttonWidth / 2,
-      firstButtonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-      pixelUnit,
-      0x44aa44,
-      0.9,
-    );
-
-    this.resumeText = this.add.text(centerX, firstButtonY, t('ui.resume'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
-    this.resumeText.setOrigin(0.5, 0.5);
-
-    const resumeZone = this.add.zone(centerX, firstButtonY, buttonWidth, buttonHeight);
-    resumeZone.setInteractive({ useHandCursor: true });
-    resumeZone.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      this.closeMenu();
-    });
-
-    const secondButtonY = firstButtonY + buttonHeight + gap;
-
-    const quitGraphics = this.add.graphics();
-    quitGraphics.fillStyle(0x552222, 0.9);
-    quitGraphics.fillRect(
-      centerX - buttonWidth / 2,
-      secondButtonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-    );
-    createUIPanel(
-      quitGraphics,
-      centerX - buttonWidth / 2,
-      secondButtonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-      pixelUnit,
-      0xaa4444,
-      0.9,
-    );
-
-    this.quitText = this.add.text(centerX, secondButtonY, t('ui.quit'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
-    this.quitText.setOrigin(0.5, 0.5);
-
-    const quitZone = this.add.zone(centerX, secondButtonY, buttonWidth, buttonHeight);
-    quitZone.setInteractive({ useHandCursor: true });
-    quitZone.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      if (Capacitor.isNativePlatform()) {
-        App.exitApp();
-      } else if (window.electron) {
-        window.electron.quitApp();
-      }
-    });
-
-    const thirdButtonY = secondButtonY + buttonHeight + gap;
-
-    const resetGraphics = this.add.graphics();
-    resetGraphics.fillStyle(0x443322, 0.9);
-    resetGraphics.fillRect(
-      centerX - buttonWidth / 2,
-      thirdButtonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-    );
-    createUIPanel(
-      resetGraphics,
-      centerX - buttonWidth / 2,
-      thirdButtonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-      pixelUnit,
-      0xaa8844,
-      0.9,
-    );
-
-    this.resetText = this.add.text(centerX, thirdButtonY, t('ui.reset'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
-    this.resetText.setOrigin(0.5, 0.5);
-
-    const resetZone = this.add.zone(centerX, thirdButtonY, buttonWidth, buttonHeight);
-    resetZone.setInteractive({ useHandCursor: true });
-    resetZone.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      this.showResetConfirm();
-    });
-
-    const fourthButtonY = thirdButtonY + buttonHeight + gap;
-
-    const deleteMetaGraphics = this.add.graphics();
-    deleteMetaGraphics.fillStyle(0x330022, 0.9);
-    deleteMetaGraphics.fillRect(
-      centerX - buttonWidth / 2,
-      fourthButtonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-    );
-    createUIPanel(
-      deleteMetaGraphics,
-      centerX - buttonWidth / 2,
-      fourthButtonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-      pixelUnit,
-      0xaa2266,
-      0.9,
-    );
-
-    this.deleteMetaText = this.add.text(centerX, fourthButtonY, t('ui.deleteMeta'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
-    this.deleteMetaText.setOrigin(0.5, 0.5);
-
-    const deleteMetaZone = this.add.zone(centerX, fourthButtonY, buttonWidth, buttonHeight);
-    deleteMetaZone.setInteractive({ useHandCursor: true });
-    deleteMetaZone.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      this.showDeleteMetaConfirm();
-    });
-
-    const flagGap = pixelUnit * 6;
-    const soundY = menuY + menuHeight - pixelUnit * 8 - flagSize - flagGap - flagSize / 2;
-
-    this.sfxMuted = sfxMuted;
-    this.soundToggleImg = this.add.image(
-      // centerX - flagGap / 2 - flagSize / 2,
-      centerX,
-      soundY,
-      'uiAtlas',
-      this.sfxMuted ? 'soundOff' : 'soundOn',
-    );
-    this.soundToggleImg.setDisplaySize(flagSize, flagSize);
-    this.soundToggleImg.setInteractive({ useHandCursor: true });
-    this.soundToggleImg.on('pointerup', () => {
-      this.sfxMuted = !this.sfxMuted;
-      setSfxMuted(this.sfxMuted);
-      this.soundToggleImg.setFrame(this.sfxMuted ? 'soundOff' : 'soundOn');
-    });
-
-    // const mainScene = this.scene.get('MainScene') as MainScene;
-    // const musicMuted = mainScene.bgMusic?.mute ?? false;
-    // this.musicToggleImg = this.add.image(
-    //   centerX + flagGap / 2 + flagSize / 2,
-    //   soundY,
-    //   'uiAtlas',
-    //   musicMuted ? 'musicOff' : 'musicOn',
-    // );
-    // this.musicToggleImg.setDisplaySize(flagSize, flagSize);
-    // this.musicToggleImg.setInteractive({ useHandCursor: true });
-    // this.musicToggleImg.on('pointerup', () => {
-    //   mainScene.bgMusic.mute = !mainScene.bgMusic.mute;
-
-    //   this.musicToggleImg.setFrame(mainScene.bgMusic.mute ? 'musicOn' : 'musicOff');
-    // });
-
-    const flagY = menuY + menuHeight - pixelUnit * 8 - flagSize / 2;
-
-    this.enFlagImg = this.add.image(
-      centerX - flagGap / 2 - flagSize / 2,
-      flagY,
-      'uiAtlas',
-      'enFlag',
-    );
-    this.enFlagImg.setDisplaySize(flagSize, flagSize);
-    this.enFlagImg.setInteractive({ useHandCursor: true });
-    this.enFlagImg.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      setLanguage('en');
-      this.refreshMenuTexts();
-    });
-
-    this.frFlagImg = this.add.image(
-      centerX + flagGap / 2 + flagSize / 2,
-      flagY,
-      'uiAtlas',
-      'frFlag',
-    );
-    this.frFlagImg.setDisplaySize(flagSize, flagSize);
-    this.frFlagImg.setInteractive({ useHandCursor: true });
-    this.frFlagImg.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      setLanguage('fr');
-      this.refreshMenuTexts();
-    });
-
-    this.refreshFlagAlpha();
-
-    this.menuContainer = this.add.container(0, 0, [
-      overlay,
-      panelGraphics,
-      resumeGraphics,
-      this.resumeText,
-      resumeZone,
-      quitGraphics,
-      this.quitText,
-      quitZone,
-      resetGraphics,
-      this.resetText,
-      resetZone,
-      deleteMetaGraphics,
-      this.deleteMetaText,
-      deleteMetaZone,
-      this.enFlagImg,
-      this.frFlagImg,
-      this.soundToggleImg,
-      // this.musicToggleImg,
-    ]);
-    this.menuContainer.setDepth(FRONT_DEPTH + 50);
-    this.menuContainer.setVisible(false);
-  }
-
-  private refreshFlagAlpha() {
-    const isEnglish = getLanguage() === 'en';
-    this.enFlagImg.setAlpha(isEnglish ? 1 : 0.35);
-    this.frFlagImg.setAlpha(isEnglish ? 0.35 : 1);
-  }
-
-  private refreshMenuTexts() {
-    this.resumeText.setText(t('ui.resume'));
-    this.quitText.setText(t('ui.quit'));
-    this.resetText.setText(t('ui.reset'));
-    this.deleteMetaText.setText(t('ui.deleteMeta'));
-    this.refreshFlagAlpha();
-  }
-
-  private createResetConfirm() {
-    const screenWidth = this.cameras.main.width;
-    const screenHeight = this.cameras.main.height;
-    const pixelUnit = this.pixelUnit;
-    const fontSize = Math.round(pixelUnit * 14);
-    const padding = pixelUnit * 8;
-    const gap = pixelUnit * 6;
-    const centerX = screenWidth / 2;
-
-    const confirmText = this.add.text(0, 0, t('ui.resetConfirm'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
-    confirmText.setOrigin(0.5, 0.5);
-
-    const yesText = this.add.text(0, 0, t('ui.yes'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
-    yesText.setOrigin(0.5, 0.5);
-
-    const noText = this.add.text(0, 0, t('ui.no'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
-    noText.setOrigin(0.5, 0.5);
-
-    const buttonWidth = Math.max(yesText.width, noText.width) + padding * 2;
-    const buttonHeight = yesText.height + padding;
-    const buttonsRowWidth = buttonWidth * 2 + gap;
-    const panelWidth = Math.max(confirmText.width, buttonsRowWidth) + padding * 2;
-    const panelHeight = confirmText.height + buttonHeight + gap + padding * 2;
-    const panelX = (screenWidth - panelWidth) / 2;
-    const panelY = (screenHeight - panelHeight) / 2;
-
-    const textY = panelY + padding + confirmText.height / 2;
-    confirmText.setPosition(centerX, textY);
-
-    const buttonsY = panelY + panelHeight - padding - buttonHeight / 2;
-
-    const overlay = this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000, 0.7);
-    overlay.setOrigin(0, 0);
-    overlay.setInteractive();
-
-    const panelGraphics = this.add.graphics();
-    panelGraphics.fillStyle(0x000033, 0.95);
-    panelGraphics.fillRect(panelX, panelY, panelWidth, panelHeight);
-    createUIPanel(panelGraphics, panelX, panelY, panelWidth, panelHeight, pixelUnit, 0xffffff, 1);
-
-    const yesGraphics = this.add.graphics();
-    const yesX = centerX - gap / 2 - buttonWidth / 2;
-    yesGraphics.fillStyle(0x552222, 0.9);
-    yesGraphics.fillRect(yesX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight);
-    createUIPanel(yesGraphics, yesX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight, pixelUnit, 0xaa4444, 0.9);
-    yesText.setPosition(yesX, buttonsY);
-
-    const yesZone = this.add.zone(yesX, buttonsY, buttonWidth, buttonHeight);
-    yesZone.setInteractive({ useHandCursor: true });
-    yesZone.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      SaveManager.deleteSave();
-      this.mainScene.clearEntities();
-      Progression.reset();
-      this.mainScene.spawnPrestigeStartingSprites();
-      this.previouslyUnlocked.clear();
-      this.initUnlockedUpgrades();
-      this.closeMenu();
-    });
-
-    const noGraphics = this.add.graphics();
-    const noX = centerX + gap / 2 + buttonWidth / 2;
-    noGraphics.fillStyle(0x225522, 0.9);
-    noGraphics.fillRect(noX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight);
-    createUIPanel(noGraphics, noX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight, pixelUnit, 0x44aa44, 0.9);
-    noText.setPosition(noX, buttonsY);
-
-    const noZone = this.add.zone(noX, buttonsY, buttonWidth, buttonHeight);
-    noZone.setInteractive({ useHandCursor: true });
-    noZone.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      this.hideResetConfirm();
-    });
-
-    this.confirmContainer = this.add.container(0, 0, [
-      overlay,
-      panelGraphics,
-      confirmText,
-      yesGraphics,
-      yesText,
-      yesZone,
-      noGraphics,
-      noText,
-      noZone,
-    ]);
-    this.confirmContainer.setDepth(FRONT_DEPTH + 60);
-  }
-
-  private showResetConfirm() {
-    if (this.confirmContainer) {
-      this.confirmContainer.destroy();
-    }
-    this.createResetConfirm();
-    this.confirmContainer.setVisible(true);
-  }
-
-  private hideResetConfirm() {
-    if (this.confirmContainer) {
-      this.confirmContainer.destroy();
-    }
-  }
-
-  private createDeleteMetaConfirm() {
-    const screenWidth = this.cameras.main.width;
-    const screenHeight = this.cameras.main.height;
-    const pixelUnit = this.pixelUnit;
-    const fontSize = Math.round(pixelUnit * 12);
-    const padding = pixelUnit * 8;
-    const gap = pixelUnit * 6;
-    const centerX = screenWidth / 2;
-
-    const confirmText = this.add.text(0, 0, t('ui.deleteMetaConfirm'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-      wordWrap: { width: screenWidth * 0.75 },
-      align: 'center',
-    });
-    confirmText.setOrigin(0.5, 0.5);
-
-    const yesText = this.add.text(0, 0, t('ui.yes'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
-    yesText.setOrigin(0.5, 0.5);
-
-    const noText = this.add.text(0, 0, t('ui.no'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
-    noText.setOrigin(0.5, 0.5);
-
-    const buttonWidth = Math.max(yesText.width, noText.width) + padding * 2;
-    const buttonHeight = yesText.height + padding;
-    const buttonsRowWidth = buttonWidth * 2 + gap;
-    const panelWidth = Math.max(confirmText.width, buttonsRowWidth) + padding * 2;
-    const panelHeight = confirmText.height + buttonHeight + gap + padding * 2;
-    const panelX = (screenWidth - panelWidth) / 2;
-    const panelY = (screenHeight - panelHeight) / 2;
-
-    const textY = panelY + padding + confirmText.height / 2;
-    confirmText.setPosition(centerX, textY);
-
-    const buttonsY = panelY + panelHeight - padding - buttonHeight / 2;
-
-    const overlay = this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000, 0.7);
-    overlay.setOrigin(0, 0);
-    overlay.setInteractive();
-
-    const panelGraphics = this.add.graphics();
-    panelGraphics.fillStyle(0x000033, 0.95);
-    panelGraphics.fillRect(panelX, panelY, panelWidth, panelHeight);
-    createUIPanel(panelGraphics, panelX, panelY, panelWidth, panelHeight, pixelUnit, 0xffffff, 1);
-
-    const yesGraphics = this.add.graphics();
-    const yesX = centerX - gap / 2 - buttonWidth / 2;
-    yesGraphics.fillStyle(0x552222, 0.9);
-    yesGraphics.fillRect(yesX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight);
-    createUIPanel(yesGraphics, yesX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight, pixelUnit, 0xaa4444, 0.9);
-    yesText.setPosition(yesX, buttonsY);
-
-    const yesZone = this.add.zone(yesX, buttonsY, buttonWidth, buttonHeight);
-    yesZone.setInteractive({ useHandCursor: true });
-    yesZone.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      SaveManager.deleteMetaSave();
-      this.hideDeleteMetaConfirm();
-    });
-
-    const noGraphics = this.add.graphics();
-    const noX = centerX + gap / 2 + buttonWidth / 2;
-    noGraphics.fillStyle(0x225522, 0.9);
-    noGraphics.fillRect(noX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight);
-    createUIPanel(noGraphics, noX - buttonWidth / 2, buttonsY - buttonHeight / 2, buttonWidth, buttonHeight, pixelUnit, 0x44aa44, 0.9);
-    noText.setPosition(noX, buttonsY);
-
-    const noZone = this.add.zone(noX, buttonsY, buttonWidth, buttonHeight);
-    noZone.setInteractive({ useHandCursor: true });
-    noZone.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      this.hideDeleteMetaConfirm();
-    });
-
-    this.deleteMetaConfirmContainer = this.add.container(0, 0, [
-      overlay,
-      panelGraphics,
-      confirmText,
-      yesGraphics,
-      yesText,
-      yesZone,
-      noGraphics,
-      noText,
-      noZone,
-    ]);
-    this.deleteMetaConfirmContainer.setDepth(FRONT_DEPTH + 60);
-  }
-
-  private showDeleteMetaConfirm() {
-    if (this.deleteMetaConfirmContainer) {
-      this.deleteMetaConfirmContainer.destroy();
-    }
-    this.createDeleteMetaConfirm();
-    this.deleteMetaConfirmContainer.setVisible(true);
-  }
-
-  private hideDeleteMetaConfirm() {
-    if (this.deleteMetaConfirmContainer) {
-      this.deleteMetaConfirmContainer.destroy();
-    }
-  }
-
   openMenu() {
-    if (this.menuOpen) return;
-    this.menuOpen = true;
-    playSfx(this, 'buttonClick', 0.3);
-    this.menuContainer.setVisible(true);
+    if (this.optionsMenu.isOpen) return;
+    this.optionsMenu.open();
     this.scene.pause('MainScene');
   }
 
   private closeMenu() {
-    this.menuOpen = false;
-    if (this.confirmContainer) {
-      this.confirmContainer.destroy();
-    }
-    if (this.deleteMetaConfirmContainer) {
-      this.deleteMetaConfirmContainer.destroy();
-    }
-    this.menuContainer.setVisible(false);
+    this.optionsMenu.close();
     this.scene.resume('MainScene');
   }
 
@@ -1023,6 +522,11 @@ export class UIScene extends CustomScene {
     if (this.crashActive) return;
     this.crashActive = true;
     this.scene.pause('MainScene');
+
+    if (DEMO_MODE) {
+      this.showDemoEndScreen();
+      return;
+    }
 
     const pointsEarned = Prestige.computePointsForLevel(Progression.level);
     Prestige.awardPoints(pointsEarned);
@@ -1049,9 +553,8 @@ export class UIScene extends CustomScene {
     const subtitleY = centerY - pixelUnit * 55;
     const messageY = centerY - pixelUnit * 40;
     const earnedY = centerY - pixelUnit * 22;
-    const cpuBonusY = centerY - pixelUnit * 10;
-    const pointsY = centerY + pixelUnit * 4;
-    const firstPrestigeY = centerY + pixelUnit * 20;
+    const pointsY = centerY - pixelUnit * 8;
+    const firstPrestigeY = centerY + pixelUnit * 10;
     const prestigeButtonHeight = pixelUnit * 18;
     const prestigeButtonGap = pixelUnit * 4;
     const prestigeButtonWidth = pixelUnit * 90;
@@ -1097,19 +600,6 @@ export class UIScene extends CustomScene {
     );
     earnedText.setOrigin(0.5, 0.5);
     earnedText.setAlpha(0);
-
-    const cpuBonusText = this.add.text(
-      centerX,
-      cpuBonusY,
-      `+${CPU_CAPACITY_BONUS_PER_POINT} MHz CPU`,
-      {
-        fontFamily: 'KenneyPixel',
-        fontSize: `${earnedFontSize}px`,
-        color: '#44ddff',
-      },
-    );
-    cpuBonusText.setOrigin(0.5, 0.5);
-    cpuBonusText.setAlpha(0);
 
     this.prestigePointsText = this.add.text(centerX, pointsY, '', {
       fontFamily: 'KenneyPixel',
@@ -1188,7 +678,6 @@ export class UIScene extends CustomScene {
       subtitleText,
       messageText,
       earnedText,
-      cpuBonusText,
       this.prestigePointsText,
       ...prestigeContainerChildren,
       buttonGraphics,
@@ -1231,7 +720,7 @@ export class UIScene extends CustomScene {
     });
 
     this.tweens.add({
-      targets: [earnedText, cpuBonusText, this.prestigePointsText],
+      targets: [earnedText, this.prestigePointsText],
       alpha: 1,
       delay: 2400,
       duration: 600,
@@ -1258,6 +747,113 @@ export class UIScene extends CustomScene {
       targets: [buttonGraphics, buttonText],
       alpha: 1,
       delay: 3200,
+      duration: 600,
+      ease: 'Power2',
+    });
+  }
+
+  private showDemoEndScreen() {
+    const screenWidth = this.cameras.main.width;
+    const screenHeight = this.cameras.main.height;
+    const pixelUnit = this.pixelUnit;
+
+    const overlay = this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000, 0);
+    overlay.setOrigin(0, 0);
+    overlay.setInteractive();
+
+    const titleFontSize = Math.round(pixelUnit * 22);
+    const subtitleFontSize = Math.round(pixelUnit * 13);
+    const messageFontSize = Math.round(pixelUnit * 9);
+    const buyFontSize = Math.round(pixelUnit * 10);
+    const centerX = screenWidth / 2;
+    const centerY = screenHeight / 2;
+
+    const titleY = centerY - pixelUnit * 40;
+    const subtitleY = centerY - pixelUnit * 15;
+    const messageY = centerY + pixelUnit * 5;
+    const buyY = centerY + pixelUnit * 25;
+
+    const titleText = this.add.text(centerX, titleY, t('demo.title'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${titleFontSize}px`,
+      color: '#ffdd44',
+      align: 'center',
+    });
+    titleText.setOrigin(0.5, 0.5);
+    titleText.setAlpha(0);
+
+    const subtitleText = this.add.text(centerX, subtitleY, t('demo.subtitle'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${subtitleFontSize}px`,
+      color: '#ffffff',
+      align: 'center',
+    });
+    subtitleText.setOrigin(0.5, 0.5);
+    subtitleText.setAlpha(0);
+
+    const messageText = this.add.text(centerX, messageY, t('demo.message'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${messageFontSize}px`,
+      color: '#aaaaaa',
+      align: 'center',
+    });
+    messageText.setOrigin(0.5, 0.5);
+    messageText.setAlpha(0);
+
+    const buyText = this.add.text(centerX, buyY, t('demo.buyFull'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${buyFontSize}px`,
+      color: '#44ff88',
+      align: 'center',
+      wordWrap: { width: screenWidth * 0.8 },
+    });
+    buyText.setOrigin(0.5, 0.5);
+    buyText.setAlpha(0);
+
+    this.crashContainer = this.add.container(0, 0, [
+      overlay,
+      titleText,
+      subtitleText,
+      messageText,
+      buyText,
+    ]);
+    this.crashContainer.setDepth(FRONT_DEPTH + 100);
+
+    this.tweens.add({
+      targets: overlay,
+      fillAlpha: 0.9,
+      duration: 1500,
+      ease: 'Power2',
+    });
+
+    this.tweens.add({
+      targets: titleText,
+      alpha: 1,
+      delay: 800,
+      duration: 600,
+      ease: 'Power2',
+    });
+
+    this.tweens.add({
+      targets: subtitleText,
+      alpha: 1,
+      delay: 1400,
+      duration: 600,
+      ease: 'Power2',
+    });
+
+    this.tweens.add({
+      targets: messageText,
+      alpha: 1,
+      delay: 2000,
+      duration: 600,
+      ease: 'Power2',
+    });
+
+    this.tweens.add({
+      targets: buyText,
+      alpha: 1,
+      delay: 2600,
       duration: 600,
       ease: 'Power2',
     });
@@ -1374,7 +970,7 @@ export class UIScene extends CustomScene {
   }
 
   update() {
-    if (!this.collapsed && !this.menuOpen) {
+    if (!this.collapsed && !this.optionsMenu.isOpen) {
       this.shop.update();
     }
     this.juiceText.setText(formatNumber(Progression.juice));

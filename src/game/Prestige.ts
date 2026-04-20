@@ -22,9 +22,8 @@ export const PRESTIGE_UPGRADES: Record<string, PrestigeUpgradeDefinition> = {
   startAutoClickers: { baseCost: 1, costMultiplier: 2 },
   startSprites: { baseCost: 1, costMultiplier: 2, maxLevel: 5 },
   unlockColors: { baseCost: 2, costMultiplier: 2, maxLevel: UNLOCK_COLOR_ORDER.length },
+  cpuCapacity: { baseCost: 1, costMultiplier: 2, maxLevel: 10 },
 };
-
-export const CPU_CAPACITY_BONUS_PER_POINT = BASE_CPU_CAPACITY_PER_LEVEL;
 
 export class Prestige {
   static points: number = 0;
@@ -33,6 +32,7 @@ export class Prestige {
     startAutoClickers: 0,
     startSprites: 0,
     unlockColors: 0,
+    cpuCapacity: 0,
   };
 
   static getStartingAutoClickers(): number {
@@ -51,7 +51,8 @@ export class Prestige {
   }
 
   static getCpuCapacityBonus(): number {
-    return Prestige.totalEarned * BASE_CPU_CAPACITY_PER_LEVEL;
+    const level = Prestige.upgradeLevels.cpuCapacity ?? 0;
+    return ((level * (level + 1)) / 2) * BASE_CPU_CAPACITY_PER_LEVEL;
   }
 
   static computePointsForLevel(level: number): number {
@@ -100,6 +101,7 @@ export class Prestige {
       startAutoClickers: 0,
       startSprites: 0,
       unlockColors: 0,
+      cpuCapacity: 0,
     };
   }
 }

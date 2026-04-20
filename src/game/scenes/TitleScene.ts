@@ -2,6 +2,8 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { CustomScene } from '../customClasses/CustomScene';
 import { spriteElements } from '../elements/SpriteAtlas';
+import { OptionsMenu } from '../objects/OptionsMenu';
+import { SaveManager } from '../utils/SaveManager';
 import {
   createUIPanel,
   getRandomInt,
@@ -39,6 +41,7 @@ export class TitleScene extends CustomScene {
   private canvasWidth: number = 0;
   private canvasHeight: number = 0;
   private transitioning: boolean = false;
+  private optionsMenu!: OptionsMenu;
 
   constructor() {
     super('TitleScene');
@@ -67,6 +70,10 @@ export class TitleScene extends CustomScene {
     this.createTitleTexts();
     this.createMenuButtons();
     this.createVersionTag();
+    this.optionsMenu = new OptionsMenu(this, {
+      onResume: () => this.optionsMenu.close(),
+      onDeleteMeta: () => SaveManager.deleteMetaSave(),
+    });
 
     initShader(this);
 
@@ -185,9 +192,7 @@ export class TitleScene extends CustomScene {
       'OPTIONS',
       0x222255,
       0x4444aa,
-      () => {
-        
-      },
+      () => this.optionsMenu.open(),
     );
     this.createButton(
       centerX,

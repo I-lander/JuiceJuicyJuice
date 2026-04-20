@@ -21,6 +21,7 @@ const translations: Record<Language, Record<string, string>> = {
     'ui.no': 'NO',
     'ui.deleteMeta': 'DELETE META',
     'ui.deleteMetaConfirm': 'Delete meta progression? This cannot be undone.',
+    'ui.quitConfirm': 'Quit the game?',
     'ui.prestigeEarned': 'PRESTIGE POINTS',
     'ui.prestigePoints': 'Prestige Points',
     'prestige.startAutoClickers.name': 'Start Auto-clickers',
@@ -72,6 +73,11 @@ const translations: Record<Language, Record<string, string>> = {
     'crash.subtitle': 'CPU OVERLOAD — 100%',
     'crash.message': 'Too much juice. The system couldn\'t handle it.',
     'crash.restart': 'REBOOT',
+
+    'demo.title': 'THANKS FOR PLAYING!',
+    'demo.subtitle': 'DEMO COMPLETE',
+    'demo.message': 'This is the end of the demo.',
+    'demo.buyFull': 'Full version available on this itch.io page.',
   },
   fr: {
     'ui.resume': 'REPRENDRE',
@@ -89,6 +95,7 @@ const translations: Record<Language, Record<string, string>> = {
     'ui.no': 'NON',
     'ui.deleteMeta': 'EFFACER META',
     'ui.deleteMetaConfirm': 'Effacer la meta progression ? Irreversible.',
+    'ui.quitConfirm': 'Quitter le jeu ?',
     'ui.prestigeEarned': 'POINTS DE PRESTIGE',
     'ui.prestigePoints': 'Points de prestige',
     'prestige.startAutoClickers.name': 'Auto-clics depart',
@@ -140,6 +147,11 @@ const translations: Record<Language, Record<string, string>> = {
     'crash.subtitle': 'SURCHARGE CPU — 100%',
     'crash.message': 'Trop de jus. Le systeme n\'a pas tenu.',
     'crash.restart': 'REDEMARRER',
+
+    'demo.title': 'MERCI D\'AVOIR JOUE !',
+    'demo.subtitle': 'FIN DE LA DEMO',
+    'demo.message': 'Vous avez atteint la fin de la demo.',
+    'demo.buyFull': 'Version complete disponible sur cette page itch.io.',
   },
 };
 
