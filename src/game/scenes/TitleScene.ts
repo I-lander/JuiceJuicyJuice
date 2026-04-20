@@ -174,7 +174,7 @@ export class TitleScene extends CustomScene {
     const gap = pixelUnit * 6;
     const firstButtonY = this.canvasHeight * (isPortrait ? 0.62 : 0.7);
 
-    this.createButton(centerX, firstButtonY, buttonWidth, buttonHeight, 'PLAY', 0x225522, 0x44aa44, () =>
+    this.createButton(centerX, firstButtonY, buttonWidth, buttonHeight, 'PLAY', 0x8a5a00, 0xffcc33, () =>
       this.startGame(),
     );
     this.createButton(
