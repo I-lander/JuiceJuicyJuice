@@ -2,7 +2,13 @@ type Language = 'en' | 'fr';
 
 const STORAGE_KEY = 'juice_language';
 
-let currentLanguage: Language = (localStorage.getItem(STORAGE_KEY) as Language) || 'en';
+function detectSystemLanguage(): Language {
+  const systemLang = navigator.language?.toLowerCase().split('-')[0];
+  return systemLang === 'fr' ? 'fr' : 'en';
+}
+
+const storedLanguage = localStorage.getItem(STORAGE_KEY) as Language | null;
+let currentLanguage: Language = storedLanguage ?? detectSystemLanguage();
 
 const translations: Record<Language, Record<string, string>> = {
   en: {
@@ -105,6 +111,12 @@ const translations: Record<Language, Record<string, string>> = {
     'demo.buyFull': 'Full version available on this itch.io page.',
 
     'title.subtitle': 'Designed and created by the Donkey',
+
+    'warning.title': 'PHOTOSENSITIVITY WARNING',
+    'warning.body':
+      'This game contains flashing lights and intense visual effects that may trigger seizures in people with photosensitive epilepsy. Player discretion is advised.',
+    'warning.continue': 'I UNDERSTAND',
+    'warning.dontShowAgain': 'DO NOT SHOW AGAIN',
   },
   fr: {
     'ui.resume': 'REPRENDRE',
@@ -206,6 +218,12 @@ const translations: Record<Language, Record<string, string>> = {
     'demo.buyFull': 'Version complete disponible sur cette page itch.io.',
 
     'title.subtitle': 'Designé et créé par le Donkey',
+
+    'warning.title': 'AVERTISSEMENT EPILEPSIE',
+    'warning.body':
+      'Ce jeu contient des flashs lumineux et des effets visuels intenses qui peuvent provoquer des crises chez les personnes atteintes d\'epilepsie photosensible. La prudence est recommandee.',
+    'warning.continue': 'J\'AI COMPRIS',
+    'warning.dontShowAgain': 'NE PLUS AFFICHER',
   },
 };
 

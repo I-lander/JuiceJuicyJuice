@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { MainScene } from './scenes/MainScene';
 import { UIScene } from './scenes/UIScene';
+import { EpilepsyWarningScene } from './scenes/EpilepsyWarningScene';
 import { LoadingScene } from './scenes/LoadingScene';
 import { TitleScene } from './scenes/TitleScene';
 
@@ -38,7 +39,7 @@ export function initPhaserGame() {
     },
     disableContextMenu: true,
     parent: 'game-container',
-    scene: [LoadingScene, TitleScene, MainScene, UIScene],
+    scene: [LoadingScene, EpilepsyWarningScene, TitleScene, MainScene, UIScene],
     powerPreference: 'high-performance',
     autoMobilePipeline: true,
     fps: {

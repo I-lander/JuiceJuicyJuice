@@ -1,6 +1,7 @@
 import { particleAtlas } from '../elements/Particles';
 import { spriteAtlas } from '../elements/SpriteAtlas';
 import { uiAtlas } from '../elements/UiAtlas';
+import { WARNING_DISMISSED_KEY } from './EpilepsyWarningScene';
 
 export class LoadingScene extends Phaser.Scene {
   constructor() {
@@ -22,6 +23,7 @@ export class LoadingScene extends Phaser.Scene {
   }
 
   async create() {
-    this.scene.start('TitleScene');
+    const warningDismissed = localStorage.getItem(WARNING_DISMISSED_KEY) === 'true';
+    this.scene.start(warningDismissed ? 'TitleScene' : 'EpilepsyWarningScene');
   }
 }
