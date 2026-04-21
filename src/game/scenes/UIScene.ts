@@ -532,6 +532,36 @@ export class UIScene extends CustomScene {
       return;
     }
 
+    const uiCamera = this.cameras.main;
+    uiCamera.shake(500, 0.028);
+    uiCamera.flash(160, 255, 255, 255);
+
+    if (this.mainScene.glitchShader) {
+      this.mainScene.glitchShader.glitchIntensity = 1;
+      this.tweens.add({
+        targets: this.mainScene.glitchShader,
+        glitchIntensity: 0.18,
+        delay: 350,
+        duration: 700,
+        ease: 'Quad.easeOut',
+      });
+    }
+    if (this.glitchShader) {
+      this.glitchShader.glitchIntensity = 1;
+      this.tweens.add({
+        targets: this.glitchShader,
+        glitchIntensity: 0.12,
+        delay: 350,
+        duration: 700,
+        ease: 'Quad.easeOut',
+      });
+    }
+
+    playSfx(this, 'wallBounce', 0.55);
+    this.time.delayedCall(60, () => playSfx(this, 'spriteBounce', 0.5));
+    this.time.delayedCall(150, () => playSfx(this, 'wallBounce', 0.45));
+    this.time.delayedCall(260, () => playSfx(this, 'buttonClick', 0.55));
+
     const pointsEarned = Prestige.computePointsForLevel(Progression.level);
     Prestige.awardPoints(pointsEarned);
     SaveManager.saveMeta();
@@ -671,6 +701,7 @@ export class UIScene extends CustomScene {
     });
     titleText.setOrigin(0.5, 0.5);
     titleText.setAlpha(0);
+    titleText.setScale(4);
 
     const subtitleText = this.add.text(centerX, subtitleY, t('crash.subtitle'), {
       fontFamily: 'KenneyPixel',
@@ -834,40 +865,42 @@ export class UIScene extends CustomScene {
     this.tweens.add({
       targets: overlay,
       fillAlpha: 0.95,
-      duration: 1500,
-      ease: 'Power2',
+      delay: 80,
+      duration: 90,
+      ease: 'Linear',
     });
 
     this.tweens.add({
       targets: titleText,
       alpha: 1,
-      delay: 600,
-      duration: 600,
-      ease: 'Power2',
+      scale: 1,
+      delay: 220,
+      duration: 260,
+      ease: 'Back.easeOut',
     });
 
     this.tweens.add({
       targets: subtitleText,
       alpha: 1,
-      delay: 1000,
-      duration: 500,
-      ease: 'Power2',
+      delay: 420,
+      duration: 80,
+      ease: 'Linear',
     });
 
     this.tweens.add({
       targets: messageText,
       alpha: 1,
-      delay: 1300,
-      duration: 500,
-      ease: 'Power2',
+      delay: 560,
+      duration: 80,
+      ease: 'Linear',
     });
 
     this.tweens.add({
       targets: [earnedText, this.prestigePointsText],
       alpha: 1,
-      delay: 1600,
-      duration: 600,
-      ease: 'Power2',
+      delay: 720,
+      duration: 140,
+      ease: 'Linear',
     });
 
     const prestigeVisuals: Phaser.GameObjects.GameObject[] = [this.prestigeConnectorGraphics];
@@ -883,17 +916,17 @@ export class UIScene extends CustomScene {
     this.tweens.add({
       targets: prestigeVisuals,
       alpha: 1,
-      delay: 2000,
-      duration: 600,
-      ease: 'Power2',
+      delay: 900,
+      duration: 220,
+      ease: 'Quad.easeOut',
     });
 
     this.tweens.add({
       targets: [buttonGraphics, buttonText],
       alpha: 1,
-      delay: 2400,
-      duration: 600,
-      ease: 'Power2',
+      delay: 1120,
+      duration: 180,
+      ease: 'Quad.easeOut',
     });
   }
 
