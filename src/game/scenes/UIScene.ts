@@ -111,7 +111,16 @@ export class UIScene extends CustomScene {
         this.initUnlockedUpgrades();
         this.closeMenu();
       },
-      onDeleteMeta: () => SaveManager.deleteMetaSave(),
+      onDeleteMeta: () => {
+        SaveManager.deleteSave();
+        SaveManager.deleteMetaSave();
+        this.mainScene.clearEntities();
+        Progression.reset();
+        this.mainScene.spawnPrestigeStartingSprites();
+        this.previouslyUnlocked.clear();
+        this.initUnlockedUpgrades();
+        this.closeMenu();
+      },
       onQuit: () => {
         if (Capacitor.isNativePlatform()) {
           App.exitApp();

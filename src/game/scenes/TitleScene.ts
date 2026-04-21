@@ -75,7 +75,10 @@ export class TitleScene extends CustomScene {
     this.createVersionTag();
     this.optionsMenu = new OptionsMenu(this, {
       onResume: () => this.optionsMenu.close(),
-      onDeleteMeta: () => SaveManager.deleteMetaSave(),
+      onDeleteMeta: () => {
+        SaveManager.deleteSave();
+        SaveManager.deleteMetaSave();
+      },
     });
     SaveManager.loadMeta();
     const saveData = SaveManager.load();
