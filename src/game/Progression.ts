@@ -21,14 +21,16 @@ export const CPU_COSTS: Record<string, number> = {
 export const BASE_BOUNCE_INTERVAL_MS = 5000;
 
 const CPU_CAPACITY_MHZ = 500;
+const BASE_AUTOCLICKER_COOLDOWN = 3000;
+const BASE_SPRITE_JUICE = 5;
 
 export class Progression {
   static juice = 0;
   static sprites = 0;
   static particlesPerClick = 1;
   static autoClickers = 0;
-  static autoClickerCooldown = 3000;
-  static spriteJuiceAmount = 5;
+  static autoClickerCooldown = BASE_AUTOCLICKER_COOLDOWN;
+  static spriteJuiceAmount = BASE_SPRITE_JUICE;
   static bounceJuiceAmount = 50;
   static movementJuiceAmount = 500;
   static rotationJuiceAmount = 50000;
@@ -71,16 +73,25 @@ export class Progression {
       Progression.activeCollisionCpu - (Progression.activeCollisionCpu * delta) / 1000,
     );
 
+    const spriteCpuMult = Prestige.getSpriteCpuMultiplier();
+    const particleCpuMult = Prestige.getParticleCpuMultiplier();
+
     let totalCpu = 0;
-    totalCpu += spriteCount * CPU_COSTS.sprite;
-    totalCpu += particleCount * CPU_COSTS.particle;
+    totalCpu += spriteCount * CPU_COSTS.sprite * spriteCpuMult;
+    totalCpu += particleCount * CPU_COSTS.particle * particleCpuMult;
     totalCpu += activeTweenCount * CPU_COSTS.tween;
-    totalCpu += movingSpriteCount * CPU_COSTS.movingSprite * Progression.spriteSpeedMultiplier;
+    totalCpu +=
+      movingSpriteCount * CPU_COSTS.movingSprite * Progression.spriteSpeedMultiplier * spriteCpuMult;
     totalCpu += Progression.autoClickers * CPU_COSTS.autoClicker;
-    totalCpu += rotatingSpriteCount * CPU_COSTS.rotatingSprite * Progression.spriteRotationSpeedMultiplier;
-    totalCpu += bouncingSpriteCount * CPU_COSTS.bounce * Progression.bounceScaleMultiplier;
-    totalCpu += Progression.activeCollisionCpu;
-    totalCpu *= Progression.cpuMultiplier;
+    totalCpu +=
+      rotatingSpriteCount *
+      CPU_COSTS.rotatingSprite *
+      Progression.spriteRotationSpeedMultiplier *
+      spriteCpuMult;
+    totalCpu +=
+      bouncingSpriteCount * CPU_COSTS.bounce * Progression.bounceScaleMultiplier * spriteCpuMult;
+    totalCpu += Progression.activeCollisionCpu * spriteCpuMult;
+    totalCpu *= Progression.cpuMultiplier * Prestige.getCpuCostMultiplier();
 
     Progression.cpuUsage = totalCpu;
     Progression.cpuPercent = Math.min(100, (totalCpu / Progression.cpuCapacityMhz) * 100);
@@ -93,8 +104,8 @@ export class Progression {
     Progression.sprites = 0;
     Progression.particlesPerClick = 1;
     Progression.autoClickers = 0;
-    Progression.autoClickerCooldown = 3000;
-    Progression.spriteJuiceAmount = 5;
+    Progression.autoClickerCooldown = BASE_AUTOCLICKER_COOLDOWN;
+    Progression.spriteJuiceAmount = BASE_SPRITE_JUICE;
     Progression.bounceJuiceAmount = 50;
     Progression.movementJuiceAmount = 500;
     Progression.rotationJuiceAmount = 50000;
@@ -137,6 +148,11 @@ export class Progression {
   static applyPrestigeBonuses() {
     Progression.autoClickers = Prestige.getStartingAutoClickers();
     Progression.cpuCapacityMhz = CPU_CAPACITY_MHZ + Prestige.getCpuCapacityBonus();
+    Progression.autoClickerCooldown = Math.round(
+      BASE_AUTOCLICKER_COOLDOWN * Prestige.getClickSpeedMultiplier(),
+    );
+    Progression.particlesPerClick = 1 + Prestige.getParticleBoost();
+    Progression.spriteJuiceAmount = BASE_SPRITE_JUICE * Prestige.getSpriteYieldMultiplier();
     Progression.unlockedParticleColors = [PARTICLE_COLOR_UPGRADES.whiteParticle];
     for (const colorKey of Prestige.getUnlockedColorKeys()) {
       const colorDefinition = PARTICLE_COLOR_UPGRADES[colorKey];
@@ -145,6 +161,20 @@ export class Progression {
       }
       Progression.upgradeLevels[colorKey] = 1;
     }
+    const startingJuice = Prestige.getStartingJuice();
+    if (startingJuice > 0) {
+      Progression.juice = startingJuice;
+      Progression.totalJuice = startingJuice;
+      Progression.recalculateLevel();
+    }
+  }
+
+  static carryPersistentJuice(previousJuice: number) {
+    const carried = previousJuice * Prestige.getPersistentJuicePercent();
+    if (carried <= 0) return;
+    Progression.juice += carried;
+    Progression.totalJuice += carried;
+    Progression.recalculateLevel();
   }
 
   static getJuiceForLevel(level: number): number {
@@ -152,8 +182,9 @@ export class Progression {
   }
 
   static addJuice(amount: number) {
-    Progression.juice += amount;
-    Progression.totalJuice += amount;
+    const multiplied = amount * Prestige.getJuiceMultiplier();
+    Progression.juice += multiplied;
+    Progression.totalJuice += multiplied;
     Progression.recalculateLevel();
   }
 
@@ -288,7 +319,8 @@ export class Progression {
   static getUpgradeCost(upgradeKey: string): number {
     const definition = UPGRADES[upgradeKey];
     const level = Progression.upgradeLevels[upgradeKey] ?? 0;
-    return Math.ceil(definition.baseCost * Math.pow(PRICE_INCREASE, level));
+    const rawCost = definition.baseCost * Math.pow(PRICE_INCREASE, level);
+    return Math.ceil(rawCost * Prestige.getUpgradeDiscountMultiplier());
   }
 
   static canAffordUpgrade(upgradeKey: string): boolean {

@@ -2,13 +2,14 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { CustomScene } from '../customClasses/CustomScene';
 import { Progression } from '../Progression';
-import { Prestige, PRESTIGE_UPGRADES } from '../Prestige';
+import { Prestige, PRESTIGE_UPGRADES, PRESTIGE_BRANCHES, type PrestigeBranch } from '../Prestige';
 import { OptionsMenu } from '../objects/OptionsMenu';
 import { Shop } from '../objects/Shop';
 import { UPGRADES } from '../objects/ShopUpgrades';
 import { t } from '../utils/i18n';
 import {
   createUIPanel,
+  formatCpuFrequency,
   formatNumber,
   FRONT_DEPTH,
   getColors,
@@ -54,13 +55,16 @@ export class UIScene extends CustomScene {
   private crashContainer!: Phaser.GameObjects.Container;
   private crashActive: boolean = false;
   private prestigePointsText!: Phaser.GameObjects.Text;
-  private prestigeButtons: Array<{
+  private prestigeConnectorGraphics!: Phaser.GameObjects.Graphics;
+  private prestigeNodes: Array<{
     key: string;
+    branch: PrestigeBranch;
     graphics: Phaser.GameObjects.Graphics;
     nameText: Phaser.GameObjects.Text;
+    descText: Phaser.GameObjects.Text;
     infoText: Phaser.GameObjects.Text;
-    x: number;
-    y: number;
+    centerX: number;
+    centerY: number;
     width: number;
     height: number;
   }> = [];
@@ -206,11 +210,11 @@ export class UIScene extends CustomScene {
 
   private refreshHud() {
     const cpuPercent = Math.round(Progression.cpuPercent);
-    const cpuUsed = Math.round(Progression.cpuUsage);
-    const cpuCapacity = Math.round(Progression.cpuCapacityMhz);
+    const cpuUsedText = formatCpuFrequency(Progression.cpuUsage);
+    const cpuCapacityText = formatCpuFrequency(Progression.cpuCapacityMhz);
     const cpuColor = this.getCpuColor(Progression.cpuPercent);
 
-    this.hudText.setText(`CPU: ${cpuPercent}%  ${cpuUsed}/${cpuCapacity} MHz`);
+    this.hudText.setText(`CPU: ${cpuPercent}%  ${cpuUsedText} / ${cpuCapacityText}`);
     this.hudText.setColor(cpuColor);
   }
 
@@ -540,29 +544,125 @@ export class UIScene extends CustomScene {
     overlay.setOrigin(0, 0);
     overlay.setInteractive();
 
-    const titleFontSize = Math.round(pixelUnit * 22);
-    const subtitleFontSize = Math.round(pixelUnit * 13);
-    const messageFontSize = Math.round(pixelUnit * 9);
-    const buttonFontSize = Math.round(pixelUnit * 14);
-    const earnedFontSize = Math.round(pixelUnit * 12);
-    const pointsFontSize = Math.round(pixelUnit * 11);
+    const titleFontSize = Math.round(pixelUnit * 18);
+    const subtitleFontSize = Math.round(pixelUnit * 9);
+    const messageFontSize = Math.round(pixelUnit * 7);
+    const buttonFontSize = Math.round(pixelUnit * 13);
+    const earnedFontSize = Math.round(pixelUnit * 11);
+    const pointsFontSize = Math.round(pixelUnit * 10);
     const centerX = screenWidth / 2;
-    const centerY = screenHeight / 2;
 
-    const titleY = centerY - pixelUnit * 75;
-    const subtitleY = centerY - pixelUnit * 55;
-    const messageY = centerY - pixelUnit * 40;
-    const earnedY = centerY - pixelUnit * 22;
-    const pointsY = centerY - pixelUnit * 8;
-    const firstPrestigeY = centerY + pixelUnit * 10;
-    const prestigeButtonHeight = pixelUnit * 18;
-    const prestigeButtonGap = pixelUnit * 4;
-    const prestigeButtonWidth = pixelUnit * 90;
-    const prestigeKeys = Object.keys(PRESTIGE_UPGRADES);
-    const rebootButtonY =
-      firstPrestigeY +
-      (prestigeButtonHeight + prestigeButtonGap) * prestigeKeys.length +
-      pixelUnit * 10;
+    const nameFontSize = Math.round(pixelUnit * 8);
+    const descFontSize = Math.round(pixelUnit * 7);
+    const infoFontSize = Math.round(pixelUnit * 8);
+
+    const topMargin = pixelUnit * 4;
+    const textChainGap = pixelUnit * 2;
+    const rebootMarginBottom = pixelUnit * 6;
+    const buttonHeight = pixelUnit * 13;
+
+    const titleY = topMargin + titleFontSize / 2;
+    const subtitleY = titleY + titleFontSize / 2 + textChainGap + subtitleFontSize / 2;
+    const messageY = subtitleY + subtitleFontSize / 2 + textChainGap + messageFontSize / 2;
+    const earnedY = messageY + messageFontSize / 2 + pixelUnit * 3 + earnedFontSize / 2;
+    const pointsY = earnedY + earnedFontSize / 2 + textChainGap + pointsFontSize / 2;
+
+    const rebootButtonY = screenHeight - rebootMarginBottom - buttonHeight / 2;
+    const rebootTopY = rebootButtonY - buttonHeight / 2;
+
+    const nodesByBranch: Record<PrestigeBranch, string[]> = {
+      bootstrap: [],
+      overclock: [],
+      hardware: [],
+      mastery: [],
+    };
+    for (const key of Object.keys(PRESTIGE_UPGRADES)) {
+      nodesByBranch[PRESTIGE_UPGRADES[key].branch].push(key);
+    }
+    let maxRowsPerBranch = 0;
+    for (const branch of PRESTIGE_BRANCHES) {
+      maxRowsPerBranch = Math.max(maxRowsPerBranch, nodesByBranch[branch].length);
+    }
+
+    const treeHorizontalMargin = pixelUnit * 6;
+    const columnGapX = pixelUnit * 5;
+    const nodeGapY = pixelUnit * 3;
+    const nodePadding = pixelUnit * 2;
+    const nodeTextGap = pixelUnit * 0.5;
+
+    const numBranches = PRESTIGE_BRANCHES.length;
+    const availableTreeWidth = screenWidth - treeHorizontalMargin * 2;
+    const nodeWidth =
+      (availableTreeWidth - (numBranches - 1) * columnGapX) / numBranches;
+    const wrapWidth = nodeWidth - 2 * nodePadding;
+
+    interface NodeDraft {
+      key: string;
+      branch: PrestigeBranch;
+      nameText: Phaser.GameObjects.Text;
+      descText: Phaser.GameObjects.Text;
+      infoText: Phaser.GameObjects.Text;
+    }
+    const drafts: NodeDraft[] = [];
+    for (const key of Object.keys(PRESTIGE_UPGRADES)) {
+      const nameText = this.add.text(0, 0, t(`prestige.${key}.name`), {
+        fontFamily: 'KenneyPixel',
+        fontSize: `${nameFontSize}px`,
+        color: '#ffffff',
+        align: 'center',
+        wordWrap: { width: wrapWidth },
+      });
+      nameText.setOrigin(0.5, 0);
+
+      const descText = this.add.text(0, 0, t(`prestige.${key}.desc`), {
+        fontFamily: 'KenneyPixel',
+        fontSize: `${descFontSize}px`,
+        color: '#aaaacc',
+        align: 'center',
+        wordWrap: { width: wrapWidth },
+      });
+      descText.setOrigin(0.5, 0);
+
+      const infoText = this.add.text(0, 0, '', {
+        fontFamily: 'KenneyPixel',
+        fontSize: `${infoFontSize}px`,
+        color: '#ffdd44',
+        align: 'center',
+      });
+      infoText.setOrigin(0.5, 1);
+
+      drafts.push({
+        key,
+        branch: PRESTIGE_UPGRADES[key].branch,
+        nameText,
+        descText,
+        infoText,
+      });
+    }
+
+    let maxNameHeight = 0;
+    let maxDescHeight = 0;
+    for (const draft of drafts) {
+      maxNameHeight = Math.max(maxNameHeight, draft.nameText.height);
+      maxDescHeight = Math.max(maxDescHeight, draft.descText.height);
+    }
+    const infoHeight = infoFontSize;
+    const nodeHeight =
+      2 * nodePadding +
+      maxNameHeight +
+      nodeTextGap +
+      maxDescHeight +
+      nodeTextGap +
+      infoHeight;
+
+    const totalTreeWidth =
+      numBranches * nodeWidth + (numBranches - 1) * columnGapX;
+    const treeStartX = centerX - totalTreeWidth / 2;
+    const totalTreeHeight =
+      maxRowsPerBranch * nodeHeight + (maxRowsPerBranch - 1) * nodeGapY;
+
+    const treeAreaBottom = rebootTopY - pixelUnit * 10;
+    const firstNodeCenterY = treeAreaBottom - totalTreeHeight + nodeHeight / 2;
 
     const titleText = this.add.text(centerX, titleY, t('crash.title'), {
       fontFamily: 'KenneyPixel',
@@ -609,24 +709,65 @@ export class UIScene extends CustomScene {
     this.prestigePointsText.setOrigin(0.5, 0.5);
     this.prestigePointsText.setAlpha(0);
 
-    this.prestigeButtons = [];
-    const prestigeContainerChildren: Phaser.GameObjects.GameObject[] = [];
-    for (let i = 0; i < prestigeKeys.length; i++) {
-      const key = prestigeKeys[i];
-      const buttonCenterY =
-        firstPrestigeY + i * (prestigeButtonHeight + prestigeButtonGap) + prestigeButtonHeight / 2;
-      const created = this.createPrestigeButton(
-        key,
-        centerX,
-        buttonCenterY,
-        prestigeButtonWidth,
-        prestigeButtonHeight,
-      );
-      prestigeContainerChildren.push(created.graphics, created.nameText, created.infoText, created.hitZone);
+    this.prestigeNodes = [];
+    this.prestigeConnectorGraphics = this.add.graphics();
+    const prestigeContainerChildren: Phaser.GameObjects.GameObject[] = [this.prestigeConnectorGraphics];
+    const draftByKey = new Map<string, NodeDraft>();
+    for (const draft of drafts) {
+      draftByKey.set(draft.key, draft);
+    }
+    for (let col = 0; col < PRESTIGE_BRANCHES.length; col++) {
+      const branch = PRESTIGE_BRANCHES[col];
+      const columnCenterX = treeStartX + col * (nodeWidth + columnGapX) + nodeWidth / 2;
+      const branchKeys = nodesByBranch[branch];
+      for (let row = 0; row < branchKeys.length; row++) {
+        const key = branchKeys[row];
+        const draft = draftByKey.get(key)!;
+        const nodeCenterY = firstNodeCenterY + row * (nodeHeight + nodeGapY);
+        const nodeTop = nodeCenterY - nodeHeight / 2;
+        const nodeBottom = nodeCenterY + nodeHeight / 2;
+
+        draft.nameText.setPosition(columnCenterX, nodeTop + nodePadding);
+        draft.descText.setPosition(
+          columnCenterX,
+          nodeTop + nodePadding + maxNameHeight + nodeTextGap,
+        );
+        draft.infoText.setPosition(columnCenterX, nodeBottom - nodePadding);
+
+        const graphics = this.add.graphics();
+        const hitZone = this.add.zone(columnCenterX, nodeCenterY, nodeWidth, nodeHeight);
+        hitZone.setInteractive({ useHandCursor: true });
+        hitZone.on('pointerup', () => {
+          if (!Prestige.purchase(key)) return;
+          SaveManager.saveMeta();
+          playSfx(this, 'purchase', 0.3);
+          this.refreshPrestigeTree();
+        });
+
+        this.prestigeNodes.push({
+          key,
+          branch,
+          graphics,
+          nameText: draft.nameText,
+          descText: draft.descText,
+          infoText: draft.infoText,
+          centerX: columnCenterX,
+          centerY: nodeCenterY,
+          width: nodeWidth,
+          height: nodeHeight,
+        });
+
+        prestigeContainerChildren.push(
+          graphics,
+          draft.nameText,
+          draft.descText,
+          draft.infoText,
+          hitZone,
+        );
+      }
     }
 
     const buttonWidth = pixelUnit * 60;
-    const buttonHeight = pixelUnit * 16;
 
     const buttonGraphics = this.add.graphics();
     buttonGraphics.fillStyle(0x552222, 0.9);
@@ -659,12 +800,14 @@ export class UIScene extends CustomScene {
     const buttonZone = this.add.zone(centerX, rebootButtonY, buttonWidth, buttonHeight);
     buttonZone.setInteractive({ useHandCursor: true });
     buttonZone.on('pointerup', () => {
+      const previousJuice = Progression.juice;
       playSfx(this, 'buttonClick', 0.3);
       this.crashContainer.destroy();
       this.crashActive = false;
-      this.prestigeButtons = [];
+      this.prestigeNodes = [];
       this.mainScene.clearEntities();
       Progression.reset();
+      Progression.carryPersistentJuice(previousJuice);
       this.mainScene.spawnPrestigeStartingSprites();
       this.previouslyUnlocked.clear();
       this.initUnlockedUpgrades();
@@ -686,11 +829,11 @@ export class UIScene extends CustomScene {
     ]);
     this.crashContainer.setDepth(FRONT_DEPTH + 100);
 
-    this.refreshPrestigeShop();
+    this.refreshPrestigeTree();
 
     this.tweens.add({
       targets: overlay,
-      fillAlpha: 0.85,
+      fillAlpha: 0.95,
       duration: 1500,
       ease: 'Power2',
     });
@@ -698,7 +841,7 @@ export class UIScene extends CustomScene {
     this.tweens.add({
       targets: titleText,
       alpha: 1,
-      delay: 800,
+      delay: 600,
       duration: 600,
       ease: 'Power2',
     });
@@ -706,13 +849,39 @@ export class UIScene extends CustomScene {
     this.tweens.add({
       targets: subtitleText,
       alpha: 1,
-      delay: 1400,
-      duration: 600,
+      delay: 1000,
+      duration: 500,
       ease: 'Power2',
     });
 
     this.tweens.add({
       targets: messageText,
+      alpha: 1,
+      delay: 1300,
+      duration: 500,
+      ease: 'Power2',
+    });
+
+    this.tweens.add({
+      targets: [earnedText, this.prestigePointsText],
+      alpha: 1,
+      delay: 1600,
+      duration: 600,
+      ease: 'Power2',
+    });
+
+    const prestigeVisuals: Phaser.GameObjects.GameObject[] = [this.prestigeConnectorGraphics];
+    this.prestigeConnectorGraphics.setAlpha(0);
+    for (const node of this.prestigeNodes) {
+      node.graphics.setAlpha(0);
+      node.nameText.setAlpha(0);
+      node.descText.setAlpha(0);
+      node.infoText.setAlpha(0);
+      prestigeVisuals.push(node.graphics, node.nameText, node.descText, node.infoText);
+    }
+
+    this.tweens.add({
+      targets: prestigeVisuals,
       alpha: 1,
       delay: 2000,
       duration: 600,
@@ -720,33 +889,9 @@ export class UIScene extends CustomScene {
     });
 
     this.tweens.add({
-      targets: [earnedText, this.prestigePointsText],
-      alpha: 1,
-      delay: 2400,
-      duration: 600,
-      ease: 'Power2',
-    });
-
-    const prestigeVisuals: Phaser.GameObjects.GameObject[] = [];
-    for (const button of this.prestigeButtons) {
-      button.graphics.setAlpha(0);
-      button.nameText.setAlpha(0);
-      button.infoText.setAlpha(0);
-      prestigeVisuals.push(button.graphics, button.nameText, button.infoText);
-    }
-
-    this.tweens.add({
-      targets: prestigeVisuals,
-      alpha: 1,
-      delay: 2800,
-      duration: 600,
-      ease: 'Power2',
-    });
-
-    this.tweens.add({
       targets: [buttonGraphics, buttonText],
       alpha: 1,
-      delay: 3200,
+      delay: 2400,
       duration: 600,
       ease: 'Power2',
     });
@@ -859,113 +1004,94 @@ export class UIScene extends CustomScene {
     });
   }
 
-  private createPrestigeButton(
-    key: string,
-    centerX: number,
-    centerY: number,
-    width: number,
-    height: number,
-  ): {
-    graphics: Phaser.GameObjects.Graphics;
-    nameText: Phaser.GameObjects.Text;
-    infoText: Phaser.GameObjects.Text;
-    hitZone: Phaser.GameObjects.Zone;
-  } {
-    const pixelUnit = this.pixelUnit;
-    const fontSize = Math.round(pixelUnit * 10);
-    const smallFontSize = Math.round(pixelUnit * 9);
-
-    const graphics = this.add.graphics();
-
-    const nameText = this.add.text(centerX, centerY - height * 0.22, t(`prestige.${key}.name`), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
-    nameText.setOrigin(0.5, 0.5);
-
-    const infoText = this.add.text(centerX, centerY + height * 0.22, '', {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${smallFontSize}px`,
-      color: '#ffdd44',
-    });
-    infoText.setOrigin(0.5, 0.5);
-
-    const hitZone = this.add.zone(centerX, centerY, width, height);
-    hitZone.setInteractive({ useHandCursor: true });
-    hitZone.on('pointerup', () => {
-      if (!Prestige.purchase(key)) return;
-      SaveManager.saveMeta();
-      playSfx(this, 'purchase', 0.3);
-      this.refreshPrestigeShop();
-    });
-
-    this.prestigeButtons.push({
-      key,
-      graphics,
-      nameText,
-      infoText,
-      x: centerX - width / 2,
-      y: centerY - height / 2,
-      width,
-      height,
-    });
-
-    return { graphics, nameText, infoText, hitZone };
-  }
-
-  private refreshPrestigeShop() {
+  private refreshPrestigeTree() {
     if (this.prestigePointsText) {
       this.prestigePointsText.setText(`${t('ui.prestigePoints')}: ${Prestige.points}`);
     }
-    for (const button of this.prestigeButtons) {
-      this.refreshPrestigeButton(button);
+    for (const node of this.prestigeNodes) {
+      this.refreshPrestigeNode(node);
+    }
+    this.redrawPrestigeConnectors();
+  }
+
+  private redrawPrestigeConnectors() {
+    const pixelUnit = this.pixelUnit;
+    this.prestigeConnectorGraphics.clear();
+    const nodeByKey: Record<string, (typeof this.prestigeNodes)[number]> = {};
+    for (const node of this.prestigeNodes) {
+      nodeByKey[node.key] = node;
+    }
+    for (const node of this.prestigeNodes) {
+      const definition = PRESTIGE_UPGRADES[node.key];
+      if (!definition.requires) continue;
+      const parent = nodeByKey[definition.requires];
+      if (!parent) continue;
+      const parentSatisfied = Prestige.getLevel(parent.key) > 0;
+      const lineColor = parentSatisfied ? 0xcc66ff : 0x444466;
+      this.prestigeConnectorGraphics.lineStyle(Math.max(1, pixelUnit * 0.6), lineColor, 0.9);
+      this.prestigeConnectorGraphics.beginPath();
+      this.prestigeConnectorGraphics.moveTo(parent.centerX, parent.centerY + parent.height / 2);
+      this.prestigeConnectorGraphics.lineTo(node.centerX, node.centerY - node.height / 2);
+      this.prestigeConnectorGraphics.strokePath();
     }
   }
 
-  private refreshPrestigeButton(button: {
-    key: string;
-    graphics: Phaser.GameObjects.Graphics;
-    nameText: Phaser.GameObjects.Text;
-    infoText: Phaser.GameObjects.Text;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  }) {
+  private refreshPrestigeNode(node: (typeof this.prestigeNodes)[number]) {
     const pixelUnit = this.pixelUnit;
-    const level = Prestige.upgradeLevels[button.key] ?? 0;
-    const isMaxed = Prestige.isMaxed(button.key);
-    const canAfford = Prestige.canAfford(button.key);
-    const cost = Prestige.getUpgradeCost(button.key);
+    const level = Prestige.getLevel(node.key);
+    const maxLevel = Prestige.getMaxLevel(node.key);
+    const isMaxed = Prestige.isMaxed(node.key);
+    const isUnlocked = Prestige.isUnlocked(node.key);
+    const canAfford = isUnlocked && Prestige.canAfford(node.key);
+    const cost = Prestige.getUpgradeCost(node.key);
 
-    button.graphics.clear();
-    if (isMaxed) {
-      button.graphics.fillStyle(0x333355, 0.9);
+    const nodeX = node.centerX - node.width / 2;
+    const nodeY = node.centerY - node.height / 2;
+
+    node.graphics.clear();
+    let fillColor: number;
+    let borderColor: number;
+    if (!isUnlocked) {
+      fillColor = 0x111122;
+      borderColor = 0x333355;
+    } else if (isMaxed) {
+      fillColor = 0x333355;
+      borderColor = 0x7788bb;
     } else if (canAfford) {
-      button.graphics.fillStyle(0x443366, 0.9);
+      fillColor = 0x443366;
+      borderColor = 0xcc66ff;
     } else {
-      button.graphics.fillStyle(0x1a1a3a, 0.9);
+      fillColor = 0x1a1a3a;
+      borderColor = 0x4444aa;
     }
-    button.graphics.fillRect(button.x, button.y, button.width, button.height);
-    const borderColor = isMaxed ? 0x555577 : canAfford ? 0xcc66ff : 0x4444aa;
+    node.graphics.fillStyle(fillColor, 0.95);
+    node.graphics.fillRect(nodeX, nodeY, node.width, node.height);
     createUIPanel(
-      button.graphics,
-      button.x,
-      button.y,
-      button.width,
-      button.height,
+      node.graphics,
+      nodeX,
+      nodeY,
+      node.width,
+      node.height,
       pixelUnit,
       borderColor,
-      0.9,
+      0.95,
     );
 
-    if (isMaxed) {
-      button.infoText.setText(`Lv.${level}  ${t('ui.max')}`);
-      button.infoText.setColor('#aaaacc');
+    if (!isUnlocked) {
+      node.nameText.setColor('#666688');
+      node.descText.setColor('#555577');
+      node.infoText.setText(t('ui.locked'));
+      node.infoText.setColor('#666688');
+    } else if (isMaxed) {
+      node.nameText.setColor('#ffffff');
+      node.descText.setColor('#aaaacc');
+      node.infoText.setText(`${level}/${maxLevel}  ${t('ui.max')}`);
+      node.infoText.setColor('#aaaacc');
     } else {
-      button.infoText.setText(`Lv.${level}  ${cost} pts`);
-      button.infoText.setColor(canAfford ? '#ffdd44' : '#aaaacc');
+      node.nameText.setColor('#ffffff');
+      node.descText.setColor('#aaaacc');
+      node.infoText.setText(`${level}/${maxLevel}  ${cost}p`);
+      node.infoText.setColor(canAfford ? '#ffdd44' : '#aaaacc');
     }
   }
 
@@ -975,7 +1101,8 @@ export class UIScene extends CustomScene {
     }
     this.juiceText.setText(formatNumber(Progression.juice));
     const isReadOnly = true;
-    const juicePerSecond = Progression.getTotalJuicePerSecond(isReadOnly);
+    const juicePerSecond =
+      Progression.getTotalJuicePerSecond(isReadOnly) * Prestige.getJuiceMultiplier();
     this.juicePerSecondText.setText(juicePerSecond > 0 ? `${formatNumber(juicePerSecond)}/s` : '0/s');
     this.refreshJuicePanel();
     this.refreshHud();

@@ -45,6 +45,11 @@ export function formatNumber(value: number): string {
   return `${(flooredValue / 1_000_000_000_000).toFixed(1).replace(/\.0$/, '')}T`;
 }
 
+export function formatCpuFrequency(mhz: number): string {
+  if (mhz < 1000) return `${Math.round(mhz)} MHz`;
+  return `${(mhz / 1000).toFixed(1)} GHz`;
+}
+
 export function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
