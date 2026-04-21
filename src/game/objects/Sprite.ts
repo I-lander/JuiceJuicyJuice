@@ -181,12 +181,25 @@ export class Sprite extends Phaser.GameObjects.Sprite {
           other.velocity.x += (relativeVelocity * normalX) / other.speed;
           other.velocity.y += (relativeVelocity * normalY) / other.speed;
 
+          const forceMultiplier = Progression.collisionForceMultiplier;
+          const thisMagnitude =
+            Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y) || 1;
+          const otherMagnitude =
+            Math.sqrt(other.velocity.x * other.velocity.x + other.velocity.y * other.velocity.y) ||
+            1;
+          this.velocity.x = (this.velocity.x / thisMagnitude) * forceMultiplier;
+          this.velocity.y = (this.velocity.y / thisMagnitude) * forceMultiplier;
+          other.velocity.x = (other.velocity.x / otherMagnitude) * forceMultiplier;
+          other.velocity.y = (other.velocity.y / otherMagnitude) * forceMultiplier;
+
           this.bounce();
           other.bounce();
           playSfx(this.scene, 'spriteBounce', 0.1);
           const contactX = (this.x + other.x) / 2;
           const contactY = (this.y + other.y) / 2;
           this.spawnBounceParticles(contactX, contactY);
+
+          Progression.addJuice(Progression.collisionJuiceAmount * forceMultiplier);
         }
 
         Progression.addCollisionCpu();

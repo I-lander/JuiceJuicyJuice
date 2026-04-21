@@ -8,13 +8,13 @@ import { Prestige } from './Prestige';
 import { t } from './utils/i18n';
 
 export const CPU_COSTS: Record<string, number> = {
-  sprite: 1.0,
+  sprite: 1.2,
   particle: 0.08,
   tween: 0.3,
   movingSprite: 0.5,
   autoClicker: 0.5,
   collision: 0.8,
-  rotatingSprite: 0.7,
+  rotatingSprite: 0.9,
   bounce: 0.6,
 };
 
@@ -23,6 +23,7 @@ export const BASE_BOUNCE_INTERVAL_MS = 5000;
 export const BASE_CPU_CAPACITY_MHZ = 500;
 const BASE_AUTOCLICKER_COOLDOWN = 3000;
 const BASE_SPRITE_JUICE = 5;
+const BASE_COLLISION_JUICE = 10;
 
 export class Progression {
   static juice = 0;
@@ -33,7 +34,8 @@ export class Progression {
   static spriteJuiceAmount = BASE_SPRITE_JUICE;
   static bounceJuiceAmount = 50;
   static movementJuiceAmount = 500;
-  static rotationJuiceAmount = 50000;
+  static rotationJuiceAmount = 5000;
+  static collisionJuiceAmount = BASE_COLLISION_JUICE;
   static isBounceEnabled = false;
   static isSpriteMovementEnabled = false;
   static isBounceParticlesEnabled = false;
@@ -42,6 +44,7 @@ export class Progression {
   static spriteSpeedMultiplier = 1;
   static spriteRotationSpeedMultiplier = 1;
   static bounceScaleMultiplier = 1;
+  static collisionForceMultiplier = 1;
   static unlockedParticleColors: ParticleColorDefinition[] = [
     PARTICLE_COLOR_UPGRADES.whiteParticle,
   ];
@@ -56,7 +59,7 @@ export class Progression {
   static totalJuice = 0;
 
   static addCollisionCpu() {
-    Progression.activeCollisionCpu += CPU_COSTS.collision;
+    Progression.activeCollisionCpu += CPU_COSTS.collision * Progression.collisionForceMultiplier;
   }
 
   static calculateCpuUsage(
@@ -108,7 +111,8 @@ export class Progression {
     Progression.spriteJuiceAmount = BASE_SPRITE_JUICE;
     Progression.bounceJuiceAmount = 50;
     Progression.movementJuiceAmount = 500;
-    Progression.rotationJuiceAmount = 50000;
+    Progression.rotationJuiceAmount = 5000;
+    Progression.collisionJuiceAmount = BASE_COLLISION_JUICE;
     Progression.isBounceEnabled = false;
     Progression.isSpriteMovementEnabled = false;
     Progression.isBounceParticlesEnabled = false;
@@ -117,6 +121,7 @@ export class Progression {
     Progression.spriteSpeedMultiplier = 1;
     Progression.spriteRotationSpeedMultiplier = 1;
     Progression.bounceScaleMultiplier = 1;
+    Progression.collisionForceMultiplier = 1;
     Progression.unlockedParticleColors = [PARTICLE_COLOR_UPGRADES.whiteParticle];
     Progression.cpuUsage = 0;
     Progression.cpuCapacityMhz = BASE_CPU_CAPACITY_MHZ;
@@ -131,6 +136,7 @@ export class Progression {
       spriteMovement: 0,
       bounceParticles: 0,
       spriteCollision: 0,
+      spriteCollisionForce: 0,
       spriteRotation: 0,
       bounceSizeUp: 0,
       spriteSpeedUp: 0,
@@ -263,6 +269,7 @@ export class Progression {
     spriteMovement: 0,
     bounceParticles: 0,
     spriteCollision: 0,
+    spriteCollisionForce: 0,
     spriteRotation: 0,
     bounceSizeUp: 0,
     spriteSpeedUp: 0,
@@ -288,6 +295,8 @@ export class Progression {
         return `x${Progression.spriteSpeedMultiplier.toFixed(2)}`;
       case 'spriteRotationSpeedUp':
         return `x${Progression.spriteRotationSpeedMultiplier.toFixed(2)}`;
+      case 'spriteCollisionForce':
+        return `x${Progression.collisionForceMultiplier.toFixed(2)}`;
       case 'bounce':
         return Progression.isBounceEnabled ? t('ui.on') : t('ui.off');
       case 'spriteMovement':

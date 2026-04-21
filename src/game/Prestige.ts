@@ -98,8 +98,9 @@ export const PRESTIGE_UPGRADES: Record<string, PrestigeUpgradeDefinition> = {
 
 const START_SPRITES_PER_LEVEL = 2;
 const START_AUTOCLICKERS_PER_LEVEL = 5;
-const START_JUICE_PER_LEVEL = 1000;
-const SPRITE_YIELD_PER_LEVEL = 0.2;
+const START_JUICE_BASE = 1000;
+const START_JUICE_SCALE = 20;
+const SPRITE_YIELD_PER_LEVEL = 0.5;
 const CLICK_SPEED_PER_LEVEL = 0.1;
 const PARTICLE_BOOST_PER_LEVEL = 1;
 const JUICE_MULT_PER_LEVEL = 0.1;
@@ -177,7 +178,9 @@ export class Prestige {
   }
 
   static getStartingJuice(): number {
-    return Prestige.getLevel('startJuice') * START_JUICE_PER_LEVEL;
+    const level = Prestige.getLevel('startJuice');
+    if (level <= 0) return 0;
+    return START_JUICE_BASE * Math.pow(START_JUICE_SCALE, level - 1);
   }
 
   static getSpriteYieldMultiplier(): number {

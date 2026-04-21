@@ -29,6 +29,7 @@ interface SaveData {
   bounceJuiceAmount: number;
   movementJuiceAmount: number;
   rotationJuiceAmount: number;
+  collisionJuiceAmount: number;
   isBounceEnabled: boolean;
   isSpriteMovementEnabled: boolean;
   isBounceParticlesEnabled: boolean;
@@ -37,6 +38,7 @@ interface SaveData {
   spriteSpeedMultiplier: number;
   spriteRotationSpeedMultiplier: number;
   bounceScaleMultiplier: number;
+  collisionForceMultiplier: number;
   sfxMuted: boolean;
   language: Language;
 }
@@ -68,6 +70,7 @@ export class SaveManager {
       bounceJuiceAmount: Progression.bounceJuiceAmount,
       movementJuiceAmount: Progression.movementJuiceAmount,
       rotationJuiceAmount: Progression.rotationJuiceAmount,
+      collisionJuiceAmount: Progression.collisionJuiceAmount,
       isBounceEnabled: Progression.isBounceEnabled,
       isSpriteMovementEnabled: Progression.isSpriteMovementEnabled,
       isBounceParticlesEnabled: Progression.isBounceParticlesEnabled,
@@ -76,6 +79,7 @@ export class SaveManager {
       spriteSpeedMultiplier: Progression.spriteSpeedMultiplier,
       spriteRotationSpeedMultiplier: Progression.spriteRotationSpeedMultiplier,
       bounceScaleMultiplier: Progression.bounceScaleMultiplier,
+      collisionForceMultiplier: Progression.collisionForceMultiplier,
       sfxMuted,
       language: getLanguage(),
     };
@@ -104,6 +108,7 @@ export class SaveManager {
     Progression.bounceJuiceAmount = data.bounceJuiceAmount;
     Progression.movementJuiceAmount = data.movementJuiceAmount;
     Progression.rotationJuiceAmount = data.rotationJuiceAmount;
+    Progression.collisionJuiceAmount = data.collisionJuiceAmount ?? 10;
     Progression.isBounceEnabled = data.isBounceEnabled;
     Progression.isSpriteMovementEnabled = data.isSpriteMovementEnabled;
     Progression.isBounceParticlesEnabled = data.isBounceParticlesEnabled;
@@ -112,6 +117,7 @@ export class SaveManager {
     Progression.spriteSpeedMultiplier = data.spriteSpeedMultiplier ?? 1;
     Progression.spriteRotationSpeedMultiplier = data.spriteRotationSpeedMultiplier ?? 1;
     Progression.bounceScaleMultiplier = data.bounceScaleMultiplier ?? 1;
+    Progression.collisionForceMultiplier = data.collisionForceMultiplier ?? 1;
     setSfxMuted(data.sfxMuted ?? false);
     if (data.language) setLanguage(data.language);
 
