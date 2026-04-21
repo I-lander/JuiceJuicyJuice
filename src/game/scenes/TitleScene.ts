@@ -4,12 +4,14 @@ import { CustomScene } from '../customClasses/CustomScene';
 import { spriteElements } from '../elements/SpriteAtlas';
 import { OptionsMenu } from '../objects/OptionsMenu';
 import { SaveManager } from '../utils/SaveManager';
+import { t } from '../utils/i18n';
 import {
   createUIPanel,
   getRandomInt,
   initShader,
   playSfx,
   removeSplashScreen,
+  setSfxMuted,
   SPRITE_BASE_UNIT,
 } from '../utils/utils';
 import { APP_VERSION } from '../utils/versionTag';
@@ -42,6 +44,7 @@ export class TitleScene extends CustomScene {
   private canvasHeight: number = 0;
   private transitioning: boolean = false;
   private optionsMenu!: OptionsMenu;
+  private sfxMuted: boolean = false;
 
   constructor() {
     super('TitleScene');
@@ -74,6 +77,12 @@ export class TitleScene extends CustomScene {
       onResume: () => this.optionsMenu.close(),
       onDeleteMeta: () => SaveManager.deleteMetaSave(),
     });
+    SaveManager.loadMeta();
+    const saveData = SaveManager.load();
+    if (saveData) {
+      this.sfxMuted = saveData.sfxMuted;
+      setSfxMuted(saveData.sfxMuted ?? false);
+    }
 
     initShader(this);
 
@@ -97,18 +106,17 @@ export class TitleScene extends CustomScene {
 
   private createTitleTexts() {
     const pixelUnit = this.pixelUnit;
-    const isPortrait = this.canvasHeight > this.canvasWidth;
     const centerX = this.canvasWidth / 2;
-    const bigFontSize = Math.round(pixelUnit * (isPortrait ? 56 : 64));
+    const bigFontSize = Math.round(pixelUnit * 64);
     const smallFontSize = Math.round(bigFontSize * 0.65);
-    const subtitleFontSize = Math.round(pixelUnit * (isPortrait ? 14 : 16));
-    const titleY = this.canvasHeight * (isPortrait ? 0.3 : 0.35);
+    const subtitleFontSize = Math.round(pixelUnit * 16);
+    const titleY = this.canvasHeight * 0.35;
 
     const titleStyle = {
       fontFamily: 'KenneyPixel',
       color: '#ffdd44',
       stroke: '#000000',
-      strokeThickness: Math.round(pixelUnit * 8),
+      strokeThickness: Math.round(pixelUnit * 9),
     };
 
     const firstJuice = this.add
@@ -124,25 +132,16 @@ export class TitleScene extends CustomScene {
     let titleWidth: number;
     let titleHeight: number;
 
-    if (isPortrait) {
-      firstJuice.setPosition(0, -juicy.height / 2 - firstJuice.height / 2);
-      juicy.setPosition(0, 0);
-      lastJuice.setPosition(0, juicy.height / 2 + lastJuice.height / 2);
-      titleWidth = juicy.width;
-      titleHeight = firstJuice.height + juicy.height + lastJuice.height;
-    } else {
-      const gap = pixelUnit * 6;
-      firstJuice.setPosition(-juicy.width / 2 - gap - firstJuice.width / 2, 0);
-      juicy.setPosition(0, 0);
-      lastJuice.setPosition(juicy.width / 2 + gap + lastJuice.width / 2, 0);
-      titleWidth = firstJuice.width + juicy.width + lastJuice.width + gap * 2;
-      titleHeight = juicy.height;
-    }
+    firstJuice.setPosition(0, -juicy.y - juicy.height / 2 + this.pixelUnit * 4);
+    juicy.setPosition(0, 0);
+    lastJuice.setPosition(0, juicy.y + juicy.height / 2 + this.tileSize / 4 - this.pixelUnit);
+    titleWidth = juicy.width;
+    titleHeight = firstJuice.height + juicy.height + lastJuice.height;
 
     const titleContainer = this.add.container(centerX, titleY, [firstJuice, juicy, lastJuice]);
     titleContainer.setDepth(100);
 
-    const orangeSize = this.tileSize * (isPortrait ? 3 : 4);
+    const orangeSize = this.tileSize * 4;
     const titleLeftX = centerX - titleWidth / 2 + this.tileSize;
     const titleTopY = titleY - titleHeight / 2 + this.tileSize * 2;
     const orangeSprite = this.add.image(
@@ -154,22 +153,21 @@ export class TitleScene extends CustomScene {
     orangeSprite.setDisplaySize(orangeSize, orangeSize);
     orangeSprite.setDepth(50);
     orangeSprite.setAngle(-30);
-
+    orangeSprite.setPosition(titleLeftX - orangeSize * 0.4, titleTopY);
     const subtitleText = this.add.text(
       centerX,
-      titleY + titleHeight / 2 + pixelUnit * 14,
-      'Designé et créé par le Donkey',
+      titleY + this.tileSize * 3.5,
+      t('title.subtitle'),
       {
         fontFamily: 'KenneyPixel',
         fontSize: `${subtitleFontSize}px`,
         color: '#ffffff',
         stroke: '#000033',
-        strokeThickness: Math.round(pixelUnit * 2),
+        strokeThickness: Math.round(pixelUnit * 4),
       },
     );
     subtitleText.setOrigin(0.5, 0.5);
     subtitleText.setDepth(100);
-
   }
 
   private createMenuButtons() {
@@ -181,8 +179,15 @@ export class TitleScene extends CustomScene {
     const gap = pixelUnit * 6;
     const firstButtonY = this.canvasHeight * (isPortrait ? 0.62 : 0.7);
 
-    this.createButton(centerX, firstButtonY, buttonWidth, buttonHeight, 'PLAY', 0x8a5a00, 0xffcc33, () =>
-      this.startGame(),
+    this.createButton(
+      centerX,
+      firstButtonY,
+      buttonWidth,
+      buttonHeight,
+      'PLAY',
+      0x8a5a00,
+      0xffcc33,
+      () => this.startGame(),
     );
     this.createButton(
       centerX,
@@ -221,7 +226,12 @@ export class TitleScene extends CustomScene {
 
     const graphics = this.add.graphics();
     graphics.fillStyle(fillColor, 1);
-    graphics.fillRect(centerX - buttonWidth / 2, centerY - buttonHeight / 2, buttonWidth, buttonHeight);
+    graphics.fillRect(
+      centerX - buttonWidth / 2,
+      centerY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+    );
     createUIPanel(
       graphics,
       centerX - buttonWidth / 2,
@@ -256,13 +266,18 @@ export class TitleScene extends CustomScene {
     const fontSize = Math.round(pixelUnit * 10);
     const margin = pixelUnit * 6;
     const demoSuffix = import.meta.env?.VITE_DEMO_MODE === 'true' ? '-DEMO' : '';
-    const versionText = this.add.text(margin, this.canvasHeight - margin, `v${APP_VERSION}${demoSuffix}`, {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-      stroke: '#000033',
-      strokeThickness: Math.round(pixelUnit * 2),
-    });
+    const versionText = this.add.text(
+      margin,
+      this.canvasHeight - margin,
+      `v${APP_VERSION}${demoSuffix}`,
+      {
+        fontFamily: 'KenneyPixel',
+        fontSize: `${fontSize}px`,
+        color: '#ffffff',
+        stroke: '#000033',
+        strokeThickness: Math.round(pixelUnit * 2),
+      },
+    );
     versionText.setOrigin(0, 1);
     versionText.setDepth(100);
   }
