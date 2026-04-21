@@ -132,7 +132,6 @@ export class Progression {
       bounceParticles: 0,
       spriteCollision: 0,
       spriteRotation: 0,
-      spriteJuiceUp: 0,
       bounceSizeUp: 0,
       spriteSpeedUp: 0,
       spriteRotationSpeedUp: 0,
@@ -265,7 +264,6 @@ export class Progression {
     bounceParticles: 0,
     spriteCollision: 0,
     spriteRotation: 0,
-    spriteJuiceUp: 0,
     bounceSizeUp: 0,
     spriteSpeedUp: 0,
     spriteRotationSpeedUp: 0,
@@ -284,8 +282,6 @@ export class Progression {
         return `${Progression.upgradeLevels['particlesPerClick']}`;
       case 'autoClicker':
         return `${Progression.autoClickers}`;
-      case 'spriteJuiceUp':
-        return `${Progression.spriteJuiceAmount.toFixed(1)}`;
       case 'bounceSizeUp':
         return `x${Progression.bounceScaleMultiplier.toFixed(2)}`;
       case 'spriteSpeedUp':
