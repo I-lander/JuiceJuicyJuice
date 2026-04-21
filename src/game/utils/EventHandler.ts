@@ -45,7 +45,7 @@ export class EventHandler {
           Progression.juice += 1000000000;
         }
         if (key.code === 'KeyL') {
-          Progression.totalJuice += 10000;
+          Progression.totalJuice += 10000000000;
         }
         if (key.code === 'KeyH') {
           this.mainScene.spawnSprite(

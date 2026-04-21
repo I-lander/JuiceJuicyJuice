@@ -34,6 +34,9 @@ interface SaveData {
   isBounceParticlesEnabled: boolean;
   isSpriteCollisionEnabled: boolean;
   isSpriteRotationEnabled: boolean;
+  spriteSpeedMultiplier: number;
+  spriteRotationSpeedMultiplier: number;
+  bounceScaleMultiplier: number;
   sfxMuted: boolean;
   language: Language;
 }
@@ -70,6 +73,9 @@ export class SaveManager {
       isBounceParticlesEnabled: Progression.isBounceParticlesEnabled,
       isSpriteCollisionEnabled: Progression.isSpriteCollisionEnabled,
       isSpriteRotationEnabled: Progression.isSpriteRotationEnabled,
+      spriteSpeedMultiplier: Progression.spriteSpeedMultiplier,
+      spriteRotationSpeedMultiplier: Progression.spriteRotationSpeedMultiplier,
+      bounceScaleMultiplier: Progression.bounceScaleMultiplier,
       sfxMuted,
       language: getLanguage(),
     };
@@ -103,6 +109,9 @@ export class SaveManager {
     Progression.isBounceParticlesEnabled = data.isBounceParticlesEnabled;
     Progression.isSpriteCollisionEnabled = data.isSpriteCollisionEnabled;
     Progression.isSpriteRotationEnabled = data.isSpriteRotationEnabled;
+    Progression.spriteSpeedMultiplier = data.spriteSpeedMultiplier ?? 1;
+    Progression.spriteRotationSpeedMultiplier = data.spriteRotationSpeedMultiplier ?? 1;
+    Progression.bounceScaleMultiplier = data.bounceScaleMultiplier ?? 1;
     setSfxMuted(data.sfxMuted ?? false);
     if (data.language) setLanguage(data.language);
 

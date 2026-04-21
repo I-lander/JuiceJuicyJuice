@@ -88,7 +88,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     levelToUnlock: 35,
     requires: 'spriteMovement',
     onPurchase: () => {
-      Progression.spriteSpeedMultiplier += 0.25;
+      Progression.spriteSpeedMultiplier += 0.1;
     },
   },
   spriteRotationSpeedUp: {
@@ -96,7 +96,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     levelToUnlock: 52,
     requires: 'spriteRotation',
     onPurchase: () => {
-      Progression.spriteRotationSpeedMultiplier += 0.25;
+      Progression.spriteRotationSpeedMultiplier += 0.1;
     },
   },
   yellowParticle: {
