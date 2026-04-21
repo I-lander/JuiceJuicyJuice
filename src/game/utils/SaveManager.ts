@@ -1,4 +1,4 @@
-import { Progression } from '../Progression';
+import { BASE_CPU_CAPACITY_MHZ, Progression } from '../Progression';
 import { Prestige } from '../Prestige';
 import { PARTICLE_COLOR_UPGRADES } from '../objects/ShopUpgrades';
 import type { MainScene } from '../scenes/MainScene';
@@ -112,6 +112,8 @@ export class SaveManager {
         Progression.unlockedParticleColors.push(PARTICLE_COLOR_UPGRADES[key]);
       }
     }
+
+    Progression.cpuCapacityMhz = BASE_CPU_CAPACITY_MHZ + Prestige.getCpuCapacityBonus();
 
     Progression.recalculateLevel();
 

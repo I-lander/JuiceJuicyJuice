@@ -20,7 +20,7 @@ export const CPU_COSTS: Record<string, number> = {
 
 export const BASE_BOUNCE_INTERVAL_MS = 5000;
 
-const CPU_CAPACITY_MHZ = 500;
+export const BASE_CPU_CAPACITY_MHZ = 500;
 const BASE_AUTOCLICKER_COOLDOWN = 3000;
 const BASE_SPRITE_JUICE = 5;
 
@@ -47,7 +47,7 @@ export class Progression {
   ];
 
   static cpuUsage = 0;
-  static cpuCapacityMhz = CPU_CAPACITY_MHZ;
+  static cpuCapacityMhz = BASE_CPU_CAPACITY_MHZ;
   static cpuPercent = 0;
   static cpuMultiplier = 1;
   static activeCollisionCpu = 0;
@@ -119,7 +119,7 @@ export class Progression {
     Progression.bounceScaleMultiplier = 1;
     Progression.unlockedParticleColors = [PARTICLE_COLOR_UPGRADES.whiteParticle];
     Progression.cpuUsage = 0;
-    Progression.cpuCapacityMhz = CPU_CAPACITY_MHZ;
+    Progression.cpuCapacityMhz = BASE_CPU_CAPACITY_MHZ;
     Progression.cpuPercent = 0;
     Progression.cpuMultiplier = 1;
     Progression.activeCollisionCpu = 0;
@@ -147,7 +147,7 @@ export class Progression {
 
   static applyPrestigeBonuses() {
     Progression.autoClickers = Prestige.getStartingAutoClickers();
-    Progression.cpuCapacityMhz = CPU_CAPACITY_MHZ + Prestige.getCpuCapacityBonus();
+    Progression.cpuCapacityMhz = BASE_CPU_CAPACITY_MHZ + Prestige.getCpuCapacityBonus();
     Progression.autoClickerCooldown = Math.round(
       BASE_AUTOCLICKER_COOLDOWN * Prestige.getClickSpeedMultiplier(),
     );

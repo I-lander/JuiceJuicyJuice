@@ -4,7 +4,7 @@ import { CustomScene } from '../customClasses/CustomScene';
 import { spriteElements } from '../elements/SpriteAtlas';
 import { OptionsMenu } from '../objects/OptionsMenu';
 import { SaveManager } from '../utils/SaveManager';
-import { t } from '../utils/i18n';
+import { setLanguage, t } from '../utils/i18n';
 import {
   createUIPanel,
   getRandomInt,
@@ -82,6 +82,7 @@ export class TitleScene extends CustomScene {
     if (saveData) {
       this.sfxMuted = saveData.sfxMuted;
       setSfxMuted(saveData.sfxMuted ?? false);
+      if (saveData.language) setLanguage(saveData.language);
     }
 
     initShader(this);
@@ -154,18 +155,13 @@ export class TitleScene extends CustomScene {
     orangeSprite.setDepth(50);
     orangeSprite.setAngle(-30);
     orangeSprite.setPosition(titleLeftX - orangeSize * 0.4, titleTopY);
-    const subtitleText = this.add.text(
-      centerX,
-      titleY + this.tileSize * 3.5,
-      t('title.subtitle'),
-      {
-        fontFamily: 'KenneyPixel',
-        fontSize: `${subtitleFontSize}px`,
-        color: '#ffffff',
-        stroke: '#000033',
-        strokeThickness: Math.round(pixelUnit * 4),
-      },
-    );
+    const subtitleText = this.add.text(centerX, titleY + this.tileSize * 3.5, t('title.subtitle'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${subtitleFontSize}px`,
+      color: '#ffffff',
+      stroke: '#000033',
+      strokeThickness: Math.round(pixelUnit * 4),
+    });
     subtitleText.setOrigin(0.5, 0.5);
     subtitleText.setDepth(100);
   }
