@@ -1,5 +1,5 @@
 const MAX_POINTS_BASE = 10;
-const LEVELS_PER_BONUS_POINT = 10;
+const LEVELS_PER_BONUS_POINT = 15;
 
 export type PrestigeBranch = 'bootstrap' | 'overclock' | 'hardware' | 'mastery';
 

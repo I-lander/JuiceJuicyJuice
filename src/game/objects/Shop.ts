@@ -410,7 +410,7 @@ export class Shop {
     const descText = this.scene.add.text(
       centerX,
       buttonY + padding + nameFontSize + pixelUnit * 2,
-      t(`upgrade.${upgradeKey}.desc`),
+      Progression.getUpgradeDescription(upgradeKey),
       {
         fontFamily: 'KenneyPixel',
         fontSize: `${descFontSize}px`,
@@ -565,7 +565,7 @@ export class Shop {
     );
 
     button.nameText.setText(t(`upgrade.${button.upgradeKey}.name`));
-    button.descText.setText(t(`upgrade.${button.upgradeKey}.desc`));
+    button.descText.setText(Progression.getUpgradeDescription(button.upgradeKey));
 
     const currentValue = Progression.getUpgradeValue(button.upgradeKey);
     button.levelText.setText(`${currentValue}  (${level})`);

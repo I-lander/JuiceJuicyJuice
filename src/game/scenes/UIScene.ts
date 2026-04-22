@@ -579,6 +579,13 @@ export class UIScene extends CustomScene {
       this.time.delayedCall(60, () => playSfx(this, 'spriteBounce', 0.5));
       this.time.delayedCall(150, () => playSfx(this, 'wallBounce', 0.45));
       this.time.delayedCall(260, () => playSfx(this, 'buttonClick', 0.55));
+    } else {
+      if (this.mainScene.glitchShader) {
+        this.mainScene.glitchShader.glitchIntensity = 0.18;
+      }
+      if (this.glitchShader) {
+        this.glitchShader.glitchIntensity = 0.12;
+      }
     }
 
     let pointsEarned: number;
@@ -768,6 +775,7 @@ export class UIScene extends CustomScene {
     this.prestigeNodes = [];
     this.prestigeConnectorGraphics = this.add.graphics();
     const prestigeContainerChildren: Phaser.GameObjects.GameObject[] = [this.prestigeConnectorGraphics];
+    const interactiveZones: Phaser.GameObjects.Zone[] = [];
     const draftByKey = new Map<string, NodeDraft>();
     for (const draft of drafts) {
       draftByKey.set(draft.key, draft);
@@ -792,13 +800,13 @@ export class UIScene extends CustomScene {
 
         const graphics = this.add.graphics();
         const hitZone = this.add.zone(columnCenterX, nodeCenterY, nodeWidth, nodeHeight);
-        hitZone.setInteractive({ useHandCursor: true });
         hitZone.on('pointerup', () => {
           if (!Prestige.purchase(key)) return;
           SaveManager.saveMeta();
           playSfx(this, 'purchase', 0.3);
           this.refreshPrestigeTree();
         });
+        interactiveZones.push(hitZone);
 
         this.prestigeNodes.push({
           key,
@@ -854,7 +862,7 @@ export class UIScene extends CustomScene {
     buttonText.setAlpha(0);
 
     const buttonZone = this.add.zone(centerX, rebootButtonY, buttonWidth, buttonHeight);
-    buttonZone.setInteractive({ useHandCursor: true });
+    interactiveZones.push(buttonZone);
     buttonZone.on('pointerup', () => {
       const previousJuice = Progression.juice;
       playSfx(this, 'buttonClick', 0.3);
@@ -953,6 +961,12 @@ export class UIScene extends CustomScene {
       delay: 1120,
       duration: 180,
       ease: 'Quad.easeOut',
+    });
+
+    this.time.delayedCall(1400, () => {
+      for (const zone of interactiveZones) {
+        zone.setInteractive({ useHandCursor: true });
+      }
     });
   }
 

@@ -6,6 +6,7 @@ import {
 } from './objects/ShopUpgrades';
 import { Prestige } from './Prestige';
 import { t } from './utils/i18n';
+import { formatNumber } from './utils/utils';
 
 export const CPU_COSTS: Record<string, number> = {
   sprite: 1.2,
@@ -183,7 +184,7 @@ export class Progression {
   }
 
   static getJuiceForLevel(level: number): number {
-    return Math.floor(10 * Math.pow(1.4, level - 1));
+    return Math.floor(10 * Math.pow(1.5, level - 1));
   }
 
   static addJuice(amount: number) {
@@ -281,6 +282,12 @@ export class Progression {
     purpleParticle: 0,
   };
 
+  static getUpgradeDescription(upgradeKey: string): string {
+    const template = t(`upgrade.${upgradeKey}.desc`);
+    const values = getUpgradeDescriptionValues(upgradeKey);
+    return template.replace(/\{(\w+)\}/g, (_, placeholderKey) => values[placeholderKey] ?? '');
+  }
+
   static getUpgradeValue(upgradeKey: string): string {
     switch (upgradeKey) {
       case 'addSprite':
@@ -343,5 +350,70 @@ export class Progression {
     Progression.juice -= cost;
     Progression.upgradeLevels[upgradeKey] = level + 1;
     return true;
+  }
+}
+
+function formatCpuValue(value: number): string {
+  if (value >= 10) return value.toFixed(1).replace(/\.0$/, '');
+  return value.toFixed(2).replace(/\.?0+$/, '');
+}
+
+function formatJuiceValue(value: number): string {
+  if (value >= 1000) return formatNumber(value);
+  if (Number.isInteger(value)) return `${value}`;
+  return value.toFixed(1).replace(/\.0$/, '');
+}
+
+function getUpgradeDescriptionValues(upgradeKey: string): Record<string, string> {
+  const spriteCpuMult = Prestige.getSpriteCpuMultiplier();
+  const particleCpuMult = Prestige.getParticleCpuMultiplier();
+  const cpuCostMult = Prestige.getCpuCostMultiplier();
+  const spriteYieldMult = Prestige.getSpriteYieldMultiplier();
+  const juiceMult = Prestige.getJuiceMultiplier();
+
+  switch (upgradeKey) {
+    case 'particlesPerClick':
+      return {
+        cpu: formatCpuValue(CPU_COSTS.particle * particleCpuMult * cpuCostMult),
+      };
+    case 'autoClicker':
+      return {
+        cpu: formatCpuValue(CPU_COSTS.autoClicker * cpuCostMult),
+      };
+    case 'addSprite':
+      return {
+        cpu: formatCpuValue(CPU_COSTS.sprite * spriteCpuMult * cpuCostMult),
+        juice: formatJuiceValue(BASE_SPRITE_JUICE * spriteYieldMult * juiceMult),
+      };
+    case 'bounce':
+      return {
+        cpu: formatCpuValue(CPU_COSTS.bounce * spriteCpuMult * cpuCostMult),
+        juice: formatJuiceValue(50 * juiceMult),
+      };
+    case 'spriteMovement':
+      return {
+        cpu: formatCpuValue(CPU_COSTS.movingSprite * spriteCpuMult * cpuCostMult),
+        juice: formatJuiceValue(500 * juiceMult),
+      };
+    case 'spriteCollision':
+      return {
+        cpu: formatCpuValue(CPU_COSTS.collision * spriteCpuMult * cpuCostMult),
+        juice: formatJuiceValue(BASE_COLLISION_JUICE * juiceMult),
+      };
+    case 'spriteRotation':
+      return {
+        cpu: formatCpuValue(CPU_COSTS.rotatingSprite * spriteCpuMult * cpuCostMult),
+        juice: formatJuiceValue(5000 * juiceMult),
+      };
+    case 'yellowParticle':
+    case 'redParticle':
+    case 'blueParticle':
+    case 'greenParticle':
+    case 'purpleParticle':
+      return {
+        juice: formatJuiceValue(PARTICLE_COLOR_UPGRADES[upgradeKey].juicePerParticle * juiceMult),
+      };
+    default:
+      return {};
   }
 }
