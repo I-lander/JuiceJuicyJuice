@@ -12,6 +12,7 @@ import { SaveManager } from '../utils/SaveManager';
 const GLITCH_CPU_THRESHOLD = 50;
 const GLITCH_CPU_MAX = 100;
 const UI_GLITCH_RATIO = 0.15;
+const CRASH_SUSTAIN_THRESHOLD_MS = 2000;
 
 export class MainScene extends CustomScene {
   uiScene!: UIScene;
@@ -35,6 +36,8 @@ export class MainScene extends CustomScene {
   bgMusic!: Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound;
   private autoClickTimer: number = 0;
   private passiveJuiceTimer: number = 0;
+  private cpuMaxSustainTimer: number = 0;
+  pendingCrashRestore: { pointsEarnedAtCrash: number } | null = null;
 
   constructor() {
     super('MainScene');
@@ -142,6 +145,7 @@ export class MainScene extends CustomScene {
     this.time.removeAllEvents();
     this.autoClickTimer = 0;
     this.passiveJuiceTimer = 0;
+    this.cpuMaxSustainTimer = 0;
   }
 
   spawnPrestigeStartingSprites() {
@@ -164,6 +168,13 @@ export class MainScene extends CustomScene {
   }
 
   update(_time: number, delta: number) {
+    if (this.pendingCrashRestore) {
+      const restore = this.pendingCrashRestore;
+      this.pendingCrashRestore = null;
+      this.uiScene.showCrashScreen(restore);
+      return;
+    }
+
     for (let i = 0; i < this.sprites.length; i++) {
       this.sprites[i].update(delta);
     }
@@ -222,7 +233,12 @@ export class MainScene extends CustomScene {
     }
 
     if (Progression.cpuPercent >= 100) {
-      this.uiScene.showCrashScreen();
+      this.cpuMaxSustainTimer += delta;
+      if (this.cpuMaxSustainTimer >= CRASH_SUSTAIN_THRESHOLD_MS) {
+        this.uiScene.showCrashScreen();
+      }
+    } else {
+      this.cpuMaxSustainTimer = 0;
     }
 
     SaveManager.updateAutoSave(delta, this);

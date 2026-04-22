@@ -53,7 +53,8 @@ export class UIScene extends CustomScene {
   private menuBtnImg!: Phaser.GameObjects.Image;
   private menuBtnZone!: Phaser.GameObjects.Zone;
   private crashContainer!: Phaser.GameObjects.Container;
-  private crashActive: boolean = false;
+  crashActive: boolean = false;
+  pointsEarnedAtCrash: number = 0;
   private prestigePointsText!: Phaser.GameObjects.Text;
   private prestigeConnectorGraphics!: Phaser.GameObjects.Graphics;
   private prestigeNodes: Array<{
@@ -225,6 +226,13 @@ export class UIScene extends CustomScene {
 
     this.hudText.setText(`CPU: ${cpuPercent}%  ${cpuUsedText} / ${cpuCapacityText}`);
     this.hudText.setColor(cpuColor);
+
+    if (Progression.cpuPercent >= 100) {
+      const pulse = 1.6 + Math.sin(this.time.now / 80) * 0.15;
+      this.hudText.setScale(pulse);
+    } else {
+      this.hudText.setScale(1);
+    }
   }
 
   private drawLeftPanel(): {
@@ -531,7 +539,7 @@ export class UIScene extends CustomScene {
     this.scene.resume('MainScene');
   }
 
-  showCrashScreen() {
+  showCrashScreen(restore?: { pointsEarnedAtCrash: number }) {
     if (this.crashActive) return;
     this.crashActive = true;
     this.scene.pause('MainScene');
@@ -541,39 +549,47 @@ export class UIScene extends CustomScene {
       return;
     }
 
-    const uiCamera = this.cameras.main;
-    uiCamera.shake(500, 0.028);
-    uiCamera.flash(160, 255, 255, 255);
+    if (!restore) {
+      const uiCamera = this.cameras.main;
+      uiCamera.shake(500, 0.028);
+      uiCamera.flash(160, 255, 255, 255);
 
-    if (this.mainScene.glitchShader) {
-      this.mainScene.glitchShader.glitchIntensity = 1;
-      this.tweens.add({
-        targets: this.mainScene.glitchShader,
-        glitchIntensity: 0.18,
-        delay: 350,
-        duration: 700,
-        ease: 'Quad.easeOut',
-      });
+      if (this.mainScene.glitchShader) {
+        this.mainScene.glitchShader.glitchIntensity = 1;
+        this.tweens.add({
+          targets: this.mainScene.glitchShader,
+          glitchIntensity: 0.18,
+          delay: 350,
+          duration: 700,
+          ease: 'Quad.easeOut',
+        });
+      }
+      if (this.glitchShader) {
+        this.glitchShader.glitchIntensity = 1;
+        this.tweens.add({
+          targets: this.glitchShader,
+          glitchIntensity: 0.12,
+          delay: 350,
+          duration: 700,
+          ease: 'Quad.easeOut',
+        });
+      }
+
+      playSfx(this, 'wallBounce', 0.55);
+      this.time.delayedCall(60, () => playSfx(this, 'spriteBounce', 0.5));
+      this.time.delayedCall(150, () => playSfx(this, 'wallBounce', 0.45));
+      this.time.delayedCall(260, () => playSfx(this, 'buttonClick', 0.55));
     }
-    if (this.glitchShader) {
-      this.glitchShader.glitchIntensity = 1;
-      this.tweens.add({
-        targets: this.glitchShader,
-        glitchIntensity: 0.12,
-        delay: 350,
-        duration: 700,
-        ease: 'Quad.easeOut',
-      });
+
+    let pointsEarned: number;
+    if (restore) {
+      pointsEarned = restore.pointsEarnedAtCrash;
+    } else {
+      pointsEarned = Prestige.computePointsForLevel(Progression.level);
+      Prestige.awardPoints(pointsEarned);
+      SaveManager.saveMeta();
     }
-
-    playSfx(this, 'wallBounce', 0.55);
-    this.time.delayedCall(60, () => playSfx(this, 'spriteBounce', 0.5));
-    this.time.delayedCall(150, () => playSfx(this, 'wallBounce', 0.45));
-    this.time.delayedCall(260, () => playSfx(this, 'buttonClick', 0.55));
-
-    const pointsEarned = Prestige.computePointsForLevel(Progression.level);
-    Prestige.awardPoints(pointsEarned);
-    SaveManager.saveMeta();
+    this.pointsEarnedAtCrash = pointsEarned;
 
     const screenWidth = this.cameras.main.width;
     const screenHeight = this.cameras.main.height;
@@ -844,6 +860,7 @@ export class UIScene extends CustomScene {
       playSfx(this, 'buttonClick', 0.3);
       this.crashContainer.destroy();
       this.crashActive = false;
+      this.pointsEarnedAtCrash = 0;
       this.prestigeNodes = [];
       this.mainScene.clearEntities();
       Progression.reset();

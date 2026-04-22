@@ -41,6 +41,8 @@ interface SaveData {
   collisionForceMultiplier: number;
   sfxMuted: boolean;
   language: Language;
+  crashActive?: boolean;
+  pointsEarnedAtCrash?: number;
 }
 
 const PARTICLE_COLOR_KEYS = [
@@ -82,6 +84,8 @@ export class SaveManager {
       collisionForceMultiplier: Progression.collisionForceMultiplier,
       sfxMuted,
       language: getLanguage(),
+      crashActive: mainScene.uiScene?.crashActive ?? false,
+      pointsEarnedAtCrash: mainScene.uiScene?.pointsEarnedAtCrash ?? 0,
     };
 
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -135,6 +139,12 @@ export class SaveManager {
     Progression.sprites = 0;
     for (const frame of data.spriteFrames) {
       mainScene.spawnSprite(frame);
+    }
+
+    if (data.crashActive) {
+      mainScene.pendingCrashRestore = {
+        pointsEarnedAtCrash: data.pointsEarnedAtCrash ?? 0,
+      };
     }
   }
 
