@@ -38,6 +38,6 @@ jobs:
       - name: Push HTML5 to Itch.io
         run: |
           butler push ./dist \
-            donkey-isle/xxx:html5 \
+            donkey-isle/juice-juicy-juice:html5 \
             --if-changed
 
