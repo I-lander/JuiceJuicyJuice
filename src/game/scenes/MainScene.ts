@@ -221,11 +221,9 @@ export class MainScene extends CustomScene {
         if (sprite.scale !== sprite.originalScale) bouncingSpriteCount++;
       }
     }
-    const activeTweenCount = this.tweens.getTweens().length;
     Progression.calculateCpuUsage(
       this.sprites.length,
       this.getTotalParticleCount(),
-      activeTweenCount,
       movingSpriteCount,
       rotatingSpriteCount,
       bouncingSpriteCount,

@@ -9,14 +9,13 @@ import { t } from './utils/i18n';
 import { formatNumber } from './utils/utils';
 
 export const CPU_COSTS: Record<string, number> = {
-  sprite: 1.2,
-  particle: 0.08,
-  tween: 0.3,
-  movingSprite: 0.5,
-  autoClicker: 0.5,
-  collision: 0.8,
-  rotatingSprite: 0.9,
-  bounce: 0.6,
+  sprite: 0.6,
+  particle: 0.05,
+  movingSprite: 0.25,
+  autoClicker: 0.4,
+  collision: 0.6,
+  rotatingSprite: 0.4,
+  bounce: 0.4,
 };
 
 export const BASE_BOUNCE_INTERVAL_MS = 5000;
@@ -74,7 +73,6 @@ export class Progression {
   static calculateCpuUsage(
     spriteCount: number,
     particleCount: number,
-    activeTweenCount: number,
     movingSpriteCount: number,
     rotatingSpriteCount: number,
     bouncingSpriteCount: number,
@@ -91,7 +89,6 @@ export class Progression {
     let totalCpu = 0;
     totalCpu += spriteCount * CPU_COSTS.sprite * spriteCpuMult;
     totalCpu += particleCount * CPU_COSTS.particle * particleCpuMult;
-    totalCpu += activeTweenCount * CPU_COSTS.tween;
     totalCpu +=
       movingSpriteCount * CPU_COSTS.movingSprite * Progression.spriteSpeedMultiplier * spriteCpuMult;
     totalCpu += Progression.autoClickers * CPU_COSTS.autoClicker;
