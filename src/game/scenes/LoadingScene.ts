@@ -1,5 +1,9 @@
 import { particleAtlas } from '../elements/Particles';
-import { spriteAtlas } from '../elements/SpriteAtlas';
+import {
+  discoverSpriteFrames,
+  SPRITE_ATLAS_CELL_SIZE,
+  SPRITE_ATLAS_KEY,
+} from '../elements/SpriteAtlas';
 import { uiAtlas } from '../elements/UiAtlas';
 import { WARNING_DISMISSED_KEY } from './EpilepsyWarningScene';
 
@@ -11,7 +15,10 @@ export class LoadingScene extends Phaser.Scene {
   preload() {
     document.fonts.load('16px "KenneyPixel"').then(() => {});
 
-    this.load.atlas('spriteAtlas', './assets/images/sprite-atlas.png', spriteAtlas);
+    this.load.spritesheet(SPRITE_ATLAS_KEY, './assets/images/sprite-atlas.png', {
+      frameWidth: SPRITE_ATLAS_CELL_SIZE,
+      frameHeight: SPRITE_ATLAS_CELL_SIZE,
+    });
     this.load.atlas('particleAtlas', './assets/images/particle-atlas.png', particleAtlas);
     this.load.atlas('uiAtlas', './assets/images/ui-atlas.png', uiAtlas);
     this.load.audio('bgMusic', './assets/music/ambient_loop.wav');
@@ -23,6 +30,7 @@ export class LoadingScene extends Phaser.Scene {
   }
 
   async create() {
+    discoverSpriteFrames(this);
     const warningDismissed = localStorage.getItem(WARNING_DISMISSED_KEY) === 'true';
     this.scene.start(warningDismissed ? 'TitleScene' : 'EpilepsyWarningScene');
   }

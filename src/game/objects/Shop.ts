@@ -1,4 +1,3 @@
-import { spriteElements } from '../elements/SpriteAtlas';
 import { Progression } from '../Progression';
 import { UIScene } from '../scenes/UIScene';
 import { t } from '../utils/i18n';

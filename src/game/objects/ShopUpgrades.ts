@@ -1,4 +1,3 @@
-import { spriteElements } from '../elements/SpriteAtlas';
 import { Progression } from '../Progression';
 import { MainScene } from '../scenes/MainScene';
 
@@ -17,8 +16,7 @@ export const UPGRADES: Record<string, UpgradeDefinition> = {
     baseCost: 15,
     levelToUnlock: 0,
     onPurchase: (scene: MainScene) => {
-      const randomFrame = spriteElements[Math.floor(Math.random() * spriteElements.length)].id;
-      scene.spawnSprite(randomFrame);
+      scene.spawnSprite(scene.pickNextSpriteFrame());
     },
   },
   yellowParticle: {

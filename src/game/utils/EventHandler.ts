@@ -1,4 +1,3 @@
-import { spriteElements } from '../elements/SpriteAtlas';
 import { Particle } from '../objects/Particle';
 import { Progression } from '../Progression';
 import { MainScene } from '../scenes/MainScene';
@@ -48,9 +47,7 @@ export class EventHandler {
           Progression.totalJuice += 10000000000;
         }
         if (key.code === 'KeyH') {
-          this.mainScene.spawnSprite(
-            spriteElements[Math.floor(Math.random() * spriteElements.length)].id,
-          );
+          this.mainScene.spawnSprite(this.mainScene.pickNextSpriteFrame());
         }
         if (key.code === 'KeyC') {
           this.mainScene.uiScene.showCrashScreen();

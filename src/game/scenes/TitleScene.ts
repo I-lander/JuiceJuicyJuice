@@ -1,7 +1,7 @@
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { CustomScene } from '../customClasses/CustomScene';
-import { spriteElements } from '../elements/SpriteAtlas';
+import { getSpriteFrames, TITLE_ORANGE_FRAME } from '../elements/SpriteAtlas';
 import { OptionsMenu } from '../objects/OptionsMenu';
 import { SaveManager } from '../utils/SaveManager';
 import { setLanguage, t } from '../utils/i18n';
@@ -25,7 +25,7 @@ class TitleSprite extends Phaser.GameObjects.Sprite {
   rotationSpeed: number;
   baseScale: number;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, frame: string, spriteScale: number) {
+  constructor(scene: Phaser.Scene, x: number, y: number, frame: number, spriteScale: number) {
     super(scene, x, y, 'spriteAtlas', frame);
     this.baseScale = spriteScale;
     this.setScale(spriteScale);
@@ -96,7 +96,7 @@ export class TitleScene extends CustomScene {
   private spawnBackgroundSprites() {
     const spriteScale = this.tileSize / SPRITE_BASE_UNIT;
     const margin = this.tileSize / 2;
-    const frames = spriteElements.map((element) => element.id);
+    const frames = getSpriteFrames();
 
     for (let i = 0; i < TITLE_SPRITE_COUNT; i++) {
       const spawnX = getRandomInt(margin, this.canvasWidth - margin);
@@ -152,7 +152,7 @@ export class TitleScene extends CustomScene {
       titleLeftX - orangeSize * 0.3,
       titleTopY - orangeSize * 0.4,
       'spriteAtlas',
-      'orange',
+      TITLE_ORANGE_FRAME,
     );
     orangeSprite.setDisplaySize(orangeSize, orangeSize);
     orangeSprite.setDepth(50);

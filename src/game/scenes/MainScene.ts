@@ -2,7 +2,7 @@ import { CustomScene } from '../customClasses/CustomScene';
 import { Progression } from '../Progression';
 import { Prestige } from '../Prestige';
 import { Sprite } from '../objects/Sprite';
-import { spriteElements } from '../elements/SpriteAtlas';
+import { getSpriteFrames } from '../elements/SpriteAtlas';
 import { getRandomInt, initGlitchShader, initShader, removeSplashScreen } from '../utils/utils';
 import { UIScene } from './UIScene';
 import { EventHandler } from '../utils/EventHandler';
@@ -106,7 +106,23 @@ export class MainScene extends CustomScene {
     return this.particles.length;
   }
 
-  spawnSprite(frame: string) {
+  pickNextSpriteFrame(): number {
+    const frames = getSpriteFrames();
+    const counts = new Map<number, number>();
+    for (const frame of frames) counts.set(frame, 0);
+    for (const sprite of this.sprites) {
+      const frameNumber = Number(sprite.frame.name);
+      counts.set(frameNumber, (counts.get(frameNumber) ?? 0) + 1);
+    }
+    let minCount = Infinity;
+    for (const count of counts.values()) {
+      if (count < minCount) minCount = count;
+    }
+    const candidates = frames.filter((frame) => counts.get(frame) === minCount);
+    return candidates[getRandomInt(0, candidates.length - 1)];
+  }
+
+  spawnSprite(frame: number) {
     Progression.sprites++;
 
     const margin = this.tileSize / 2;
@@ -152,8 +168,7 @@ export class MainScene extends CustomScene {
     const startingSprites = Prestige.getStartingSprites();
     if (startingSprites <= 0) return;
     for (let i = 0; i < startingSprites; i++) {
-      const randomFrame = spriteElements[getRandomInt(0, spriteElements.length - 1)].id;
-      this.spawnSprite(randomFrame);
+      this.spawnSprite(this.pickNextSpriteFrame());
     }
   }
 

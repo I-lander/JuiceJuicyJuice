@@ -29,8 +29,8 @@ export class Sprite extends Phaser.GameObjects.Sprite {
     this.autoBounceTimer = Math.random() * BASE_BOUNCE_INTERVAL_MS;
   }
 
-  init(texture: string) {
-    this.setTexture('spriteAtlas', texture);
+  init(frame: number) {
+    this.setTexture('spriteAtlas', frame);
     this.setDepth(1);
   }
 

@@ -21,7 +21,7 @@ interface SaveData {
   juice: number;
   totalJuice: number;
   upgradeLevels: Record<string, number>;
-  spriteFrames: string[];
+  spriteFrames: number[];
   particlesPerClick: number;
   autoClickers: number;
   autoClickerCooldown: number;
@@ -57,7 +57,7 @@ export class SaveManager {
   private static autoSaveTimer: number = 0;
 
   static save(mainScene: MainScene): void {
-    const spriteFrames = mainScene.sprites.map((sprite) => sprite.frame.name);
+    const spriteFrames = mainScene.sprites.map((sprite) => Number(sprite.frame.name));
 
     const data: SaveData = {
       version: 1,
