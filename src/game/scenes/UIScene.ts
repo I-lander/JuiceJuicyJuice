@@ -19,7 +19,7 @@ import {
 import { MainScene } from './MainScene';
 import { SaveManager } from '../utils/SaveManager';
 
-const DEMO_MODE = import.meta.env?.VITE_DEMO_MODE === 'true';
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
 export class UIScene extends CustomScene {
   mainScene!: MainScene;
