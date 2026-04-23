@@ -111,6 +111,7 @@ const translations: Record<Language, Record<string, string>> = {
     'demo.subtitle': 'DEMO COMPLETE',
     'demo.message': 'This is the end of the demo.',
     'demo.buyFull': 'Full version available on this itch.io page.',
+    'demo.resetRestart': 'RESET & RESTART',
 
     'title.subtitle': 'Designed and created by the Donkey',
 
@@ -220,6 +221,7 @@ const translations: Record<Language, Record<string, string>> = {
     'demo.subtitle': 'FIN DE LA DEMO',
     'demo.message': 'Vous avez atteint la fin de la demo.',
     'demo.buyFull': 'Version complete disponible sur cette page itch.io.',
+    'demo.resetRestart': 'RECOMMENCER',
 
     'title.subtitle': 'Designé et créé par le Donkey',
 

@@ -12,7 +12,7 @@ import { SaveManager } from '../utils/SaveManager';
 const GLITCH_CPU_THRESHOLD = 50;
 const GLITCH_CPU_MAX = 100;
 const UI_GLITCH_RATIO = 0.15;
-const CRASH_SUSTAIN_THRESHOLD_MS = 2000;
+const CRASH_SUSTAIN_THRESHOLD_MS = 1500;
 
 export class MainScene extends CustomScene {
   uiScene!: UIScene;

@@ -983,6 +983,7 @@ export class UIScene extends CustomScene {
     const subtitleFontSize = Math.round(pixelUnit * 13);
     const messageFontSize = Math.round(pixelUnit * 9);
     const buyFontSize = Math.round(pixelUnit * 10);
+    const buttonFontSize = Math.round(pixelUnit * 10);
     const centerX = screenWidth / 2;
     const centerY = screenHeight / 2;
 
@@ -990,6 +991,9 @@ export class UIScene extends CustomScene {
     const subtitleY = centerY - pixelUnit * 15;
     const messageY = centerY + pixelUnit * 5;
     const buyY = centerY + pixelUnit * 25;
+    const buttonY = centerY + pixelUnit * 50;
+    const buttonWidth = pixelUnit * 70;
+    const buttonHeight = pixelUnit * 18;
 
     const titleText = this.add.text(centerX, titleY, t('demo.title'), {
       fontFamily: 'KenneyPixel',
@@ -1028,12 +1032,60 @@ export class UIScene extends CustomScene {
     buyText.setOrigin(0.5, 0.5);
     buyText.setAlpha(0);
 
+    const buttonGraphics = this.add.graphics();
+    buttonGraphics.fillStyle(0x552222, 0.9);
+    buttonGraphics.fillRect(
+      centerX - buttonWidth / 2,
+      buttonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+    );
+    createUIPanel(
+      buttonGraphics,
+      centerX - buttonWidth / 2,
+      buttonY - buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      pixelUnit,
+      0xaa4444,
+      0.9,
+    );
+    buttonGraphics.setAlpha(0);
+
+    const buttonText = this.add.text(centerX, buttonY, t('demo.resetRestart'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${buttonFontSize}px`,
+      color: '#ffffff',
+    });
+    buttonText.setOrigin(0.5, 0.5);
+    buttonText.setAlpha(0);
+
+    const buttonZone = this.add.zone(centerX, buttonY, buttonWidth, buttonHeight);
+    buttonZone.setInteractive();
+    buttonZone.on('pointerup', () => {
+      playSfx(this, 'buttonClick', 0.3);
+      SaveManager.deleteSave();
+      SaveManager.deleteMetaSave();
+      this.crashContainer.destroy();
+      this.crashActive = false;
+      this.pointsEarnedAtCrash = 0;
+      this.mainScene.clearEntities();
+      Progression.reset();
+      this.mainScene.spawnPrestigeStartingSprites();
+      this.previouslyUnlocked.clear();
+      this.initUnlockedUpgrades();
+      this.scene.resume('MainScene');
+    });
+
     this.crashContainer = this.add.container(0, 0, [
       overlay,
       titleText,
       subtitleText,
       messageText,
       buyText,
+      buttonGraphics,
+      buttonText,
+      buttonZone,
     ]);
     this.crashContainer.setDepth(FRONT_DEPTH + 100);
 
@@ -1072,6 +1124,14 @@ export class UIScene extends CustomScene {
       targets: buyText,
       alpha: 1,
       delay: 2600,
+      duration: 600,
+      ease: 'Power2',
+    });
+
+    this.tweens.add({
+      targets: [buttonGraphics, buttonText],
+      alpha: 1,
+      delay: 3200,
       duration: 600,
       ease: 'Power2',
     });
