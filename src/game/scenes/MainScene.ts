@@ -45,7 +45,6 @@ export class MainScene extends CustomScene {
 
   create() {
     super.create();
-    removeSplashScreen(this);
 
     this.canvasHeight = this.cameras.main.height;
     this.canvasWidth = this.cameras.main.width;
