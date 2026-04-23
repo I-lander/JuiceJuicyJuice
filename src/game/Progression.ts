@@ -59,6 +59,14 @@ export class Progression {
   static level = 1;
   static totalJuice = 0;
 
+  static get maxJuicePerParticle(): number {
+    let max = 0;
+    for (const color of Progression.unlockedParticleColors) {
+      if (color.juicePerParticle > max) max = color.juicePerParticle;
+    }
+    return max;
+  }
+
   static addCollisionCpu() {
     Progression.activeCollisionCpu += CPU_COSTS.collision * Progression.collisionForceMultiplier;
   }
@@ -235,16 +243,11 @@ export class Progression {
           Progression.bounceJuiceAmount * Progression.sprites * Progression.bounceScaleMultiplier;
       }
       if (Progression.autoClickers > 0 && Progression.unlockedParticleColors.length > 0) {
-        const averageJuicePerParticle =
-          Progression.unlockedParticleColors.reduce(
-            (sum, color) => sum + color.juicePerParticle,
-            0,
-          ) / Progression.unlockedParticleColors.length;
         const clicksPerSecond = 1000 / Progression.autoClickerCooldown;
         juicePerSecond +=
           Progression.autoClickers *
           Progression.particlesPerClick *
-          averageJuicePerParticle *
+          Progression.maxJuicePerParticle *
           clicksPerSecond;
       }
     }

@@ -30,7 +30,7 @@ export class Particle extends Phaser.GameObjects.Image {
     if (colors.length > 0) {
       const colorDef: ParticleColorDefinition = colors[Math.floor(Math.random() * colors.length)];
       this.setTint(colorDef.tint);
-      this.juicePerParticle = colorDef.juicePerParticle;
+      this.juicePerParticle = Progression.maxJuicePerParticle;
     } else {
       this.juicePerParticle = 1;
     }
