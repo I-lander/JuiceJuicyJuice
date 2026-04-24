@@ -28,7 +28,7 @@ export class LoadingScene extends Phaser.Scene {
       frameHeight: PARTICLE_ATLAS_CELL_SIZE,
     });
     this.load.atlas('uiAtlas', './assets/images/ui-atlas.png', uiAtlas);
-    this.load.audio('bgMusic', './assets/music/ambient_loop.wav');
+    this.load.audio('bgMusic', './assets/music/funky_loop.wav');
     this.load.audio('clickParticles', './assets/sounds/click_particles.wav');
     this.load.audio('wallBounce', './assets/sounds/wall_bounce.wav');
     this.load.audio('spriteBounce', './assets/sounds/sprite_bounce.wav');

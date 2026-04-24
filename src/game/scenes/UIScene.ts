@@ -8,6 +8,7 @@ import { Shop } from '../objects/Shop';
 import { UPGRADES } from '../objects/ShopUpgrades';
 import { t } from '../utils/i18n';
 import {
+  BG_MUSIC_VOLUME,
   createUIPanel,
   formatCpuFrequency,
   formatNumber,
@@ -579,12 +580,35 @@ export class UIScene extends CustomScene {
       this.time.delayedCall(60, () => playSfx(this, 'spriteBounce', 0.5));
       this.time.delayedCall(150, () => playSfx(this, 'wallBounce', 0.45));
       this.time.delayedCall(260, () => playSfx(this, 'buttonClick', 0.55));
+
+      const crashBgMusic = this.mainScene.bgMusic;
+      if (crashBgMusic) {
+        const detuneState = { value: crashBgMusic.detune };
+        this.tweens.add({
+          targets: detuneState,
+          value: -3000,
+          duration: 600,
+          ease: 'Cubic.easeOut',
+          onUpdate: () => crashBgMusic.setDetune(detuneState.value),
+        });
+        this.tweens.add({
+          targets: crashBgMusic,
+          volume: 0,
+          delay: 200,
+          duration: 700,
+          ease: 'Quad.easeOut',
+        });
+      }
     } else {
       if (this.mainScene.glitchShader) {
         this.mainScene.glitchShader.glitchIntensity = 0.18;
       }
       if (this.glitchShader) {
         this.glitchShader.glitchIntensity = 0.12;
+      }
+      if (this.mainScene.bgMusic) {
+        this.mainScene.bgMusic.setDetune(-3000);
+        this.mainScene.bgMusic.setVolume(0);
       }
     }
 
@@ -877,6 +901,16 @@ export class UIScene extends CustomScene {
       this.previouslyUnlocked.clear();
       this.initUnlockedUpgrades();
       SaveManager.deleteSave();
+      const rebootBgMusic = this.mainScene.bgMusic;
+      if (rebootBgMusic) {
+        rebootBgMusic.setDetune(0);
+        this.tweens.add({
+          targets: rebootBgMusic,
+          volume: BG_MUSIC_VOLUME,
+          duration: 400,
+          ease: 'Quad.easeOut',
+        });
+      }
       this.scene.resume('MainScene');
     });
 
@@ -1074,6 +1108,16 @@ export class UIScene extends CustomScene {
       this.mainScene.spawnPrestigeStartingSprites();
       this.previouslyUnlocked.clear();
       this.initUnlockedUpgrades();
+      const demoBgMusic = this.mainScene.bgMusic;
+      if (demoBgMusic) {
+        demoBgMusic.setDetune(0);
+        this.tweens.add({
+          targets: demoBgMusic,
+          volume: BG_MUSIC_VOLUME,
+          duration: 400,
+          ease: 'Quad.easeOut',
+        });
+      }
       this.scene.resume('MainScene');
     });
 

@@ -4,14 +4,14 @@ import { CustomScene } from '../customClasses/CustomScene';
 import { getSpriteFrames, TITLE_ORANGE_FRAME } from '../elements/SpriteAtlas';
 import { OptionsMenu } from '../objects/OptionsMenu';
 import { SaveManager } from '../utils/SaveManager';
-import { setLanguage, t } from '../utils/i18n';
+import { t } from '../utils/i18n';
 import {
   createUIPanel,
   getRandomInt,
   initShader,
   playSfx,
+  registerBgMusic,
   removeSplashScreen,
-  setSfxMuted,
   SPRITE_BASE_UNIT,
 } from '../utils/utils';
 import { APP_VERSION } from '../utils/versionTag';
@@ -44,7 +44,6 @@ export class TitleScene extends CustomScene {
   private canvasHeight: number = 0;
   private transitioning: boolean = false;
   private optionsMenu!: OptionsMenu;
-  private sfxMuted: boolean = false;
 
   constructor() {
     super('TitleScene');
@@ -81,14 +80,18 @@ export class TitleScene extends CustomScene {
       },
     });
     SaveManager.loadMeta();
-    const saveData = SaveManager.load();
-    if (saveData) {
-      this.sfxMuted = saveData.sfxMuted;
-      setSfxMuted(saveData.sfxMuted ?? false);
-      if (saveData.language) setLanguage(saveData.language);
-    }
+    SaveManager.applySettings();
 
     initShader(this);
+
+    const bgMusicAlreadyPlaying = this.sound.getAll('bgMusic').some((sound) => sound.isPlaying);
+    if (!bgMusicAlreadyPlaying) {
+      const bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.2 }) as
+        | Phaser.Sound.WebAudioSound
+        | Phaser.Sound.HTML5AudioSound;
+      bgMusic.play();
+      registerBgMusic(bgMusic);
+    }
 
     this.cameras.main.fadeIn(500, 0, 0, 0);
   }

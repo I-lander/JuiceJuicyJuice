@@ -1,9 +1,12 @@
 import { CustomScene } from '../customClasses/CustomScene';
 import { getLanguage, setLanguage, t } from '../utils/i18n';
+import { SaveManager } from '../utils/SaveManager';
 import {
   createUIPanel,
   FRONT_DEPTH,
+  musicMuted,
   playSfx,
+  setMusicMuted,
   setSfxMuted,
   sfxMuted,
 } from '../utils/utils';
@@ -33,7 +36,9 @@ export class OptionsMenu {
   private enFlagImg!: Phaser.GameObjects.Image;
   private frFlagImg!: Phaser.GameObjects.Image;
   private soundToggleImg!: Phaser.GameObjects.Image;
+  private musicToggleImg!: Phaser.GameObjects.Image;
   private localSfxMuted: boolean = false;
+  private localMusicMuted: boolean = false;
 
   public isOpen: boolean = false;
 
@@ -188,7 +193,7 @@ export class OptionsMenu {
 
     this.localSfxMuted = sfxMuted;
     this.soundToggleImg = this.scene.add.image(
-      centerX,
+      centerX - flagGap / 2 - flagSize / 2,
       soundY,
       'uiAtlas',
       this.localSfxMuted ? 'soundOff' : 'soundOn',
@@ -199,6 +204,23 @@ export class OptionsMenu {
       this.localSfxMuted = !this.localSfxMuted;
       setSfxMuted(this.localSfxMuted);
       this.soundToggleImg.setFrame(this.localSfxMuted ? 'soundOff' : 'soundOn');
+      SaveManager.saveSettings();
+    });
+
+    this.localMusicMuted = musicMuted;
+    this.musicToggleImg = this.scene.add.image(
+      centerX + flagGap / 2 + flagSize / 2,
+      soundY,
+      'uiAtlas',
+      this.localMusicMuted ? 'musicOff' : 'musicOn',
+    );
+    this.musicToggleImg.setDisplaySize(flagSize, flagSize);
+    this.musicToggleImg.setInteractive({ useHandCursor: true });
+    this.musicToggleImg.on('pointerup', () => {
+      this.localMusicMuted = !this.localMusicMuted;
+      setMusicMuted(this.localMusicMuted);
+      this.musicToggleImg.setFrame(this.localMusicMuted ? 'musicOff' : 'musicOn');
+      SaveManager.saveSettings();
     });
 
     const flagY = menuY + menuHeight - pixelUnit * 8 - flagSize / 2;
@@ -215,6 +237,7 @@ export class OptionsMenu {
       playSfx(this.scene, 'buttonClick', 0.3);
       setLanguage('en');
       this.refreshTexts();
+      SaveManager.saveSettings();
     });
 
     this.frFlagImg = this.scene.add.image(
@@ -229,11 +252,17 @@ export class OptionsMenu {
       playSfx(this.scene, 'buttonClick', 0.3);
       setLanguage('fr');
       this.refreshTexts();
+      SaveManager.saveSettings();
     });
 
     this.refreshFlagAlpha();
 
-    containerChildren.push(this.enFlagImg, this.frFlagImg, this.soundToggleImg);
+    containerChildren.push(
+      this.enFlagImg,
+      this.frFlagImg,
+      this.soundToggleImg,
+      this.musicToggleImg,
+    );
 
     this.menuContainer = this.scene.add.container(0, 0, containerChildren);
     this.menuContainer.setDepth(FRONT_DEPTH + 50);

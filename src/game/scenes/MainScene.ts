@@ -3,7 +3,14 @@ import { Progression } from '../Progression';
 import { Prestige } from '../Prestige';
 import { Sprite } from '../objects/Sprite';
 import { getSpriteFrames } from '../elements/SpriteAtlas';
-import { getRandomInt, initGlitchShader, initShader, removeSplashScreen } from '../utils/utils';
+import {
+  BG_MUSIC_VOLUME,
+  getRandomInt,
+  initGlitchShader,
+  initShader,
+  registerBgMusic,
+  removeSplashScreen,
+} from '../utils/utils';
 import { UIScene } from './UIScene';
 import { EventHandler } from '../utils/EventHandler';
 import { Particle } from '../objects/Particle';
@@ -13,6 +20,7 @@ const GLITCH_CPU_THRESHOLD = 50;
 const GLITCH_CPU_MAX = 100;
 const UI_GLITCH_RATIO = 0.15;
 const CRASH_SUSTAIN_THRESHOLD_MS = 1500;
+const MUSIC_GLITCH_MAX_DETUNE = 450;
 
 export class MainScene extends CustomScene {
   uiScene!: UIScene;
@@ -64,6 +72,7 @@ export class MainScene extends CustomScene {
     this.initCamera();
 
     SaveManager.loadMeta();
+    SaveManager.applySettings();
     const saveData = SaveManager.load();
     if (saveData) {
       SaveManager.applyLoad(saveData, this);
@@ -74,8 +83,20 @@ export class MainScene extends CustomScene {
     SaveManager.setupVisibilityListener(this);
     initGlitchShader(this);
 
-    // this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.4 }) as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound;
-    // this.bgMusic.play();
+    const existingBgMusic = this.sound
+      .getAll('bgMusic')
+      .find((sound) => sound.isPlaying);
+    if (existingBgMusic) {
+      this.bgMusic = existingBgMusic as
+        | Phaser.Sound.WebAudioSound
+        | Phaser.Sound.HTML5AudioSound;
+    } else {
+      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: BG_MUSIC_VOLUME }) as
+        | Phaser.Sound.WebAudioSound
+        | Phaser.Sound.HTML5AudioSound;
+      this.bgMusic.play();
+    }
+    registerBgMusic(this.bgMusic);
   }
 
   initCamera() {
@@ -242,6 +263,10 @@ export class MainScene extends CustomScene {
     }
     if (this.uiScene?.glitchShader) {
       this.uiScene.glitchShader.glitchIntensity = glitchIntensity * UI_GLITCH_RATIO;
+    }
+
+    if (this.bgMusic && !this.uiScene?.crashActive) {
+      this.bgMusic.setDetune(-glitchIntensity * MUSIC_GLITCH_MAX_DETUNE);
     }
 
     if (Progression.cpuPercent >= 100) {

@@ -4,10 +4,29 @@ import GlitchShader from '../shaders/GlitchShader';
 
 export const SPRITE_BASE_UNIT = 16;
 export const FRONT_DEPTH = 1000000;
+export const BG_MUSIC_VOLUME = 0.2;
 
 export let sfxMuted = false;
 export function setSfxMuted(muted: boolean) {
   sfxMuted = muted;
+}
+
+export let musicMuted = false;
+let bgMusicInstance:
+  | Phaser.Sound.WebAudioSound
+  | Phaser.Sound.HTML5AudioSound
+  | null = null;
+
+export function registerBgMusic(
+  sound: Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound,
+) {
+  bgMusicInstance = sound;
+  sound.setMute(musicMuted);
+}
+
+export function setMusicMuted(muted: boolean) {
+  musicMuted = muted;
+  bgMusicInstance?.setMute(muted);
 }
 
 export function playSfx(scene: Phaser.Scene, key: string, volume: number = 0.3) {

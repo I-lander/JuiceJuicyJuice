@@ -2,12 +2,19 @@ import { BASE_CPU_CAPACITY_MHZ, Progression } from '../Progression';
 import { Prestige } from '../Prestige';
 import { PARTICLE_COLOR_UPGRADES } from '../objects/ShopUpgrades';
 import type { MainScene } from '../scenes/MainScene';
-import { sfxMuted, setSfxMuted } from './utils';
+import { musicMuted, setMusicMuted, sfxMuted, setSfxMuted } from './utils';
 import { getLanguage, setLanguage, type Language } from './i18n';
 
 const SAVE_KEY = 'juice_save_data';
 const META_SAVE_KEY = 'juice_meta_save_data';
+const SETTINGS_KEY = 'juice_settings';
 const AUTO_SAVE_INTERVAL = 30_000;
+
+interface SettingsData {
+  sfxMuted: boolean;
+  musicMuted: boolean;
+  language: Language;
+}
 
 interface MetaSaveData {
   version: number;
@@ -39,8 +46,9 @@ interface SaveData {
   spriteRotationSpeedMultiplier: number;
   bounceScaleMultiplier: number;
   collisionForceMultiplier: number;
-  sfxMuted: boolean;
-  language: Language;
+  sfxMuted?: boolean;
+  musicMuted?: boolean;
+  language?: Language;
   crashActive?: boolean;
   pointsEarnedAtCrash?: number;
 }
@@ -82,8 +90,6 @@ export class SaveManager {
       spriteRotationSpeedMultiplier: Progression.spriteRotationSpeedMultiplier,
       bounceScaleMultiplier: Progression.bounceScaleMultiplier,
       collisionForceMultiplier: Progression.collisionForceMultiplier,
-      sfxMuted,
-      language: getLanguage(),
       crashActive: mainScene.uiScene?.crashActive ?? false,
       pointsEarnedAtCrash: mainScene.uiScene?.pointsEarnedAtCrash ?? 0,
     };
@@ -122,8 +128,6 @@ export class SaveManager {
     Progression.spriteRotationSpeedMultiplier = data.spriteRotationSpeedMultiplier ?? 1;
     Progression.bounceScaleMultiplier = data.bounceScaleMultiplier ?? 1;
     Progression.collisionForceMultiplier = data.collisionForceMultiplier ?? 1;
-    setSfxMuted(data.sfxMuted ?? false);
-    if (data.language) setLanguage(data.language);
 
     Progression.unlockedParticleColors = [PARTICLE_COLOR_UPGRADES.whiteParticle];
     for (const key of PARTICLE_COLOR_KEYS) {
@@ -189,6 +193,41 @@ export class SaveManager {
   static deleteMetaSave(): void {
     localStorage.removeItem(META_SAVE_KEY);
     Prestige.reset();
+  }
+
+  static saveSettings(): void {
+    const data: SettingsData = {
+      sfxMuted,
+      musicMuted,
+      language: getLanguage(),
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
+  }
+
+  static applySettings(): void {
+    const settingsRaw = localStorage.getItem(SETTINGS_KEY);
+    if (settingsRaw) {
+      try {
+        const data = JSON.parse(settingsRaw) as Partial<SettingsData>;
+        setSfxMuted(data.sfxMuted ?? false);
+        setMusicMuted(data.musicMuted ?? false);
+        if (data.language) setLanguage(data.language);
+        return;
+      } catch {
+        /* empty */
+      }
+    }
+    const legacyRaw = localStorage.getItem(SAVE_KEY);
+    if (!legacyRaw) return;
+    try {
+      const legacy = JSON.parse(legacyRaw) as Partial<SaveData>;
+      if (legacy.sfxMuted !== undefined) setSfxMuted(legacy.sfxMuted);
+      if (legacy.musicMuted !== undefined) setMusicMuted(legacy.musicMuted);
+      if (legacy.language) setLanguage(legacy.language);
+      SaveManager.saveSettings();
+    } catch {
+      return;
+    }
   }
 
   static setupVisibilityListener(mainScene: MainScene): void {
