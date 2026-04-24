@@ -1,0 +1,64 @@
+name: Windows Electron Build
+
+on:
+  push:
+    tags:
+      - '*'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install electron dependencies
+        working-directory: electron
+        run: npm install
+
+      - name: Build web assets and copy to electron
+        run: npm run build:electron
+
+      - name: Build Electron Windows EXE
+        run: npm run build:electron-exe
+
+      - name: Set TAG_NAME
+        shell: bash
+        run: echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: electron/dist/JuiceJuicyJuice-*.exe
+
+      - name: Set up Butler
+        uses: remarkablegames/setup-butler@v2
+        env:
+          BUTLER_API_KEY: ${{ secrets.ITCHIO_API_KEY }}
+
+      - name: Push Windows EXE to Itch.io
+        shell: bash
+        env:
+          BUTLER_API_KEY: ${{ secrets.ITCHIO_API_KEY }}
+        run: |
+          butler push electron/dist/JuiceJuicyJuice-*.exe \
+            donkey-isle/juice-juicy-juice:windows \
+            --userversion=${{ env.TAG_NAME }}

@@ -5,7 +5,7 @@ import { getSpriteFrames, TITLE_ORANGE_FRAME } from '../elements/SpriteAtlas';
 import { Button } from '../objects/Button';
 import { OptionsMenu } from '../objects/OptionsMenu';
 import { SaveManager } from '../utils/SaveManager';
-import { t } from '../utils/i18n';
+import { subscribeLanguageChange, t } from '../utils/i18n';
 import {
   getEffectiveMusicVolume,
   getRandomInt,
@@ -44,6 +44,11 @@ export class TitleScene extends CustomScene {
   private canvasHeight: number = 0;
   private transitioning: boolean = false;
   private optionsMenu!: OptionsMenu;
+  private titleRightX: number = 0;
+  private titleCenterY: number = 0;
+  private subtitleText?: Phaser.GameObjects.Text;
+  private pwywText?: Phaser.GameObjects.Text;
+  private unsubscribeLanguage?: () => void;
 
   constructor() {
     super('TitleScene');
@@ -75,6 +80,8 @@ export class TitleScene extends CustomScene {
     this.createTitleTexts();
     this.createMenuButtons();
     this.createVersionTag();
+    this.createPwywMessage();
+    this.registerLanguageListener();
     this.optionsMenu = new OptionsMenu(this, {
       onResume: () => this.optionsMenu.close(),
       onDeleteMeta: () => {
@@ -87,9 +94,10 @@ export class TitleScene extends CustomScene {
 
     const bgMusicAlreadyPlaying = this.sound.getAll('bgMusic').some((sound) => sound.isPlaying);
     if (!bgMusicAlreadyPlaying) {
-      const bgMusic = this.sound.add('bgMusic', { loop: true, volume: getEffectiveMusicVolume() }) as
-        | Phaser.Sound.WebAudioSound
-        | Phaser.Sound.HTML5AudioSound;
+      const bgMusic = this.sound.add('bgMusic', {
+        loop: true,
+        volume: getEffectiveMusicVolume(),
+      }) as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound;
       bgMusic.play();
       registerBgMusic(bgMusic);
     }
@@ -162,15 +170,18 @@ export class TitleScene extends CustomScene {
     orangeSprite.setDepth(50);
     orangeSprite.setAngle(-30);
     orangeSprite.setPosition(titleLeftX - orangeSize * 0.4, titleTopY);
-    const subtitleText = this.add.text(centerX, titleY + this.tileSize * 3.5, t('title.subtitle'), {
+    this.subtitleText = this.add.text(centerX, titleY + this.tileSize * 3.5, t('title.subtitle'), {
       fontFamily: 'KenneyPixel',
       fontSize: `${subtitleFontSize}px`,
       color: '#ffffff',
-      stroke: '#000033',
+      stroke: '#000000',
       strokeThickness: Math.round(pixelUnit * 4),
     });
-    subtitleText.setOrigin(0.5, 0.5);
-    subtitleText.setDepth(100);
+    this.subtitleText.setOrigin(0.5, 0.5);
+    this.subtitleText.setDepth(100);
+
+    this.titleRightX = centerX + titleWidth / 2;
+    this.titleCenterY = titleY;
   }
 
   private createMenuButtons() {
@@ -187,9 +198,24 @@ export class TitleScene extends CustomScene {
     const maxTextWidth = Button.measureMaxTextWidth(this, labels, fontSize);
     const buttonWidth = maxTextWidth + paddingX * 2;
 
-    const specs: Array<{ label: string; fillColor: number; borderColor: number; onClick: () => void }> = [
-      { label: 'PLAY', fillColor: 0x8a5a00, borderColor: 0xffcc33, onClick: () => this.startGame() },
-      { label: 'OPTIONS', fillColor: 0x222255, borderColor: 0x4444aa, onClick: () => this.optionsMenu.open() },
+    const specs: Array<{
+      label: string;
+      fillColor: number;
+      borderColor: number;
+      onClick: () => void;
+    }> = [
+      {
+        label: 'PLAY',
+        fillColor: 0x8a5a00,
+        borderColor: 0xffcc33,
+        onClick: () => this.startGame(),
+      },
+      {
+        label: 'OPTIONS',
+        fillColor: 0x222255,
+        borderColor: 0x4444aa,
+        onClick: () => this.optionsMenu.open(),
+      },
       { label: 'QUIT', fillColor: 0x552222, borderColor: 0xaa4444, onClick: () => this.quitGame() },
     ];
 
@@ -222,21 +248,60 @@ export class TitleScene extends CustomScene {
     const pixelUnit = this.pixelUnit;
     const fontSize = Math.round(pixelUnit * 10);
     const margin = pixelUnit * 6;
-    const demoSuffix = import.meta.env.VITE_DEMO_MODE === 'true' ? '-DEMO' : '';
-    const versionText = this.add.text(
-      margin,
-      this.canvasHeight - margin,
-      `v${APP_VERSION}${demoSuffix}`,
+    const versionText = this.add.text(margin, this.canvasHeight - margin, `v${APP_VERSION}`, {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ffffff',
+      stroke: '#000033',
+      strokeThickness: Math.round(pixelUnit * 2),
+    });
+    versionText.setOrigin(0, 1);
+    versionText.setDepth(100);
+  }
+
+  private createPwywMessage() {
+    if (import.meta.env.VITE_WEB_VERSION !== 'true') return;
+    const pixelUnit = this.pixelUnit;
+    const fontSize = Math.round(pixelUnit * 14);
+    const offsetX = pixelUnit * 6 - this.tileSize * 2;
+    const offsetY = -this.tileSize * 0.8 - this.tileSize * 2;
+    this.pwywText = this.add.text(
+      this.titleRightX + offsetX,
+      this.titleCenterY + offsetY,
+      t('title.pwyw'),
       {
         fontFamily: 'KenneyPixel',
         fontSize: `${fontSize}px`,
-        color: '#ffffff',
-        stroke: '#000033',
-        strokeThickness: Math.round(pixelUnit * 2),
+        color: '#ed7f22',
+        stroke: '#000000',
+        strokeThickness: Math.round(pixelUnit * 4),
+        align: 'left',
+        wordWrap: { width: this.tileSize * 10 },
       },
     );
-    versionText.setOrigin(0, 1);
-    versionText.setDepth(100);
+    this.pwywText.setOrigin(0, 0.5);
+    this.pwywText.setAngle(33);
+    this.pwywText.setDepth(100);
+
+    this.tweens.add({
+      targets: this.pwywText,
+      scale: 1.08,
+      duration: 900,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+  }
+
+  private registerLanguageListener() {
+    this.unsubscribeLanguage = subscribeLanguageChange(() => {
+      this.subtitleText?.setText(t('title.subtitle'));
+      this.pwywText?.setText(t('title.pwyw'));
+    });
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.unsubscribeLanguage?.();
+      this.unsubscribeLanguage = undefined;
+    });
   }
 
   private quitGame() {

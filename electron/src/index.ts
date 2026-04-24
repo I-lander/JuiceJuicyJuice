@@ -59,6 +59,7 @@ if (electronIsDev) {
   const mainWindow = myCapacitorApp.getMainWindow();
   mainWindow.setMenu(null);
   mainWindow.setMenuBarVisibility(false);
+  mainWindow.setFullScreen(false);
 
   mainWindow.webContents.on('before-input-event', (event, input) => {
     if (input.type === 'keyDown' && input.key === 'F11') {

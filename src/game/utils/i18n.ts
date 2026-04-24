@@ -107,13 +107,8 @@ const translations: Record<Language, Record<string, string>> = {
     'crash.message': 'Too much juice. The system couldn\'t handle it.',
     'crash.restart': 'REBOOT',
 
-    'demo.title': 'THANKS FOR PLAYING!',
-    'demo.subtitle': 'DEMO COMPLETE',
-    'demo.message': 'This is the end of the demo.',
-    'demo.buyFull': 'Full version available on this itch.io page.',
-    'demo.resetRestart': 'RESET & RESTART',
-
     'title.subtitle': 'Designed and created by the Donkey',
+    'title.pwyw': 'Loving the juice? Tip the Donkey on itch.io!',
 
     'warning.title': 'PHOTOSENSITIVITY WARNING',
     'warning.body':
@@ -217,13 +212,8 @@ const translations: Record<Language, Record<string, string>> = {
     'crash.message': 'Trop de jus. Le systeme n\'a pas tenu.',
     'crash.restart': 'REDEMARRER',
 
-    'demo.title': 'MERCI D\'AVOIR JOUE !',
-    'demo.subtitle': 'FIN DE LA DEMO',
-    'demo.message': 'Vous avez atteint la fin de la demo.',
-    'demo.buyFull': 'Version complete disponible sur cette page itch.io.',
-    'demo.resetRestart': 'RECOMMENCER',
-
     'title.subtitle': 'Designé et créé par le Donkey',
+    'title.pwyw': 'Le jus te plait ? Laisse un pourboire au Donkey sur itch.io !',
 
     'warning.title': 'AVERTISSEMENT EPILEPSIE',
     'warning.body':
@@ -237,9 +227,21 @@ export function t(key: string): string {
   return translations[currentLanguage][key] ?? key;
 }
 
+type LanguageListener = (lang: Language) => void;
+const languageListeners: Set<LanguageListener> = new Set();
+
+export function subscribeLanguageChange(listener: LanguageListener): () => void {
+  languageListeners.add(listener);
+  return () => languageListeners.delete(listener);
+}
+
 export function setLanguage(lang: Language): void {
+  const changed = currentLanguage !== lang;
   currentLanguage = lang;
   localStorage.setItem(STORAGE_KEY, lang);
+  if (changed) {
+    languageListeners.forEach((listener) => listener(lang));
+  }
 }
 
 export function getLanguage(): Language {

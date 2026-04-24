@@ -23,8 +23,6 @@ import {
 import { MainScene } from './MainScene';
 import { SaveManager } from '../utils/SaveManager';
 
-const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
-
 export class UIScene extends CustomScene {
   mainScene!: MainScene;
 
@@ -549,11 +547,6 @@ export class UIScene extends CustomScene {
     this.crashActive = true;
     this.scene.pause('MainScene');
 
-    if (DEMO_MODE) {
-      this.showDemoEndScreen();
-      return;
-    }
-
     if (!restore) {
       const uiCamera = this.cameras.main;
       uiCamera.shake(500, 0.028);
@@ -987,164 +980,6 @@ export class UIScene extends CustomScene {
       for (const zone of interactiveZones) {
         zone.setInteractive({ useHandCursor: true });
       }
-    });
-  }
-
-  private showDemoEndScreen() {
-    const screenWidth = this.cameras.main.width;
-    const screenHeight = this.cameras.main.height;
-    const pixelUnit = this.pixelUnit;
-
-    const overlay = this.add.rectangle(0, 0, screenWidth, screenHeight, 0x000000, 0);
-    overlay.setOrigin(0, 0);
-    overlay.setInteractive();
-
-    const titleFontSize = Math.round(pixelUnit * 22);
-    const subtitleFontSize = Math.round(pixelUnit * 13);
-    const messageFontSize = Math.round(pixelUnit * 9);
-    const buyFontSize = Math.round(pixelUnit * 10);
-    const buttonFontSize = Math.round(pixelUnit * 10);
-    const centerX = screenWidth / 2;
-    const centerY = screenHeight / 2;
-
-    const titleY = centerY - pixelUnit * 40;
-    const subtitleY = centerY - pixelUnit * 15;
-    const messageY = centerY + pixelUnit * 5;
-    const buyY = centerY + pixelUnit * 25;
-    const buttonY = centerY + pixelUnit * 50;
-    const buttonHeight = pixelUnit * 18;
-
-    const titleText = this.add.text(centerX, titleY, t('demo.title'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${titleFontSize}px`,
-      color: '#ffdd44',
-      align: 'center',
-    });
-    titleText.setOrigin(0.5, 0.5);
-    titleText.setAlpha(0);
-
-    const subtitleText = this.add.text(centerX, subtitleY, t('demo.subtitle'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${subtitleFontSize}px`,
-      color: '#ffffff',
-      align: 'center',
-    });
-    subtitleText.setOrigin(0.5, 0.5);
-    subtitleText.setAlpha(0);
-
-    const messageText = this.add.text(centerX, messageY, t('demo.message'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${messageFontSize}px`,
-      color: '#aaaaaa',
-      align: 'center',
-    });
-    messageText.setOrigin(0.5, 0.5);
-    messageText.setAlpha(0);
-
-    const buyText = this.add.text(centerX, buyY, t('demo.buyFull'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${buyFontSize}px`,
-      color: '#44ff88',
-      align: 'center',
-      wordWrap: { width: screenWidth * 0.8 },
-    });
-    buyText.setOrigin(0.5, 0.5);
-    buyText.setAlpha(0);
-
-    const demoButton = new Button({
-      scene: this,
-      x: centerX,
-      y: buttonY,
-      label: t('demo.resetRestart'),
-      fontSize: buttonFontSize,
-      fillColor: 0x552222,
-      fillAlpha: 0.9,
-      borderColor: 0xaa4444,
-      borderAlpha: 0.9,
-      pixelUnit,
-      paddingX: pixelUnit * 12,
-      paddingY: (buttonHeight - buttonFontSize) / 2,
-      onClick: () => {
-        SaveManager.deleteSave();
-        SaveManager.deleteMetaSave();
-        this.crashContainer.destroy();
-        this.crashActive = false;
-        this.pointsEarnedAtCrash = 0;
-        this.mainScene.clearEntities();
-        Progression.reset();
-        this.mainScene.spawnPrestigeStartingSprites();
-        this.previouslyUnlocked.clear();
-        this.initUnlockedUpgrades();
-        const demoBgMusic = this.mainScene.bgMusic;
-        if (demoBgMusic) {
-          demoBgMusic.setDetune(0);
-          this.tweens.add({
-            targets: demoBgMusic,
-            volume: getEffectiveMusicVolume(),
-            duration: 400,
-            ease: 'Quad.easeOut',
-          });
-        }
-        this.scene.resume('MainScene');
-      },
-    });
-    demoButton.setAlpha(0);
-
-    this.crashContainer = this.add.container(0, 0, [
-      overlay,
-      titleText,
-      subtitleText,
-      messageText,
-      buyText,
-      demoButton.container,
-    ]);
-    this.crashContainer.setDepth(FRONT_DEPTH + 100);
-
-    this.tweens.add({
-      targets: overlay,
-      fillAlpha: 0.9,
-      duration: 1500,
-      ease: 'Power2',
-    });
-
-    this.tweens.add({
-      targets: titleText,
-      alpha: 1,
-      delay: 800,
-      duration: 600,
-      ease: 'Power2',
-    });
-
-    this.tweens.add({
-      targets: subtitleText,
-      alpha: 1,
-      delay: 1400,
-      duration: 600,
-      ease: 'Power2',
-    });
-
-    this.tweens.add({
-      targets: messageText,
-      alpha: 1,
-      delay: 2000,
-      duration: 600,
-      ease: 'Power2',
-    });
-
-    this.tweens.add({
-      targets: buyText,
-      alpha: 1,
-      delay: 2600,
-      duration: 600,
-      ease: 'Power2',
-    });
-
-    this.tweens.add({
-      targets: [demoButton.graphics, demoButton.text],
-      alpha: 1,
-      delay: 3200,
-      duration: 600,
-      ease: 'Power2',
     });
   }
 
