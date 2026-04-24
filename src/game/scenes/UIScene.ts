@@ -17,6 +17,8 @@ import {
   getEffectiveMusicVolume,
   initGlitchShader,
   playSfx,
+  registerBgMusic,
+  unregisterBgMusic,
 } from '../utils/utils';
 import { MainScene } from './MainScene';
 import { SaveManager } from '../utils/SaveManager';
@@ -57,6 +59,7 @@ export class UIScene extends CustomScene {
   private crashContainer!: Phaser.GameObjects.Container;
   crashActive: boolean = false;
   pointsEarnedAtCrash: number = 0;
+  private prestigeMusic: Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound | null = null;
   private prestigePointsText!: Phaser.GameObjects.Text;
   private prestigeConnectorGraphics!: Phaser.GameObjects.Graphics;
   private prestigeNodes: Array<{
@@ -613,6 +616,8 @@ export class UIScene extends CustomScene {
       }
     }
 
+    this.startPrestigeMusic(!restore);
+
     let pointsEarned: number;
     if (restore) {
       pointsEarned = restore.pointsEarnedAtCrash;
@@ -876,9 +881,13 @@ export class UIScene extends CustomScene {
         this.previouslyUnlocked.clear();
         this.initUnlockedUpgrades();
         SaveManager.deleteSave();
+        this.stopPrestigeMusic(true);
         const rebootBgMusic = this.mainScene.bgMusic;
         if (rebootBgMusic) {
+          rebootBgMusic.stop();
           rebootBgMusic.setDetune(0);
+          rebootBgMusic.setVolume(0);
+          rebootBgMusic.play();
           this.tweens.add({
             targets: rebootBgMusic,
             volume: getEffectiveMusicVolume(),
@@ -1137,6 +1146,53 @@ export class UIScene extends CustomScene {
       duration: 600,
       ease: 'Power2',
     });
+  }
+
+  private startPrestigeMusic(fadeIn: boolean) {
+    if (this.prestigeMusic) return;
+    const targetVolume = getEffectiveMusicVolume();
+    const music = this.sound.add('prestigeMusic', {
+      loop: true,
+      volume: fadeIn ? 0 : targetVolume,
+    }) as Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound;
+    music.play();
+    registerBgMusic(music);
+    this.prestigeMusic = music;
+
+    if (fadeIn) {
+      music.setVolume(0);
+      this.tweens.add({
+        targets: music,
+        volume: targetVolume,
+        delay: 400,
+        duration: 900,
+        ease: 'Quad.easeIn',
+      });
+    }
+  }
+
+  private stopPrestigeMusic(fadeOut: boolean) {
+    const music = this.prestigeMusic;
+    if (!music) return;
+    this.prestigeMusic = null;
+
+    const cleanup = () => {
+      unregisterBgMusic(music);
+      if (music.isPlaying) music.stop();
+      music.destroy();
+    };
+
+    if (fadeOut) {
+      this.tweens.add({
+        targets: music,
+        volume: 0,
+        duration: 500,
+        ease: 'Quad.easeOut',
+        onComplete: cleanup,
+      });
+    } else {
+      cleanup();
+    }
   }
 
   private refreshPrestigeTree() {

@@ -9,10 +9,9 @@ export const BG_MUSIC_VOLUME = 0.2;
 export let sfxVolume = 1;
 export let musicVolume = 1;
 
-let bgMusicInstance:
-  | Phaser.Sound.WebAudioSound
-  | Phaser.Sound.HTML5AudioSound
-  | null = null;
+const registeredMusicInstances = new Set<
+  Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound
+>();
 
 export function getEffectiveMusicVolume(): number {
   return BG_MUSIC_VOLUME * musicVolume;
@@ -21,8 +20,14 @@ export function getEffectiveMusicVolume(): number {
 export function registerBgMusic(
   sound: Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound,
 ) {
-  bgMusicInstance = sound;
+  registeredMusicInstances.add(sound);
   sound.setVolume(getEffectiveMusicVolume());
+}
+
+export function unregisterBgMusic(
+  sound: Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound,
+) {
+  registeredMusicInstances.delete(sound);
 }
 
 export function setSfxVolume(volume: number) {
@@ -30,8 +35,17 @@ export function setSfxVolume(volume: number) {
 }
 
 export function setMusicVolume(volume: number) {
-  musicVolume = Math.max(0, Math.min(1, volume));
-  bgMusicInstance?.setVolume(getEffectiveMusicVolume());
+  const clampedVolume = Math.max(0, Math.min(1, volume));
+  const shouldRestart = musicVolume === 0 && clampedVolume > 0;
+  musicVolume = clampedVolume;
+  const effectiveVolume = getEffectiveMusicVolume();
+  for (const instance of registeredMusicInstances) {
+    if (shouldRestart && instance.isPlaying) {
+      instance.stop();
+      instance.play();
+    }
+    instance.setVolume(effectiveVolume);
+  }
 }
 
 export function playSfx(scene: Phaser.Scene, key: string, volume: number = 0.3) {
