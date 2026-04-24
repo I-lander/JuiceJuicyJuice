@@ -44,10 +44,10 @@ jobs:
         shell: bash
         run: echo "TAG_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: electron/dist/JuiceJuicyJuice-*.exe
+      # - name: Release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: electron/dist/JuiceJuicyJuice-*.exe
 
       - name: Set up Butler
         uses: remarkablegames/setup-butler@v2
