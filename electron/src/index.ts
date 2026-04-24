@@ -15,7 +15,7 @@ import { ElectronCapacitorApp, setupContentSecurityPolicy, setupReloadWatcher } 
 unhandled();
 
 ipcMain.on('quit-app', () => {
-  app.quit(); // Quitter l'application
+  app.exit(0);
 });
 
 // Define our menu templates (these are optional)
@@ -58,8 +58,14 @@ if (electronIsDev) {
 
   const mainWindow = myCapacitorApp.getMainWindow();
   mainWindow.setMenu(null);
-  mainWindow.setFullScreen(true);
   mainWindow.setMenuBarVisibility(false);
+
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type === 'keyDown' && input.key === 'F11') {
+      mainWindow.setFullScreen(!mainWindow.isFullScreen());
+      event.preventDefault();
+    }
+  });
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();

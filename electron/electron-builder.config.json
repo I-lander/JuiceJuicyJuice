@@ -5,13 +5,11 @@
   },
   "files": ["assets/**/*", "build/**/*", "capacitor.config.*", "app/**/*"],
   "publish": null,
-  "nsis": {
-    "allowElevation": true,
-    "oneClick": false,
-    "allowToChangeInstallationDirectory": true
-  },
   "win": {
-    "target": "nsis",
+    "target": "portable",
     "icon": "./assets/icon.ico"
+  },
+  "portable": {
+    "artifactName": "JuiceJuicyJuice-${version}.exe"
   }
 }
