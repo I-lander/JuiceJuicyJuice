@@ -1,4 +1,4 @@
-import { PARTICLE_FRAMES } from '../elements/Particles';
+import { getParticleFrames, PARTICLE_ATLAS_KEY } from '../elements/Particles';
 import { Progression } from '../Progression';
 import type { ParticleColorDefinition } from './ShopUpgrades';
 
@@ -12,8 +12,9 @@ export class Particle extends Phaser.GameObjects.Image {
   juicePerParticle: number;
 
   constructor(scene: Phaser.Scene, x: number, y: number, startScale: number) {
-    const frame = PARTICLE_FRAMES[Math.floor(Math.random() * PARTICLE_FRAMES.length)];
-    super(scene, x, y, 'particleAtlas', frame);
+    const frames = getParticleFrames();
+    const frame = frames[Math.floor(Math.random() * frames.length)];
+    super(scene, x, y, PARTICLE_ATLAS_KEY, frame);
 
     this.startScale = startScale;
     this.maxLifespan = PARTICLE_LIFESPAN;
