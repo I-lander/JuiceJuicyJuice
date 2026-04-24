@@ -237,12 +237,7 @@ export class OptionsMenu {
     this.drawSlider(this.sfxSliderGraphics, this.sfxSliderBounds, sfxVolume);
     this.drawSlider(this.musicSliderGraphics, this.musicSliderBounds, musicVolume);
 
-    const sfxZone = this.scene.add.zone(
-      trackX + trackWidth / 2,
-      sfxSliderY,
-      trackWidth,
-      flagSize,
-    );
+    const sfxZone = this.scene.add.zone(trackX + trackWidth / 2, sfxSliderY, trackWidth, flagSize);
     sfxZone.setInteractive({ useHandCursor: true });
     sfxZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       this.sfxDragging = true;
@@ -343,7 +338,7 @@ export class OptionsMenu {
     graphics.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
     const fillWidth = bounds.width * value;
     if (fillWidth > 0) {
-      graphics.fillStyle(0x44aa88, 1);
+      graphics.fillStyle(0x7b5cff, 1);
       graphics.fillRect(bounds.x, bounds.y, fillWidth, bounds.height);
     }
     const handleWidth = pixelUnit * 3;
