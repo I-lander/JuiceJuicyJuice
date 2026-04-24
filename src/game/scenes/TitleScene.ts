@@ -2,15 +2,14 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { CustomScene } from '../customClasses/CustomScene';
 import { getSpriteFrames, TITLE_ORANGE_FRAME } from '../elements/SpriteAtlas';
+import { Button } from '../objects/Button';
 import { OptionsMenu } from '../objects/OptionsMenu';
 import { SaveManager } from '../utils/SaveManager';
 import { t } from '../utils/i18n';
 import {
-  createUIPanel,
   getEffectiveMusicVolume,
   getRandomInt,
   initShader,
-  playSfx,
   registerBgMusic,
   removeSplashScreen,
   SPRITE_BASE_UNIT,
@@ -178,90 +177,44 @@ export class TitleScene extends CustomScene {
     const pixelUnit = this.pixelUnit;
     const isPortrait = this.canvasHeight > this.canvasWidth;
     const centerX = this.canvasWidth / 2;
-    const buttonWidth = pixelUnit * (isPortrait ? 80 : 60);
-    const buttonHeight = pixelUnit * 16;
+    const fontSize = Math.round(pixelUnit * 14);
+    const paddingX = pixelUnit * 10;
+    const paddingY = pixelUnit * 4;
     const gap = pixelUnit * 6;
     const firstButtonY = this.canvasHeight * (isPortrait ? 0.62 : 0.7);
 
-    this.createButton(
-      centerX,
-      firstButtonY,
-      buttonWidth,
-      buttonHeight,
-      'PLAY',
-      0x8a5a00,
-      0xffcc33,
-      () => this.startGame(),
-    );
-    this.createButton(
-      centerX,
-      firstButtonY + buttonHeight + gap,
-      buttonWidth,
-      buttonHeight,
-      'OPTIONS',
-      0x222255,
-      0x4444aa,
-      () => this.optionsMenu.open(),
-    );
-    this.createButton(
-      centerX,
-      firstButtonY + (buttonHeight + gap) * 2,
-      buttonWidth,
-      buttonHeight,
-      'QUIT',
-      0x552222,
-      0xaa4444,
-      () => this.quitGame(),
-    );
-  }
+    const labels = ['PLAY', 'OPTIONS', 'QUIT'];
+    const maxTextWidth = Button.measureMaxTextWidth(this, labels, fontSize);
+    const buttonWidth = maxTextWidth + paddingX * 2;
 
-  private createButton(
-    centerX: number,
-    centerY: number,
-    buttonWidth: number,
-    buttonHeight: number,
-    label: string,
-    fillColor: number,
-    borderColor: number,
-    onClick: () => void,
-  ) {
-    const pixelUnit = this.pixelUnit;
-    const fontSize = Math.round(pixelUnit * 14);
+    const specs: Array<{ label: string; fillColor: number; borderColor: number; onClick: () => void }> = [
+      { label: 'PLAY', fillColor: 0x8a5a00, borderColor: 0xffcc33, onClick: () => this.startGame() },
+      { label: 'OPTIONS', fillColor: 0x222255, borderColor: 0x4444aa, onClick: () => this.optionsMenu.open() },
+      { label: 'QUIT', fillColor: 0x552222, borderColor: 0xaa4444, onClick: () => this.quitGame() },
+    ];
 
-    const graphics = this.add.graphics();
-    graphics.fillStyle(fillColor, 1);
-    graphics.fillRect(
-      centerX - buttonWidth / 2,
-      centerY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
+    const buttons = specs.map(
+      (spec) =>
+        new Button({
+          scene: this,
+          x: centerX,
+          y: firstButtonY,
+          label: spec.label,
+          fontSize,
+          fillColor: spec.fillColor,
+          borderColor: spec.borderColor,
+          pixelUnit,
+          onClick: spec.onClick,
+          width: buttonWidth,
+          paddingX,
+          paddingY,
+        }),
     );
-    createUIPanel(
-      graphics,
-      centerX - buttonWidth / 2,
-      centerY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-      pixelUnit,
-      borderColor,
-      1,
-    );
-    graphics.setDepth(100);
 
-    const buttonText = this.add.text(centerX, centerY, label, {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
-    buttonText.setOrigin(0.5, 0.5);
-    buttonText.setDepth(101);
-
-    const buttonZone = this.add.zone(centerX, centerY, buttonWidth, buttonHeight);
-    buttonZone.setInteractive({ useHandCursor: true });
-    buttonZone.setDepth(102);
-    buttonZone.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      onClick();
+    const buttonHeight = buttons[0].height;
+    buttons.forEach((button, index) => {
+      button.setPosition(centerX, firstButtonY + index * (buttonHeight + gap));
+      button.setDepth(100);
     });
   }
 

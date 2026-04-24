@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { CustomScene } from '../customClasses/CustomScene';
 import { Progression } from '../Progression';
 import { Prestige, PRESTIGE_UPGRADES, PRESTIGE_BRANCHES, type PrestigeBranch } from '../Prestige';
+import { Button } from '../objects/Button';
 import { OptionsMenu } from '../objects/OptionsMenu';
 import { Shop } from '../objects/Shop';
 import { UPGRADES } from '../objects/ShopUpgrades';
@@ -678,8 +679,7 @@ export class UIScene extends CustomScene {
 
     const numBranches = PRESTIGE_BRANCHES.length;
     const availableTreeWidth = screenWidth - treeHorizontalMargin * 2;
-    const nodeWidth =
-      (availableTreeWidth - (numBranches - 1) * columnGapX) / numBranches;
+    const nodeWidth = (availableTreeWidth - (numBranches - 1) * columnGapX) / numBranches;
     const wrapWidth = nodeWidth - 2 * nodePadding;
 
     interface NodeDraft {
@@ -734,18 +734,11 @@ export class UIScene extends CustomScene {
     }
     const infoHeight = infoFontSize;
     const nodeHeight =
-      2 * nodePadding +
-      maxNameHeight +
-      nodeTextGap +
-      maxDescHeight +
-      nodeTextGap +
-      infoHeight;
+      2 * nodePadding + maxNameHeight + nodeTextGap + maxDescHeight + nodeTextGap + infoHeight;
 
-    const totalTreeWidth =
-      numBranches * nodeWidth + (numBranches - 1) * columnGapX;
+    const totalTreeWidth = numBranches * nodeWidth + (numBranches - 1) * columnGapX;
     const treeStartX = centerX - totalTreeWidth / 2;
-    const totalTreeHeight =
-      maxRowsPerBranch * nodeHeight + (maxRowsPerBranch - 1) * nodeGapY;
+    const totalTreeHeight = maxRowsPerBranch * nodeHeight + (maxRowsPerBranch - 1) * nodeGapY;
 
     const treeAreaBottom = rebootTopY - pixelUnit * 10;
     const firstNodeCenterY = treeAreaBottom - totalTreeHeight + nodeHeight / 2;
@@ -798,7 +791,9 @@ export class UIScene extends CustomScene {
 
     this.prestigeNodes = [];
     this.prestigeConnectorGraphics = this.add.graphics();
-    const prestigeContainerChildren: Phaser.GameObjects.GameObject[] = [this.prestigeConnectorGraphics];
+    const prestigeContainerChildren: Phaser.GameObjects.GameObject[] = [
+      this.prestigeConnectorGraphics,
+    ];
     const interactiveZones: Phaser.GameObjects.Zone[] = [];
     const draftByKey = new Map<string, NodeDraft>();
     for (const draft of drafts) {
@@ -855,64 +850,48 @@ export class UIScene extends CustomScene {
       }
     }
 
-    const buttonWidth = pixelUnit * 60;
-
-    const buttonGraphics = this.add.graphics();
-    buttonGraphics.fillStyle(0x552222, 0.9);
-    buttonGraphics.fillRect(
-      centerX - buttonWidth / 2,
-      rebootButtonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-    );
-    createUIPanel(
-      buttonGraphics,
-      centerX - buttonWidth / 2,
-      rebootButtonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
+    const rebootButton = new Button({
+      scene: this,
+      x: centerX,
+      y: rebootButtonY,
+      label: t('crash.restart'),
+      fontSize: buttonFontSize,
+      fillColor: 0x552222,
+      fillAlpha: 0.9,
+      borderColor: 0xaa4444,
+      borderAlpha: 0.9,
       pixelUnit,
-      0xaa4444,
-      0.9,
-    );
-    buttonGraphics.setAlpha(0);
-
-    const buttonText = this.add.text(centerX, rebootButtonY, t('crash.restart'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${buttonFontSize}px`,
-      color: '#ffffff',
+      paddingX: pixelUnit * 10,
+      paddingY: buttonHeight - buttonFontSize / 2,
+      onClick: () => {
+        const previousJuice = Progression.juice;
+        this.crashContainer.destroy();
+        this.crashActive = false;
+        this.pointsEarnedAtCrash = 0;
+        this.prestigeNodes = [];
+        this.mainScene.clearEntities();
+        Progression.reset();
+        Progression.carryPersistentJuice(previousJuice);
+        this.mainScene.spawnPrestigeStartingSprites();
+        this.previouslyUnlocked.clear();
+        this.initUnlockedUpgrades();
+        SaveManager.deleteSave();
+        const rebootBgMusic = this.mainScene.bgMusic;
+        if (rebootBgMusic) {
+          rebootBgMusic.setDetune(0);
+          this.tweens.add({
+            targets: rebootBgMusic,
+            volume: getEffectiveMusicVolume(),
+            duration: 400,
+            ease: 'Quad.easeOut',
+          });
+        }
+        this.scene.resume('MainScene');
+      },
     });
-    buttonText.setOrigin(0.5, 0.5);
-    buttonText.setAlpha(0);
-
-    const buttonZone = this.add.zone(centerX, rebootButtonY, buttonWidth, buttonHeight);
-    interactiveZones.push(buttonZone);
-    buttonZone.on('pointerup', () => {
-      const previousJuice = Progression.juice;
-      playSfx(this, 'buttonClick', 0.3);
-      this.crashContainer.destroy();
-      this.crashActive = false;
-      this.pointsEarnedAtCrash = 0;
-      this.prestigeNodes = [];
-      this.mainScene.clearEntities();
-      Progression.reset();
-      Progression.carryPersistentJuice(previousJuice);
-      this.mainScene.spawnPrestigeStartingSprites();
-      this.previouslyUnlocked.clear();
-      this.initUnlockedUpgrades();
-      SaveManager.deleteSave();
-      const rebootBgMusic = this.mainScene.bgMusic;
-      if (rebootBgMusic) {
-        rebootBgMusic.setDetune(0);
-        this.tweens.add({
-          targets: rebootBgMusic,
-          volume: getEffectiveMusicVolume(),
-          duration: 400,
-          ease: 'Quad.easeOut',
-        });
-      }
-      this.scene.resume('MainScene');
-    });
+    rebootButton.setAlpha(0);
+    rebootButton.zone.disableInteractive();
+    interactiveZones.push(rebootButton.zone);
 
     this.crashContainer = this.add.container(0, 0, [
       overlay,
@@ -922,9 +901,7 @@ export class UIScene extends CustomScene {
       earnedText,
       this.prestigePointsText,
       ...prestigeContainerChildren,
-      buttonGraphics,
-      buttonText,
-      buttonZone,
+      rebootButton.container,
     ]);
     this.crashContainer.setDepth(FRONT_DEPTH + 100);
 
@@ -990,7 +967,7 @@ export class UIScene extends CustomScene {
     });
 
     this.tweens.add({
-      targets: [buttonGraphics, buttonText],
+      targets: [rebootButton.graphics, rebootButton.text],
       alpha: 1,
       delay: 1120,
       duration: 180,
@@ -1026,7 +1003,6 @@ export class UIScene extends CustomScene {
     const messageY = centerY + pixelUnit * 5;
     const buyY = centerY + pixelUnit * 25;
     const buttonY = centerY + pixelUnit * 50;
-    const buttonWidth = pixelUnit * 70;
     const buttonHeight = pixelUnit * 18;
 
     const titleText = this.add.text(centerX, titleY, t('demo.title'), {
@@ -1066,60 +1042,44 @@ export class UIScene extends CustomScene {
     buyText.setOrigin(0.5, 0.5);
     buyText.setAlpha(0);
 
-    const buttonGraphics = this.add.graphics();
-    buttonGraphics.fillStyle(0x552222, 0.9);
-    buttonGraphics.fillRect(
-      centerX - buttonWidth / 2,
-      buttonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-    );
-    createUIPanel(
-      buttonGraphics,
-      centerX - buttonWidth / 2,
-      buttonY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
+    const demoButton = new Button({
+      scene: this,
+      x: centerX,
+      y: buttonY,
+      label: t('demo.resetRestart'),
+      fontSize: buttonFontSize,
+      fillColor: 0x552222,
+      fillAlpha: 0.9,
+      borderColor: 0xaa4444,
+      borderAlpha: 0.9,
       pixelUnit,
-      0xaa4444,
-      0.9,
-    );
-    buttonGraphics.setAlpha(0);
-
-    const buttonText = this.add.text(centerX, buttonY, t('demo.resetRestart'), {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${buttonFontSize}px`,
-      color: '#ffffff',
+      paddingX: pixelUnit * 12,
+      paddingY: (buttonHeight - buttonFontSize) / 2,
+      onClick: () => {
+        SaveManager.deleteSave();
+        SaveManager.deleteMetaSave();
+        this.crashContainer.destroy();
+        this.crashActive = false;
+        this.pointsEarnedAtCrash = 0;
+        this.mainScene.clearEntities();
+        Progression.reset();
+        this.mainScene.spawnPrestigeStartingSprites();
+        this.previouslyUnlocked.clear();
+        this.initUnlockedUpgrades();
+        const demoBgMusic = this.mainScene.bgMusic;
+        if (demoBgMusic) {
+          demoBgMusic.setDetune(0);
+          this.tweens.add({
+            targets: demoBgMusic,
+            volume: getEffectiveMusicVolume(),
+            duration: 400,
+            ease: 'Quad.easeOut',
+          });
+        }
+        this.scene.resume('MainScene');
+      },
     });
-    buttonText.setOrigin(0.5, 0.5);
-    buttonText.setAlpha(0);
-
-    const buttonZone = this.add.zone(centerX, buttonY, buttonWidth, buttonHeight);
-    buttonZone.setInteractive();
-    buttonZone.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      SaveManager.deleteSave();
-      SaveManager.deleteMetaSave();
-      this.crashContainer.destroy();
-      this.crashActive = false;
-      this.pointsEarnedAtCrash = 0;
-      this.mainScene.clearEntities();
-      Progression.reset();
-      this.mainScene.spawnPrestigeStartingSprites();
-      this.previouslyUnlocked.clear();
-      this.initUnlockedUpgrades();
-      const demoBgMusic = this.mainScene.bgMusic;
-      if (demoBgMusic) {
-        demoBgMusic.setDetune(0);
-        this.tweens.add({
-          targets: demoBgMusic,
-          volume: getEffectiveMusicVolume(),
-          duration: 400,
-          ease: 'Quad.easeOut',
-        });
-      }
-      this.scene.resume('MainScene');
-    });
+    demoButton.setAlpha(0);
 
     this.crashContainer = this.add.container(0, 0, [
       overlay,
@@ -1127,9 +1087,7 @@ export class UIScene extends CustomScene {
       subtitleText,
       messageText,
       buyText,
-      buttonGraphics,
-      buttonText,
-      buttonZone,
+      demoButton.container,
     ]);
     this.crashContainer.setDepth(FRONT_DEPTH + 100);
 
@@ -1173,7 +1131,7 @@ export class UIScene extends CustomScene {
     });
 
     this.tweens.add({
-      targets: [buttonGraphics, buttonText],
+      targets: [demoButton.graphics, demoButton.text],
       alpha: 1,
       delay: 3200,
       duration: 600,
@@ -1280,7 +1238,9 @@ export class UIScene extends CustomScene {
     const isReadOnly = true;
     const juicePerSecond =
       Progression.getTotalJuicePerSecond(isReadOnly) * Prestige.getJuiceMultiplier();
-    this.juicePerSecondText.setText(juicePerSecond > 0 ? `${formatNumber(juicePerSecond)}/s` : '0/s');
+    this.juicePerSecondText.setText(
+      juicePerSecond > 0 ? `${formatNumber(juicePerSecond)}/s` : '0/s',
+    );
     this.refreshJuicePanel();
     this.refreshHud();
     this.checkNewUnlocks();

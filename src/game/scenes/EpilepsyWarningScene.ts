@@ -1,7 +1,8 @@
 import { CustomScene } from '../customClasses/CustomScene';
+import { Button } from '../objects/Button';
 import { SaveManager } from '../utils/SaveManager';
 import { setLanguage, t } from '../utils/i18n';
-import { createUIPanel, playSfx, removeSplashScreen } from '../utils/utils';
+import { removeSplashScreen } from '../utils/utils';
 
 export const WARNING_DISMISSED_KEY = 'juice_epilepsy_warning_dismissed';
 
@@ -72,85 +73,60 @@ export class EpilepsyWarningScene extends CustomScene {
 
   private createActionButtons() {
     const pixelUnit = this.pixelUnit;
-    const isPortrait = this.canvasHeight > this.canvasWidth;
     const centerX = this.canvasWidth / 2;
-    const buttonWidth = pixelUnit * (isPortrait ? 80 : 60);
-    const buttonHeight = pixelUnit * 16;
+    const fontSize = Math.round(pixelUnit * 14);
+    const paddingX = pixelUnit * 10;
+    const paddingY = pixelUnit * 4;
     const gap = pixelUnit * 6;
     const firstButtonY = this.canvasHeight * 0.7;
 
-    this.createButton(
-      centerX,
-      firstButtonY,
-      buttonWidth,
-      buttonHeight,
-      t('warning.continue'),
-      0x8a5a00,
-      0xffcc33,
-      () => this.continueToTitle(),
-    );
-    this.createButton(
-      centerX,
-      firstButtonY + buttonHeight + gap,
-      buttonWidth,
-      buttonHeight,
-      t('warning.dontShowAgain'),
-      0x222255,
-      0x4444aa,
-      () => {
-        localStorage.setItem(WARNING_DISMISSED_KEY, 'true');
-        this.continueToTitle();
+    const specs: Array<{ label: string; fillColor: number; borderColor: number; onClick: () => void }> = [
+      {
+        label: t('warning.continue'),
+        fillColor: 0x8a5a00,
+        borderColor: 0xffcc33,
+        onClick: () => this.continueToTitle(),
       },
+      {
+        label: t('warning.dontShowAgain'),
+        fillColor: 0x222255,
+        borderColor: 0x4444aa,
+        onClick: () => {
+          localStorage.setItem(WARNING_DISMISSED_KEY, 'true');
+          this.continueToTitle();
+        },
+      },
+    ];
+
+    const maxTextWidth = Button.measureMaxTextWidth(
+      this,
+      specs.map((spec) => spec.label),
+      fontSize,
     );
-  }
+    const buttonWidth = maxTextWidth + paddingX * 2;
 
-  private createButton(
-    centerX: number,
-    centerY: number,
-    buttonWidth: number,
-    buttonHeight: number,
-    label: string,
-    fillColor: number,
-    borderColor: number,
-    onClick: () => void,
-  ) {
-    const pixelUnit = this.pixelUnit;
-    const fontSize = Math.round(pixelUnit * 14);
-
-    const graphics = this.add.graphics();
-    graphics.fillStyle(fillColor, 1);
-    graphics.fillRect(
-      centerX - buttonWidth / 2,
-      centerY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
+    const buttons = specs.map(
+      (spec) =>
+        new Button({
+          scene: this,
+          x: centerX,
+          y: firstButtonY,
+          label: spec.label,
+          fontSize,
+          fillColor: spec.fillColor,
+          borderColor: spec.borderColor,
+          pixelUnit,
+          onClick: spec.onClick,
+          width: buttonWidth,
+          paddingX,
+          paddingY,
+        }),
     );
-    createUIPanel(
-      graphics,
-      centerX - buttonWidth / 2,
-      centerY - buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-      pixelUnit,
-      borderColor,
-      1,
-    );
-    graphics.setDepth(100);
 
-    const buttonText = this.add.text(centerX, centerY, label, {
-      fontFamily: 'KenneyPixel',
-      fontSize: `${fontSize}px`,
-      color: '#ffffff',
-    });
-    buttonText.setOrigin(0.5, 0.5);
-    buttonText.setDepth(101);
-
-    const buttonZone = this.add.zone(centerX, centerY, buttonWidth, buttonHeight);
-    buttonZone.setInteractive({ useHandCursor: true });
-    buttonZone.setDepth(102);
-    buttonZone.on('pointerup', () => {
-      playSfx(this, 'buttonClick', 0.3);
-      onClick();
+    const buttonHeight = buttons[0].height;
+    buttons.forEach((button, index) => {
+      button.setPosition(centerX, firstButtonY + index * (buttonHeight + gap));
+      button.setDepth(100);
     });
   }
 
