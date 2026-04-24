@@ -10,7 +10,7 @@ SAMPLE_RATE = 44100
 BPM = 128
 BEAT_DURATION = 60.0 / BPM
 SIXTEENTH_DURATION = BEAT_DURATION / 4
-LOOP_BARS = 32
+LOOP_BARS = 96
 BAR_DURATION = 4 * BEAT_DURATION
 LOOP_DURATION = LOOP_BARS * BAR_DURATION
 TAIL_DURATION = 2.0
@@ -18,6 +18,68 @@ RENDER_DURATION = LOOP_DURATION + TAIL_DURATION
 
 LOOP_SAMPLES = int(LOOP_DURATION * SAMPLE_RATE)
 RENDER_SAMPLES = int(RENDER_DURATION * SAMPLE_RATE)
+
+
+SECTIONS = [
+    {"start": 0,  "end": 8,  "type": "intro"},
+    {"start": 8,  "end": 24, "type": "full"},
+    {"start": 24, "end": 32, "type": "calm"},
+    {"start": 32, "end": 48, "type": "full"},
+    {"start": 48, "end": 56, "type": "break"},
+    {"start": 56, "end": 72, "type": "full"},
+    {"start": 72, "end": 80, "type": "calm"},
+    {"start": 80, "end": 96, "type": "finale"},
+]
+
+SECTION_PROFILES = {
+    "intro": {
+        "bass_amp": 0.75, "bass_sparse": False,
+        "lead_amp": 0.0,
+        "arp_amp": 0.6, "arp_sparse": True,
+        "stabs_amp": 0.0,
+        "drums_mode": "soft",
+        "quirks_density": 0.0,
+    },
+    "full": {
+        "bass_amp": 1.0, "bass_sparse": False,
+        "lead_amp": 1.0,
+        "arp_amp": 1.0, "arp_sparse": False,
+        "stabs_amp": 1.0,
+        "drums_mode": "full",
+        "quirks_density": 1.0,
+    },
+    "calm": {
+        "bass_amp": 0.55, "bass_sparse": True,
+        "lead_amp": 0.0,
+        "arp_amp": 0.5, "arp_sparse": True,
+        "stabs_amp": 0.0,
+        "drums_mode": "soft",
+        "quirks_density": 0.25,
+    },
+    "break": {
+        "bass_amp": 0.35, "bass_sparse": True,
+        "lead_amp": 0.0,
+        "arp_amp": 0.4, "arp_sparse": True,
+        "stabs_amp": 0.0,
+        "drums_mode": "minimal",
+        "quirks_density": 0.0,
+    },
+    "finale": {
+        "bass_amp": 1.0, "bass_sparse": False,
+        "lead_amp": 1.05,
+        "arp_amp": 1.0, "arp_sparse": False,
+        "stabs_amp": 1.0,
+        "drums_mode": "full",
+        "quirks_density": 1.15,
+    },
+}
+
+
+def get_section_profile(bar_index: int) -> dict:
+    for section in SECTIONS:
+        if section["start"] <= bar_index < section["end"]:
+            return SECTION_PROFILES[section["type"]]
+    return SECTION_PROFILES["full"]
 
 
 NOTE_OFFSETS = {
@@ -267,11 +329,19 @@ def generate_bass(track: np.ndarray) -> None:
          "G1", "F#1", "G1", "REST", "C2", "REST", "D2", "G2"],
     ]
     for bar_index in range(LOOP_BARS):
+        profile = get_section_profile(bar_index)
+        bass_amp_mult = profile["bass_amp"]
+        bass_sparse = profile["bass_sparse"]
+        if bass_amp_mult <= 0.0:
+            continue
         pattern = patterns_per_chord[bar_index % 4]
         for step_index, note_name in enumerate(pattern):
+            if bass_sparse and step_index not in (0, 4, 8, 12):
+                continue
             step_time = bar_index * BAR_DURATION + step_index * SIXTEENTH_DURATION
             is_accent = step_index in (0, 4, 8, 12)
-            amplitude = 0.22 if is_accent else 0.14
+            base_amplitude = 0.22 if is_accent else 0.14
+            amplitude = base_amplitude * bass_amp_mult
             play_note(
                 track, note_name, step_time, SIXTEENTH_DURATION * 0.88,
                 waveform="square", duty=0.3, amplitude=amplitude,
@@ -299,6 +369,10 @@ def generate_lead(track: np.ndarray) -> None:
         [("G5", 2), ("B5", 2), ("D6", 2), ("G6", 2), ("F6", 4), ("REST", 4)],
     ]
     for bar_index in range(LOOP_BARS):
+        profile = get_section_profile(bar_index)
+        lead_amp_mult = profile["lead_amp"]
+        if lead_amp_mult <= 0.0:
+            continue
         bar_notes = bars_sequence[bar_index % len(bars_sequence)]
         position = bar_index * BAR_DURATION
         for note_index, (note_name, sixteenths) in enumerate(bar_notes):
@@ -311,7 +385,7 @@ def generate_lead(track: np.ndarray) -> None:
                     slide_from = previous_note
             play_note(
                 track, note_name, position, note_duration * 0.92,
-                waveform="square", duty=0.45, amplitude=0.13,
+                waveform="square", duty=0.45, amplitude=0.13 * lead_amp_mult,
                 attack=0.005, decay=0.07, sustain=0.55, release=0.1,
                 vibrato=should_vibrato, slide_from=slide_from,
             )
@@ -326,14 +400,22 @@ def generate_arp(track: np.ndarray) -> None:
         ["G3", "B3", "D4", "G4"],
     ]
     for bar_index in range(LOOP_BARS):
+        profile = get_section_profile(bar_index)
+        arp_amp_mult = profile["arp_amp"]
+        arp_sparse = profile["arp_sparse"]
+        if arp_amp_mult <= 0.0:
+            continue
         chord = chord_progression[bar_index % 4]
         up_down_pattern = chord + chord[::-1][1:-1]
-        for step in range(16):
+        step_sequence = range(0, 16, 2) if arp_sparse else range(16)
+        note_length_mult = 1.6 if arp_sparse else 0.75
+        for step in step_sequence:
             note_name = up_down_pattern[step % len(up_down_pattern)]
             step_time = bar_index * BAR_DURATION + step * SIXTEENTH_DURATION
-            amplitude = 0.055 + 0.02 * (1 if step % 4 == 0 else 0)
+            base_amplitude = 0.055 + 0.02 * (1 if step % 4 == 0 else 0)
+            amplitude = base_amplitude * arp_amp_mult
             play_note(
-                track, note_name, step_time, SIXTEENTH_DURATION * 0.75,
+                track, note_name, step_time, SIXTEENTH_DURATION * note_length_mult,
                 waveform="square", duty=0.25, amplitude=amplitude,
                 attack=0.002, decay=0.03, sustain=0.35, release=0.04,
             )
@@ -347,36 +429,55 @@ def generate_stabs(track: np.ndarray) -> None:
         ["G3", "B3", "D4"],
     ]
     for bar_index in range(LOOP_BARS):
+        profile = get_section_profile(bar_index)
+        stabs_amp_mult = profile["stabs_amp"]
+        if stabs_amp_mult <= 0.0:
+            continue
         chord = chord_progression[bar_index % 4]
         stab_positions_sixteenths = [2, 6, 10, 14]
         for sixteenth_offset in stab_positions_sixteenths:
             stab_time = bar_index * BAR_DURATION + sixteenth_offset * SIXTEENTH_DURATION
-            chord_stab(track, chord, stab_time, SIXTEENTH_DURATION * 1.5, amplitude=0.07)
+            chord_stab(track, chord, stab_time, SIXTEENTH_DURATION * 1.5,
+                       amplitude=0.07 * stabs_amp_mult)
 
 
 def generate_drums(track: np.ndarray) -> None:
-    kick_steps = {0, 6, 10}
+    kick_steps_full = {0, 6, 10}
+    kick_steps_soft = {0, 10}
     snare_steps = {4, 12}
     ghost_steps = {3, 7, 11, 15}
     open_hat_steps = {14}
 
     for bar_index in range(LOOP_BARS):
+        profile = get_section_profile(bar_index)
+        drums_mode = profile["drums_mode"]
+        if drums_mode not in ("full", "soft", "minimal"):
+            continue
         bar_start = bar_index * BAR_DURATION
         for step in range(16):
             step_time = bar_start + step * SIXTEENTH_DURATION
-            if step in kick_steps:
-                mix_into(track, kick_drum() * 0.55, int(step_time * SAMPLE_RATE))
-            if step in snare_steps:
-                mix_into(track, snare_drum() * 0.3, int(step_time * SAMPLE_RATE))
-            if step in ghost_steps and random.random() < 0.45:
-                mix_into(track, ghost_snare() * 0.14, int(step_time * SAMPLE_RATE))
-            if step % 2 == 0:
-                amplitude = 0.09 if step % 4 == 0 else 0.065
-                mix_into(track, hat_click() * amplitude, int(step_time * SAMPLE_RATE))
-            if step in open_hat_steps:
-                mix_into(track, hat_click(open_hat=True) * 0.11, int(step_time * SAMPLE_RATE))
+            if drums_mode == "full":
+                if step in kick_steps_full:
+                    mix_into(track, kick_drum() * 0.55, int(step_time * SAMPLE_RATE))
+                if step in snare_steps:
+                    mix_into(track, snare_drum() * 0.3, int(step_time * SAMPLE_RATE))
+                if step in ghost_steps and random.random() < 0.45:
+                    mix_into(track, ghost_snare() * 0.14, int(step_time * SAMPLE_RATE))
+                if step % 2 == 0:
+                    amplitude = 0.09 if step % 4 == 0 else 0.065
+                    mix_into(track, hat_click() * amplitude, int(step_time * SAMPLE_RATE))
+                if step in open_hat_steps:
+                    mix_into(track, hat_click(open_hat=True) * 0.11, int(step_time * SAMPLE_RATE))
+            elif drums_mode == "soft":
+                if step in kick_steps_soft:
+                    mix_into(track, kick_drum() * 0.38, int(step_time * SAMPLE_RATE))
+                if step in (0, 4, 8, 12):
+                    mix_into(track, hat_click() * 0.055, int(step_time * SAMPLE_RATE))
+            elif drums_mode == "minimal":
+                if step % 4 == 0:
+                    mix_into(track, hat_click() * 0.04, int(step_time * SAMPLE_RATE))
 
-        if bar_index % 4 == 3:
+        if drums_mode == "full" and bar_index % 4 == 3:
             fill_pitches = [240.0, 200.0, 170.0, 140.0]
             for fill_index, pitch_hz in enumerate(fill_pitches):
                 fill_time = bar_start + (12 + fill_index) * SIXTEENTH_DURATION
@@ -386,40 +487,73 @@ def generate_drums(track: np.ndarray) -> None:
 def generate_quirks(track: np.ndarray) -> None:
     four_bar_duration = 4 * BAR_DURATION
 
-    for section_index in range(LOOP_BARS // 4):
-        section_start = section_index * four_bar_duration
+    for group_index in range(LOOP_BARS // 4):
+        base_bar = group_index * 4
+        profile = get_section_profile(base_bar)
+        density = profile["quirks_density"]
+        if density <= 0:
+            continue
+        section_start = group_index * four_bar_duration
         cowbell_offsets_sixteenths = [10, 22, 42, 58]
         for offset in cowbell_offsets_sixteenths:
+            if random.random() >= density:
+                continue
             cowbell_time = section_start + offset * SIXTEENTH_DURATION
             if cowbell_time < LOOP_DURATION:
-                mix_into(track, cowbell_hit() * 0.11, int(cowbell_time * SAMPLE_RATE))
+                mix_into(track, cowbell_hit() * 0.11 * density,
+                         int(cowbell_time * SAMPLE_RATE))
 
     siren_bars = list(range(3, LOOP_BARS, 8))
     for siren_bar in siren_bars:
+        profile = get_section_profile(siren_bar)
+        density = profile["quirks_density"]
+        if density <= 0 or random.random() >= density:
+            continue
         siren_time = siren_bar * BAR_DURATION + 3 * BEAT_DURATION
         if siren_time < LOOP_DURATION:
-            mix_into(track, siren_sweep() * 0.09, int(siren_time * SAMPLE_RATE))
+            mix_into(track, siren_sweep() * 0.09 * density,
+                     int(siren_time * SAMPLE_RATE))
 
     zap_bars = list(range(7, LOOP_BARS, 8))
     for zap_bar in zap_bars:
+        profile = get_section_profile(zap_bar)
+        density = profile["quirks_density"]
+        if density <= 0 or random.random() >= density:
+            continue
         zap_time = zap_bar * BAR_DURATION + 3.5 * BEAT_DURATION
         if zap_time < LOOP_DURATION:
-            mix_into(track, zap_down() * 0.13, int(zap_time * SAMPLE_RATE))
+            mix_into(track, zap_down() * 0.13 * density,
+                     int(zap_time * SAMPLE_RATE))
 
     whip_bars = list(range(4, LOOP_BARS, 4))
     for whip_bar in whip_bars:
+        profile = get_section_profile(whip_bar)
+        density = profile["quirks_density"]
+        if density <= 0:
+            continue
         whip_time = whip_bar * BAR_DURATION - 0.12
         if whip_time > 0 and whip_time < LOOP_DURATION:
-            mix_into(track, whip_sfx() * 0.12, int(whip_time * SAMPLE_RATE))
+            mix_into(track, whip_sfx() * 0.12 * density,
+                     int(whip_time * SAMPLE_RATE))
 
-    bubble_count = 2 * LOOP_BARS // 4 + 4
+    bubble_count = int((2 * LOOP_BARS // 4 + 4) * 1.2)
     for _ in range(bubble_count):
         onset = random.uniform(0.5, LOOP_DURATION - 0.5)
-        mix_into(track, bubble_pop() * random.uniform(0.04, 0.08), int(onset * SAMPLE_RATE))
+        bar_for_onset = int(onset / BAR_DURATION)
+        profile = get_section_profile(bar_for_onset)
+        density = profile["quirks_density"]
+        if density <= 0 or random.random() >= density:
+            continue
+        mix_into(track, bubble_pop() * random.uniform(0.04, 0.08),
+                 int(onset * SAMPLE_RATE))
 
-    stutter_onsets = [(2 + 8 * cycle_index) * BAR_DURATION + 3.5 * BEAT_DURATION
-                      for cycle_index in range(LOOP_BARS // 8)]
-    for stutter_start in stutter_onsets:
+    stutter_bars = [2 + 8 * cycle_index for cycle_index in range(LOOP_BARS // 8)]
+    for stutter_bar in stutter_bars:
+        profile = get_section_profile(stutter_bar)
+        density = profile["quirks_density"]
+        if density <= 0:
+            continue
+        stutter_start = stutter_bar * BAR_DURATION + 3.5 * BEAT_DURATION
         for repeat_index in range(4):
             stutter_time = stutter_start + repeat_index * SIXTEENTH_DURATION * 0.5
             if stutter_time >= LOOP_DURATION:
@@ -427,7 +561,7 @@ def generate_quirks(track: np.ndarray) -> None:
             pitch_choice = random.choice(["G5", "Bb5", "C6", "Eb6"])
             play_note(
                 track, pitch_choice, stutter_time, SIXTEENTH_DURATION * 0.4,
-                waveform="square", duty=0.2, amplitude=0.07,
+                waveform="square", duty=0.2, amplitude=0.07 * density,
                 attack=0.001, decay=0.02, sustain=0.3, release=0.03,
             )
 
@@ -478,10 +612,10 @@ def save_wav(filepath: str, signal: np.ndarray) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate a funky, zany chiptune title loop for JuiceJuicyJuice.")
+    parser = argparse.ArgumentParser(description="Generate a funky, zany chiptune loop for JuiceJuicyJuice.")
     default_output = os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "public", "assets", "music", "funky_loop_title.wav",
+        "public", "assets", "music", "funky_loop.wav",
     )
     parser.add_argument("--output", "-o", default=default_output, help="Output .wav path")
     parser.add_argument("--seed", type=int, default=4242, help="Random seed")
@@ -491,6 +625,13 @@ def main() -> None:
     random.seed(arguments.seed)
 
     print(f"Tempo: {BPM} BPM  |  Loop length: {LOOP_DURATION:.2f}s  |  Bars: {LOOP_BARS}")
+    print("Section plan:")
+    for section in SECTIONS:
+        section_start_seconds = section["start"] * BAR_DURATION
+        section_end_seconds = section["end"] * BAR_DURATION
+        print(f"  bars {section['start']:>3}-{section['end']:<3} "
+              f"({section_start_seconds:5.1f}s -> {section_end_seconds:5.1f}s)  "
+              f"{section['type']}")
 
     bass_track = np.zeros(RENDER_SAMPLES)
     lead_track = np.zeros(RENDER_SAMPLES)
