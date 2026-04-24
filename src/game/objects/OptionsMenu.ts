@@ -4,11 +4,11 @@ import { SaveManager } from '../utils/SaveManager';
 import {
   createUIPanel,
   FRONT_DEPTH,
-  musicMuted,
+  musicVolume,
   playSfx,
-  setMusicMuted,
-  setSfxMuted,
-  sfxMuted,
+  setMusicVolume,
+  setSfxVolume,
+  sfxVolume,
 } from '../utils/utils';
 
 export interface OptionsMenuCallbacks {
@@ -35,10 +35,16 @@ export class OptionsMenu {
   private deleteMetaText!: Phaser.GameObjects.Text;
   private enFlagImg!: Phaser.GameObjects.Image;
   private frFlagImg!: Phaser.GameObjects.Image;
-  private soundToggleImg!: Phaser.GameObjects.Image;
-  private musicToggleImg!: Phaser.GameObjects.Image;
-  private localSfxMuted: boolean = false;
-  private localMusicMuted: boolean = false;
+  private sfxSliderIcon!: Phaser.GameObjects.Image;
+  private sfxSliderGraphics!: Phaser.GameObjects.Graphics;
+  private sfxSliderBounds!: { x: number; y: number; width: number; height: number };
+  private musicSliderIcon!: Phaser.GameObjects.Image;
+  private musicSliderGraphics!: Phaser.GameObjects.Graphics;
+  private musicSliderBounds!: { x: number; y: number; width: number; height: number };
+  private sfxDragging: boolean = false;
+  private musicDragging: boolean = false;
+  private pointerMoveHandler?: (pointer: Phaser.Input.Pointer) => void;
+  private pointerUpHandler?: () => void;
 
   public isOpen: boolean = false;
 
@@ -129,6 +135,8 @@ export class OptionsMenu {
       tileSize * 2 +
       flagSize +
       gap +
+      flagSize +
+      gap +
       flagSize;
     const menuX = (screenWidth - menuWidth) / 2;
     const menuY = (screenHeight - menuHeight) / 2;
@@ -189,39 +197,87 @@ export class OptionsMenu {
     }
 
     const flagGap = pixelUnit * 6;
-    const soundY = menuY + menuHeight - pixelUnit * 8 - flagSize - flagGap - flagSize / 2;
+    const sliderPadding = pixelUnit * 8;
+    const sliderIconGap = pixelUnit * 4;
+    const musicSliderY = menuY + menuHeight - pixelUnit * 8 - flagSize - flagGap - flagSize / 2;
+    const sfxSliderY = musicSliderY - flagSize - flagGap;
+    const sliderLeftX = menuX + sliderPadding;
+    const trackX = sliderLeftX + flagSize + sliderIconGap;
+    const trackWidth = menuX + menuWidth - sliderPadding - trackX;
+    const trackHeight = pixelUnit * 3;
 
-    this.localSfxMuted = sfxMuted;
-    this.soundToggleImg = this.scene.add.image(
-      centerX - flagGap / 2 - flagSize / 2,
-      soundY,
+    this.sfxSliderBounds = {
+      x: trackX,
+      y: sfxSliderY - trackHeight / 2,
+      width: trackWidth,
+      height: trackHeight,
+    };
+    this.musicSliderBounds = {
+      x: trackX,
+      y: musicSliderY - trackHeight / 2,
+      width: trackWidth,
+      height: trackHeight,
+    };
+
+    this.sfxSliderIcon = this.scene.add.image(
+      sliderLeftX + flagSize / 2,
+      sfxSliderY,
       'uiAtlas',
-      this.localSfxMuted ? 'soundOff' : 'soundOn',
+      sfxVolume > 0 ? 'soundOn' : 'soundOff',
     );
-    this.soundToggleImg.setDisplaySize(flagSize, flagSize);
-    this.soundToggleImg.setInteractive({ useHandCursor: true });
-    this.soundToggleImg.on('pointerup', () => {
-      this.localSfxMuted = !this.localSfxMuted;
-      setSfxMuted(this.localSfxMuted);
-      this.soundToggleImg.setFrame(this.localSfxMuted ? 'soundOff' : 'soundOn');
-      SaveManager.saveSettings();
+    this.sfxSliderIcon.setDisplaySize(flagSize, flagSize);
+
+    this.musicSliderIcon = this.scene.add.image(
+      sliderLeftX + flagSize / 2,
+      musicSliderY,
+      'uiAtlas',
+      musicVolume > 0 ? 'musicOn' : 'musicOff',
+    );
+    this.musicSliderIcon.setDisplaySize(flagSize, flagSize);
+
+    this.sfxSliderGraphics = this.scene.add.graphics();
+    this.musicSliderGraphics = this.scene.add.graphics();
+    this.drawSlider(this.sfxSliderGraphics, this.sfxSliderBounds, sfxVolume);
+    this.drawSlider(this.musicSliderGraphics, this.musicSliderBounds, musicVolume);
+
+    const sfxZone = this.scene.add.zone(
+      trackX + trackWidth / 2,
+      sfxSliderY,
+      trackWidth,
+      flagSize,
+    );
+    sfxZone.setInteractive({ useHandCursor: true });
+    sfxZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      this.sfxDragging = true;
+      this.updateSfxVolumeFromPointer(pointer.x);
     });
 
-    this.localMusicMuted = musicMuted;
-    this.musicToggleImg = this.scene.add.image(
-      centerX + flagGap / 2 + flagSize / 2,
-      soundY,
-      'uiAtlas',
-      this.localMusicMuted ? 'musicOff' : 'musicOn',
+    const musicZone = this.scene.add.zone(
+      trackX + trackWidth / 2,
+      musicSliderY,
+      trackWidth,
+      flagSize,
     );
-    this.musicToggleImg.setDisplaySize(flagSize, flagSize);
-    this.musicToggleImg.setInteractive({ useHandCursor: true });
-    this.musicToggleImg.on('pointerup', () => {
-      this.localMusicMuted = !this.localMusicMuted;
-      setMusicMuted(this.localMusicMuted);
-      this.musicToggleImg.setFrame(this.localMusicMuted ? 'musicOff' : 'musicOn');
-      SaveManager.saveSettings();
+    musicZone.setInteractive({ useHandCursor: true });
+    musicZone.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      this.musicDragging = true;
+      this.updateMusicVolumeFromPointer(pointer.x);
     });
+
+    this.pointerMoveHandler = (pointer: Phaser.Input.Pointer) => {
+      if (this.sfxDragging) this.updateSfxVolumeFromPointer(pointer.x);
+      if (this.musicDragging) this.updateMusicVolumeFromPointer(pointer.x);
+    };
+    this.pointerUpHandler = () => {
+      if (this.sfxDragging || this.musicDragging) {
+        this.sfxDragging = false;
+        this.musicDragging = false;
+        SaveManager.saveSettings();
+      }
+    };
+    this.scene.input.on('pointermove', this.pointerMoveHandler);
+    this.scene.input.on('pointerup', this.pointerUpHandler);
+    this.scene.input.on('pointerupoutside', this.pointerUpHandler);
 
     const flagY = menuY + menuHeight - pixelUnit * 8 - flagSize / 2;
 
@@ -260,8 +316,12 @@ export class OptionsMenu {
     containerChildren.push(
       this.enFlagImg,
       this.frFlagImg,
-      this.soundToggleImg,
-      this.musicToggleImg,
+      this.sfxSliderIcon,
+      this.sfxSliderGraphics,
+      sfxZone,
+      this.musicSliderIcon,
+      this.musicSliderGraphics,
+      musicZone,
     );
 
     this.menuContainer = this.scene.add.container(0, 0, containerChildren);
@@ -273,6 +333,44 @@ export class OptionsMenu {
     const isEnglish = getLanguage() === 'en';
     this.enFlagImg.setAlpha(isEnglish ? 1 : 0.35);
     this.frFlagImg.setAlpha(isEnglish ? 0.35 : 1);
+  }
+
+  private drawSlider(
+    graphics: Phaser.GameObjects.Graphics,
+    bounds: { x: number; y: number; width: number; height: number },
+    value: number,
+  ) {
+    graphics.clear();
+    const pixelUnit = this.pixelUnit;
+    graphics.fillStyle(0x222244, 0.9);
+    graphics.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    const fillWidth = bounds.width * value;
+    if (fillWidth > 0) {
+      graphics.fillStyle(0x44aa88, 1);
+      graphics.fillRect(bounds.x, bounds.y, fillWidth, bounds.height);
+    }
+    const handleWidth = pixelUnit * 3;
+    const handleHeight = bounds.height + pixelUnit * 4;
+    const handleX = bounds.x + fillWidth - handleWidth / 2;
+    const handleY = bounds.y + bounds.height / 2 - handleHeight / 2;
+    graphics.fillStyle(0xffffff, 1);
+    graphics.fillRect(handleX, handleY, handleWidth, handleHeight);
+  }
+
+  private updateSfxVolumeFromPointer(pointerX: number) {
+    const bounds = this.sfxSliderBounds;
+    const ratio = Math.max(0, Math.min(1, (pointerX - bounds.x) / bounds.width));
+    setSfxVolume(ratio);
+    this.drawSlider(this.sfxSliderGraphics, bounds, ratio);
+    this.sfxSliderIcon.setFrame(ratio > 0 ? 'soundOn' : 'soundOff');
+  }
+
+  private updateMusicVolumeFromPointer(pointerX: number) {
+    const bounds = this.musicSliderBounds;
+    const ratio = Math.max(0, Math.min(1, (pointerX - bounds.x) / bounds.width));
+    setMusicVolume(ratio);
+    this.drawSlider(this.musicSliderGraphics, bounds, ratio);
+    this.musicSliderIcon.setFrame(ratio > 0 ? 'musicOn' : 'musicOff');
   }
 
   refreshTexts() {

@@ -6,33 +6,38 @@ export const SPRITE_BASE_UNIT = 16;
 export const FRONT_DEPTH = 1000000;
 export const BG_MUSIC_VOLUME = 0.2;
 
-export let sfxMuted = false;
-export function setSfxMuted(muted: boolean) {
-  sfxMuted = muted;
-}
+export let sfxVolume = 1;
+export let musicVolume = 1;
 
-export let musicMuted = false;
 let bgMusicInstance:
   | Phaser.Sound.WebAudioSound
   | Phaser.Sound.HTML5AudioSound
   | null = null;
 
+export function getEffectiveMusicVolume(): number {
+  return BG_MUSIC_VOLUME * musicVolume;
+}
+
 export function registerBgMusic(
   sound: Phaser.Sound.WebAudioSound | Phaser.Sound.HTML5AudioSound,
 ) {
   bgMusicInstance = sound;
-  sound.setMute(musicMuted);
+  sound.setVolume(getEffectiveMusicVolume());
 }
 
-export function setMusicMuted(muted: boolean) {
-  musicMuted = muted;
-  bgMusicInstance?.setMute(muted);
+export function setSfxVolume(volume: number) {
+  sfxVolume = Math.max(0, Math.min(1, volume));
+}
+
+export function setMusicVolume(volume: number) {
+  musicVolume = Math.max(0, Math.min(1, volume));
+  bgMusicInstance?.setVolume(getEffectiveMusicVolume());
 }
 
 export function playSfx(scene: Phaser.Scene, key: string, volume: number = 0.3) {
-  if (!sfxMuted) {
+  if (sfxVolume > 0) {
     const pitchVariation = 1 + (Math.random() - 0.5) * 0.15;
-    const volumeVariation = volume * (1 + (Math.random() - 0.5) * 0.1);
+    const volumeVariation = volume * sfxVolume * (1 + (Math.random() - 0.5) * 0.1);
     scene.sound.play(key, { volume: volumeVariation, rate: pitchVariation });
   }
 }

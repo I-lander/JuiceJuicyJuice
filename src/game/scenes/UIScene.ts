@@ -8,12 +8,12 @@ import { Shop } from '../objects/Shop';
 import { UPGRADES } from '../objects/ShopUpgrades';
 import { t } from '../utils/i18n';
 import {
-  BG_MUSIC_VOLUME,
   createUIPanel,
   formatCpuFrequency,
   formatNumber,
   FRONT_DEPTH,
   getColors,
+  getEffectiveMusicVolume,
   initGlitchShader,
   playSfx,
 } from '../utils/utils';
@@ -906,7 +906,7 @@ export class UIScene extends CustomScene {
         rebootBgMusic.setDetune(0);
         this.tweens.add({
           targets: rebootBgMusic,
-          volume: BG_MUSIC_VOLUME,
+          volume: getEffectiveMusicVolume(),
           duration: 400,
           ease: 'Quad.easeOut',
         });
@@ -1113,7 +1113,7 @@ export class UIScene extends CustomScene {
         demoBgMusic.setDetune(0);
         this.tweens.add({
           targets: demoBgMusic,
-          volume: BG_MUSIC_VOLUME,
+          volume: getEffectiveMusicVolume(),
           duration: 400,
           ease: 'Quad.easeOut',
         });

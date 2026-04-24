@@ -4,7 +4,7 @@ import { Prestige } from '../Prestige';
 import { Sprite } from '../objects/Sprite';
 import { getSpriteFrames } from '../elements/SpriteAtlas';
 import {
-  BG_MUSIC_VOLUME,
+  getEffectiveMusicVolume,
   getRandomInt,
   initGlitchShader,
   initShader,
@@ -91,7 +91,7 @@ export class MainScene extends CustomScene {
         | Phaser.Sound.WebAudioSound
         | Phaser.Sound.HTML5AudioSound;
     } else {
-      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: BG_MUSIC_VOLUME }) as
+      this.bgMusic = this.sound.add('bgMusic', { loop: true, volume: getEffectiveMusicVolume() }) as
         | Phaser.Sound.WebAudioSound
         | Phaser.Sound.HTML5AudioSound;
       this.bgMusic.play();

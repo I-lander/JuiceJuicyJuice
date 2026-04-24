@@ -7,6 +7,7 @@ import { SaveManager } from '../utils/SaveManager';
 import { t } from '../utils/i18n';
 import {
   createUIPanel,
+  getEffectiveMusicVolume,
   getRandomInt,
   initShader,
   playSfx,
@@ -68,6 +69,9 @@ export class TitleScene extends CustomScene {
       0x42a72e,
     );
 
+    SaveManager.loadMeta();
+    SaveManager.applySettings();
+
     this.spawnBackgroundSprites();
     this.createTitleTexts();
     this.createMenuButtons();
@@ -79,14 +83,12 @@ export class TitleScene extends CustomScene {
         SaveManager.deleteMetaSave();
       },
     });
-    SaveManager.loadMeta();
-    SaveManager.applySettings();
 
     initShader(this);
 
     const bgMusicAlreadyPlaying = this.sound.getAll('bgMusic').some((sound) => sound.isPlaying);
     if (!bgMusicAlreadyPlaying) {
-      const bgMusic = this.sound.add('bgMusic', { loop: true, volume: 0.2 }) as
+      const bgMusic = this.sound.add('bgMusic', { loop: true, volume: getEffectiveMusicVolume() }) as
         | Phaser.Sound.WebAudioSound
         | Phaser.Sound.HTML5AudioSound;
       bgMusic.play();

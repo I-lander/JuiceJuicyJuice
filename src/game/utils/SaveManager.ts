@@ -2,7 +2,7 @@ import { BASE_CPU_CAPACITY_MHZ, Progression } from '../Progression';
 import { Prestige } from '../Prestige';
 import { PARTICLE_COLOR_UPGRADES } from '../objects/ShopUpgrades';
 import type { MainScene } from '../scenes/MainScene';
-import { musicMuted, setMusicMuted, sfxMuted, setSfxMuted } from './utils';
+import { musicVolume, setMusicVolume, sfxVolume, setSfxVolume } from './utils';
 import { getLanguage, setLanguage, type Language } from './i18n';
 
 const SAVE_KEY = 'juice_save_data';
@@ -11,8 +11,8 @@ const SETTINGS_KEY = 'juice_settings';
 const AUTO_SAVE_INTERVAL = 30_000;
 
 interface SettingsData {
-  sfxMuted: boolean;
-  musicMuted: boolean;
+  sfxVolume: number;
+  musicVolume: number;
   language: Language;
 }
 
@@ -197,8 +197,8 @@ export class SaveManager {
 
   static saveSettings(): void {
     const data: SettingsData = {
-      sfxMuted,
-      musicMuted,
+      sfxVolume,
+      musicVolume,
       language: getLanguage(),
     };
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
@@ -208,9 +208,20 @@ export class SaveManager {
     const settingsRaw = localStorage.getItem(SETTINGS_KEY);
     if (settingsRaw) {
       try {
-        const data = JSON.parse(settingsRaw) as Partial<SettingsData>;
-        setSfxMuted(data.sfxMuted ?? false);
-        setMusicMuted(data.musicMuted ?? false);
+        const data = JSON.parse(settingsRaw) as Partial<SettingsData> & {
+          sfxMuted?: boolean;
+          musicMuted?: boolean;
+        };
+        if (data.sfxVolume !== undefined) {
+          setSfxVolume(data.sfxVolume);
+        } else if (data.sfxMuted !== undefined) {
+          setSfxVolume(data.sfxMuted ? 0 : 1);
+        }
+        if (data.musicVolume !== undefined) {
+          setMusicVolume(data.musicVolume);
+        } else if (data.musicMuted !== undefined) {
+          setMusicVolume(data.musicMuted ? 0 : 1);
+        }
         if (data.language) setLanguage(data.language);
         return;
       } catch {
@@ -221,8 +232,8 @@ export class SaveManager {
     if (!legacyRaw) return;
     try {
       const legacy = JSON.parse(legacyRaw) as Partial<SaveData>;
-      if (legacy.sfxMuted !== undefined) setSfxMuted(legacy.sfxMuted);
-      if (legacy.musicMuted !== undefined) setMusicMuted(legacy.musicMuted);
+      if (legacy.sfxMuted !== undefined) setSfxVolume(legacy.sfxMuted ? 0 : 1);
+      if (legacy.musicMuted !== undefined) setMusicVolume(legacy.musicMuted ? 0 : 1);
       if (legacy.language) setLanguage(legacy.language);
       SaveManager.saveSettings();
     } catch {
