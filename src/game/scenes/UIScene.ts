@@ -128,10 +128,10 @@ export class UIScene extends CustomScene {
         this.closeMenu();
       },
       onQuit: () => {
-        if (Capacitor.isNativePlatform()) {
-          App.exitApp();
-        } else if (window.electron) {
+        if (window.electron) {
           window.electron.quitApp();
+        } else if (Capacitor.isNativePlatform()) {
+          App.exitApp();
         }
       },
     });
