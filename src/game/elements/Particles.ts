@@ -12,7 +12,7 @@ export function discoverParticleFrames(scene: Phaser.Scene): void {
   const canvas = document.createElement('canvas');
   canvas.width = PARTICLE_ATLAS_CELL_SIZE;
   canvas.height = PARTICLE_ATLAS_CELL_SIZE;
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext('2d', { willReadFrequently: true });
   if (!context) return;
 
   const frames: number[] = [];
