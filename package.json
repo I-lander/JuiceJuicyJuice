@@ -1,12 +1,13 @@
 {
   "name": "juice-juicy-juice",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "commonjs",
   "homepage": "./",
   "scripts": {
     "version:patch": "node push-new-version.js patch",
     "version:minor": "node push-new-version.js minor",
+    "generate:atlas-frames": "node scripts/generate-atlas-frames.js",
     "start": "vite",
     "build": "vite build --base=./",
     "sync": "npx cap sync",
