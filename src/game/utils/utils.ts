@@ -64,7 +64,7 @@ export function removeSplashScreen(scene: Phaser.Scene) {
   if (import.meta.env.VITE_IS_DEV_SPLASH === 'true') {
     document.getElementById('splashScreen')?.remove();
   } else {
-    const splashMinDuration = 3000;
+    const splashMinDuration = 2000;
     const splashElapsed = Date.now() - window.splashStartTime;
     const remaining = Math.max(splashMinDuration - splashElapsed, 0);
 

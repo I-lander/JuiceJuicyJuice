@@ -1,15 +1,22 @@
 import {
-  discoverParticleFrames,
   PARTICLE_ATLAS_CELL_SIZE,
   PARTICLE_ATLAS_KEY,
+  setParticleFrames,
 } from '../elements/Particles';
 import {
-  discoverSpriteFrames,
   SPRITE_ATLAS_CELL_SIZE,
   SPRITE_ATLAS_KEY,
+  setSpriteFrames,
 } from '../elements/SpriteAtlas';
 import { uiAtlas } from '../elements/UiAtlas';
 import { WARNING_DISMISSED_KEY } from './EpilepsyWarningScene';
+
+const ATLAS_FRAMES_KEY = 'atlasFrames';
+
+interface AtlasFramesData {
+  sprite: number[];
+  particle: number[];
+}
 
 export class LoadingScene extends Phaser.Scene {
   constructor() {
@@ -27,6 +34,7 @@ export class LoadingScene extends Phaser.Scene {
       frameWidth: PARTICLE_ATLAS_CELL_SIZE,
       frameHeight: PARTICLE_ATLAS_CELL_SIZE,
     });
+    this.load.json(ATLAS_FRAMES_KEY, './assets/data/atlas-frames.json');
     this.load.atlas('uiAtlas', './assets/images/ui-atlas.png', uiAtlas);
     this.load.audio('bgMusic', './assets/music/funky_loop.wav');
     this.load.audio('prestigeMusic', './assets/music/prestige_loop.wav');
@@ -38,8 +46,9 @@ export class LoadingScene extends Phaser.Scene {
   }
 
   async create() {
-    discoverSpriteFrames(this);
-    discoverParticleFrames(this);
+    const atlasFrames = this.cache.json.get(ATLAS_FRAMES_KEY) as AtlasFramesData;
+    setSpriteFrames(atlasFrames.sprite);
+    setParticleFrames(atlasFrames.particle);
     const warningDismissed = localStorage.getItem(WARNING_DISMISSED_KEY) === 'true';
     this.scene.start(warningDismissed ? 'TitleScene' : 'EpilepsyWarningScene');
   }
