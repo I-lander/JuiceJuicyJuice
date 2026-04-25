@@ -45,7 +45,7 @@ export class EpilepsyWarningScene extends CustomScene {
   private createWarningTexts() {
     const pixelUnit = this.pixelUnit;
     const centerX = this.canvasWidth / 2;
-    const titleFontSize = Math.round(pixelUnit * 32);
+    const titleFontSize = Math.round(pixelUnit * 26);
     const bodyFontSize = Math.round(pixelUnit * 14);
 
     const titleText = this.add.text(centerX, this.canvasHeight * 0.25, t('warning.title'), {
@@ -57,6 +57,12 @@ export class EpilepsyWarningScene extends CustomScene {
       align: 'center',
     });
     titleText.setOrigin(0.5, 0.5);
+
+    let currentFontSize = titleFontSize;
+    while (titleText.width > this.canvasWidth * 0.9) {
+      currentFontSize -= 2;
+      titleText.setFontSize(currentFontSize);
+    }
 
     const bodyWrapWidth = this.canvasWidth * 0.75;
     const bodyText = this.add.text(centerX, this.canvasHeight * 0.45, t('warning.body'), {

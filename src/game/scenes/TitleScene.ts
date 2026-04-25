@@ -262,25 +262,44 @@ export class TitleScene extends CustomScene {
   private createPwywMessage() {
     if (import.meta.env.VITE_WEB_VERSION !== 'true') return;
     const pixelUnit = this.pixelUnit;
-    const fontSize = Math.round(pixelUnit * 14);
-    const offsetX = pixelUnit * 6 - this.tileSize * 2;
-    const offsetY = -this.tileSize * 0.8 - this.tileSize * 2;
-    this.pwywText = this.add.text(
-      this.titleRightX + offsetX,
-      this.titleCenterY + offsetY,
-      t('title.pwyw'),
-      {
-        fontFamily: 'KenneyPixel',
-        fontSize: `${fontSize}px`,
-        color: '#ed7f22',
-        stroke: '#000000',
-        strokeThickness: Math.round(pixelUnit * 4),
-        align: 'left',
-        wordWrap: { width: this.tileSize * 10 },
-      },
-    );
-    this.pwywText.setOrigin(0, 0.5);
-    this.pwywText.setAngle(33);
+    const isPortrait = this.canvasHeight > this.canvasWidth;
+    const fontSize = Math.round(pixelUnit * (isPortrait ? 11 : 14));
+    const wrapWidth = isPortrait ? this.canvasWidth * 0.7 : this.tileSize * 10;
+
+    let posX: number;
+    let posY: number;
+    let angle: number;
+    let originX: number;
+    let originY: number;
+    let textAlign: 'left' | 'center';
+
+    if (isPortrait) {
+      posX = this.canvasWidth / 2;
+      posY = this.canvasHeight * 0.12;
+      angle = -8;
+      originX = 0.5;
+      originY = 0.5;
+      textAlign = 'center';
+    } else {
+      posX = this.titleRightX - this.tileSize * 2 + pixelUnit * 6;
+      posY = this.titleCenterY - this.tileSize * 2.8;
+      angle = 33;
+      originX = 0;
+      originY = 0.5;
+      textAlign = 'center';
+    }
+
+    this.pwywText = this.add.text(posX, posY, t('title.pwyw'), {
+      fontFamily: 'KenneyPixel',
+      fontSize: `${fontSize}px`,
+      color: '#ed7f22',
+      stroke: '#000000',
+      strokeThickness: Math.round(pixelUnit * 4),
+      align: textAlign,
+      wordWrap: { width: wrapWidth },
+    });
+    this.pwywText.setOrigin(originX, originY);
+    this.pwywText.setAngle(angle);
     this.pwywText.setDepth(100);
 
     this.tweens.add({
